@@ -136,15 +136,20 @@ def test_missing_state_file_is_reported():
         make({"state_file": "NoSuchPatient@0s.xml"}).initial_state()
 
 
-def test_state_with_active_infusion_is_refused(tmp_path, direct_engine):
+def test_state_with_an_active_infusion_starts_at_its_rate(tmp_path, direct_engine):
+    """A state saved while infusing starts the iv setpoint at the infusion's rate; an
+    infusion of another compound than iv_compound raises (the setpoint couldn't stop it)."""
     import pybiogears as pb
     e = direct_engine()
     e.process_actions(pb.actions.substance_compound_infusion("Saline", 500.0, 100.0))
     e.advance(2.0)
     path = tmp_path / "infusing.xml"
     e.save_state(path)
-    with pytest.raises(ValueError, match="SubstanceCompoundInfusionData"):
-        make({"state_file": str(path)}).initial_state()
+    p = make({"state_file": str(path)})
+    p.initial_state()
+    assert p._bridge.applied == {"hemorrhage_rate_mL_per_min": 0.0, "iv_rate_mL_per_min": 100.0}
+    with pytest.raises(ValueError, match="Saline"):
+        make({"state_file": str(path), "iv_compound": "RingersLactate"}).initial_state()
 
 
 def test_explicit_bad_runtime_dir_raises_instead_of_falling_back(tmp_path):

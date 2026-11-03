@@ -1,0 +1,11 @@
+save time 9.999999999999876 load time 9.99999999999988
+continued vs uninterrupted, max rel diff: 1.6247921956453876e-11
+  HeartRate                     74.4088      74.4088
+  MeanArterialPressure           96.132       96.132
+  BloodVolume                   5519.08      5519.08
+  TotalBloodVolumeLost          38.4887      38.4887
+  TidalVolume                   824.155      824.155
+  SkinTemperature               35.0905      35.0905
+  ArterialOxygenPressure        122.246      122.246
+  CentralVenousPressure         3.99912      3.99912
+resent hemorrhage after reload: blood lost 42.7215468321519 vs 38.48869570591964

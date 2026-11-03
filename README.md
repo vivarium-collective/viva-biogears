@@ -12,9 +12,9 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body_circuits` and `biogears_lymph`.
 
   All are tested against the real engine.
-  - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`).
+  - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
+  - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`).
 - **Next (viva-pulse parity, in this order):**
-  - saved states and branching from them;
   - circuit additions;
   - the Sphinx documentation and tutorials.
 
@@ -68,6 +68,29 @@ BioGearsCircuitProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {
   - They play the role of viva-pulse's `circuit_modifiers`: the result is a different patient, not a perturbation.
   - Chronic anemia removes hemoglobin but leaves hematocrit unchanged in BioGears 8.2.0.
 - **Rules.** Setting `state_file` and `patient_file` (or `conditions`) together raises. `biogears_lymph` drops its equilibrated default when a patient is given; that patient is not equilibrated.
+
+### Saved states and branching
+
+A process saves its engine at given simulation times:
+
+```python
+config = {"save_state_times_s": [600, 1200], "save_state_dir": "states/", "save_state_name": "bleed"}
+# -> states/bleed@600s.xml, states/bleed@1200s.xml
+```
+
+The same can be done from the command line: `python -m viva_biogears.states StandardMale@0s.xml --times 60 120 --out states/`.
+
+- **Where saves land.** Each save is at the first update boundary at or after its time, so saving doesn't change the run. Existing files are never overwritten: a name already in the directory raises when the process is built.
+- **Branching.** A saved state is an ordinary BioGears state, so `state_file` starts another run from it. Actions active at the save keep running: a bleed, an infusion, intubation, the ventilator, the cannula, a thermal application, a changed environment.
+- **Setpoints in a branch.** The loading process reads those actions from the state, and each setpoint group starts at the state's values:
+  - a branch with the same setpoints sends nothing and continues the run (to about 1e-11);
+  - a branch with different ones sends the change: rate 0 stops the bleed, `connected` 0 disconnects the ventilator.
+
+  This matters in BioGears in particular, because resending a hemorrhage restarts it.
+- **What raises.**
+  - An active action the process can't address: a bleed in another compartment, an infusion of another compound, another tube type.
+  - An airway device the process doesn't control.
+- **BioGears bugs.** pybiogears works around four BioGears 8.2.0 save/load bugs: a segfault saving with equipment requests, ventilator states that didn't reload, blood lost reset on load, and NaN thermal parts. See `workspace/experiments/save-states-2026-11-03`.
 
 ## Usage
 

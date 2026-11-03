@@ -12,7 +12,6 @@ from ._bridge import (  # noqa: F401
     INTERVENTION_CONFIG,
     EngineBridge,
     check_intervention_config,
-    check_loadable_state,
 )
 
 
@@ -39,6 +38,11 @@ class BioGearsProcess(Process):
     Vital signs (see ``VITALS``) as ``overwrite[float]``: ``initial_state()``
     seeds each store with the loaded state's reading and every update emits
     BioGears' current reading, so the store always equals BioGears' own value.
+    The engine starts from ``state_file`` or a ``patient_file`` (``viva_biogears.patients``).
+    A state saved mid-run (``save_state_times_s``, ``viva_biogears.states``) carries its
+    bleed and infusion; the setpoints start at their values, so the same setpoints
+    continue the run and different ones send the change.
+
     ``irreversible_state`` turns True once BioGears reports its irreversible state
     (it does at 50 % blood loss); the engine is not advanced after that, so the
     vitals stores keep the last reading BioGears produced.

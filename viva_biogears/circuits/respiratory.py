@@ -50,6 +50,8 @@ from .base import (
     scalar,
     validate_switch,
 )
+from .state import scalar as state_scalar
+from .state import text
 
 INTUBATION_TYPES = ("Tracheal", "Esophageal", "LeftMainstem", "RightMainstem")
 VENTILATOR_CONNECTIONS = ("Tube", "Mask")
@@ -152,6 +154,45 @@ def _build_intubation(values, config):
     return intubation_xml(config["intubation_type"] if values["intubated"] == 1.0 else "Off")
 
 
+def _loaded_intubation(state, config):
+    if state.intubation == "Off":
+        return {"intubated": 0.0}
+    kinds = [el.get("Type") for kind, el in state.actions if kind == "IntubationData"]
+    if kinds and kinds[0] != config["intubation_type"]:
+        raise ValueError(f"the loaded state is intubated ({kinds[0]}), but intubation_type is "
+                         f"{config['intubation_type']!r}; set it to {kinds[0]!r}")
+    return {"intubated": 1.0}
+
+
+_MACHINE = {  # setpoint -> (anesthesia-machine element, unit)
+    "ventilator_pressure_cmH2O": ("VentilatorPressure", "cmH2O"),
+    "peep_cmH2O": ("PositiveEndExpiredPressure", "cmH2O"),
+    "respiration_rate_bpm": ("RespiratoryRate", "1/min"),
+    "inspiratory_expiratory_ratio": ("InspiratoryExpiratoryRatio", ""),
+    "oxygen_fraction": ("OxygenFraction", ""),
+    "inlet_flow_L_per_min": ("InletFlow", "L/min"),
+}
+
+
+def _loaded_ventilator(state, config):
+    machine = state.systems.get("BioGearsAnesthesiaMachineData")
+    connection = text(machine, "Connection", "Off") or "Off"
+    if connection == "Off":
+        return dict(VENTILATOR_BASELINE)
+    if connection != config["ventilator_connection"]:
+        raise ValueError(f"the loaded state's ventilator is connected by {connection}, but "
+                         f"ventilator_connection is {config['ventilator_connection']!r}; set it to {connection!r}")
+    if text(machine, "OxygenSource", "Wall") != "Wall" or text(machine, "PrimaryGas", "Nitrogen") != "Nitrogen":
+        return None  # a configuration this module doesn't send: resend ours on the first update
+    values = {"connected": 1.0}
+    for port, (tag, unit) in _MACHINE.items():
+        v = state_scalar(machine, tag, unit)
+        if v is None:
+            return None
+        values[port] = v
+    return values
+
+
 def _check_respiratory_config(config: dict[str, Any]) -> None:
     if config["intubation_type"] not in INTUBATION_TYPES:
         raise ValueError(f"intubation_type must be one of {INTUBATION_TYPES}, got {config['intubation_type']!r}")
@@ -199,7 +240,8 @@ RESPIRATORY = CircuitModule(
                 "pleural gas compartments; setpoint: intubation.",
     outputs=_respiratory_outputs(),
     bindings=(ActionBinding(ports={"intubated": 0.0}, build=_build_intubation,
-                            action_types=("IntubationData",), validate=_validate_intubation),),
+                            action_types=("IntubationData",), validate=_validate_intubation,
+                            loaded=_loaded_intubation),),
     params={"intubation_type": {"_type": "string", "_default": "Tracheal"}},
     check_config=_check_respiratory_config,
 )
@@ -214,7 +256,8 @@ MECHANICAL_VENTILATOR = CircuitModule(
                      for port, (prop, unit) in (("absolute_pressure_cmH2O", ("Pressure", "cmH2O")),
                                                 ("volume_mL", ("Volume", "mL")))]),
     bindings=(ActionBinding(ports=dict(VENTILATOR_BASELINE), build=_build_ventilator,
-                            action_types=("AnesthesiaMachineConfigurationData",), validate=_validate_ventilator),),
+                            action_types=("AnesthesiaMachineConfigurationData",), validate=_validate_ventilator,
+                            loaded=_loaded_ventilator),),
     params={"ventilator_connection": {"_type": "string", "_default": "Tube"}},
     check_config=_check_ventilator_config,
     airway_device="connected",

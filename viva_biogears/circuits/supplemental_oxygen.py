@@ -20,6 +20,7 @@ from __future__ import annotations
 import math
 
 from .base import ActionBinding, CircuitModule, Request, scalar, validate_switch
+from .state import scalar as state_scalar
 
 _OXYGENATION = {
     "oxygen_saturation": ("OxygenSaturation", ""),
@@ -47,6 +48,17 @@ def _build_oxygen(values, config):
     return nasal_cannula_xml(values["oxygen_flow_L_per_min"] if values["oxygen_connected"] == 1.0 else 0.0)
 
 
+def _loaded_oxygen(state, config):
+    for kind, el in state.actions:
+        if kind == "NasalCannulaData":
+            flow = state_scalar(el, "FlowRate", "L/min")
+            if flow is None:
+                return None
+            if flow > 0:
+                return {"oxygen_connected": 1.0, "oxygen_flow_L_per_min": flow}
+    return dict(OXYGEN_BASELINE)
+
+
 SUPPLEMENTAL_OXYGEN = CircuitModule(
     name="supplemental_oxygen",
     description="A nasal cannula: arterial blood gases and end-tidal CO2; setpoints: connection and flow.",
@@ -54,6 +66,7 @@ SUPPLEMENTAL_OXYGEN = CircuitModule(
     + (Request(("cannula", "nosepiece_oxygen_volume_fraction"), "GasCompartment", "VolumeFraction", "",
                "Nosepiece", "Oxygen"),),
     bindings=(ActionBinding(ports=dict(OXYGEN_BASELINE), build=_build_oxygen,
-                            action_types=("NasalCannulaData",), validate=_validate_oxygen),),
+                            action_types=("NasalCannulaData",), validate=_validate_oxygen,
+                            loaded=_loaded_oxygen),),
     airway_device="oxygen_connected",
 )

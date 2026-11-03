@@ -70,8 +70,17 @@ class ActionBinding:
     BioGears action XML (one ``<Action>``, or several concatenated). ``validate``
     raises ``ValueError`` on bad values; ``check_transition(previous, values)``
     raises ``ValueError`` on a change BioGears cannot make. ``action_types`` are the
-    BioGears action types (``xsi:type``) ``build`` sends: a state holding one of them
-    active is refused at load, because the group's stores would not describe it.
+    BioGears action types (``xsi:type``) ``build`` sends.
+
+    ``loaded(state, config)`` reads, from the parsed starting state
+    (``viva_biogears.circuits.state.StateInfo``), the values the group already has
+    there: a state saved mid-run carries its bleed, infusion, ventilator, ... So a
+    branch whose setpoints equal them sends nothing and continues the run exactly, and
+    one that differs sends the change. It returns the values (the baselines when
+    nothing is active), None when the state's values can't be read (the group is then
+    sent on the first update whatever its value), or raises ``ValueError`` for an active
+    action the group can't address (a bleed in another compartment). A group without
+    ``loaded`` whose action type is active in the state is treated as None.
     """
 
     ports: dict[str, float]
@@ -79,6 +88,14 @@ class ActionBinding:
     action_types: tuple[str, ...]
     validate: Callable[[dict[str, float], dict[str, Any]], None] | None = None
     check_transition: Callable[[dict[str, float], dict[str, float]], None] | None = None
+    loaded: Callable[[Any, dict[str, Any]], dict[str, float] | None] | None = None
+
+    def loaded_values(self, state, config) -> dict[str, float] | None:
+        if self.loaded is not None:
+            return self.loaded(state, config)
+        if set(self.action_types) & set(state.active_actions):
+            return None
+        return dict(self.ports)
 
 
 def check_outputs(module: str, outputs: tuple[Request, ...]) -> None:

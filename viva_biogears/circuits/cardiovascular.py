@@ -38,6 +38,7 @@ import math
 from typing import Any
 
 from .base import ActionBinding, CircuitModule, Request, check_nonnegative
+from .state import scalar, text
 
 #: Compartments BioGears 8.2.0 can bleed from: those with a "<name>Bleed" path in
 #: the cardiovascular circuit (BioGearsCircuits.h). Any other name is accepted by
@@ -195,10 +196,54 @@ def check_infusion_config(config: dict[str, Any]) -> None:
     # The compound itself is checked against <runtime>/substances when the engine loads.
 
 
+def loaded_hemorrhage(state, config):
+    """The bleed the state carries at ``hemorrhage_compartment`` (its initial rate)."""
+    values = dict(HEMORRHAGE_BASELINE)
+    others = []
+    for kind, el in state.actions:
+        if kind != "HemorrhageData":
+            continue
+        if el.get("Compartment") != config["hemorrhage_compartment"]:
+            others.append(el.get("Compartment"))
+            continue
+        rate = scalar(el, "InitialRate", "mL/min")
+        if rate is None:
+            return None
+        values["hemorrhage_rate_mL_per_min"] = rate
+    if others:
+        raise ValueError(f"the loaded state has active hemorrhages at {others}, which this process's "
+                         f"hemorrhage setpoint (at {config['hemorrhage_compartment']}) can't stop; set "
+                         "hemorrhage_compartment to it")
+    return values
+
+
+def loaded_infusion(state, config):
+    """The infusion of ``iv_compound`` the state carries (its rate)."""
+    values = dict(INFUSION_BASELINE)
+    others = []
+    for kind, el in state.actions:
+        if kind != "SubstanceCompoundInfusionData":
+            continue
+        compound = text(el, "SubstanceCompound")
+        if compound != config["iv_compound"]:
+            others.append(compound)
+            continue
+        rate = scalar(el, "Rate", "mL/min")
+        if rate is None:
+            return None
+        values["iv_rate_mL_per_min"] = rate
+    if others:
+        raise ValueError(f"the loaded state has active infusions of {others}, which this process's infusion "
+                         f"setpoint (of {config['iv_compound']}) can't stop; set iv_compound to it")
+    return values
+
+
 HEMORRHAGE = ActionBinding(ports=dict(HEMORRHAGE_BASELINE), build=_build_hemorrhage,
-                           action_types=("HemorrhageData",), validate=_validate_hemorrhage)
+                           action_types=("HemorrhageData",), validate=_validate_hemorrhage,
+                           loaded=loaded_hemorrhage)
 INFUSION = ActionBinding(ports=dict(INFUSION_BASELINE), build=_build_infusion,
-                         action_types=("SubstanceCompoundInfusionData",), validate=_validate_infusion)
+                         action_types=("SubstanceCompoundInfusionData",), validate=_validate_infusion,
+                         loaded=loaded_infusion)
 
 HEMORRHAGE_PARAMS = {"hemorrhage_compartment": {"_type": "string", "_default": "RightLeg"}}
 INFUSION_PARAMS = {"iv_compound": {"_type": "string", "_default": "Saline"},

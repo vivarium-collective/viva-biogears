@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import math
 
-from ..circuits.cardiovascular import (  # noqa: F401
-    HEMORRHAGE_COMPARTMENTS,
+from ..circuits.cardiovascular import (
+    HEMORRHAGE_COMPARTMENTS,  # noqa: F401  (re-exported)
     check_hemorrhage_config,
     hemorrhage_xml,
     infusion_xml,
+    loaded_hemorrhage,
+    loaded_infusion,
 )
 from ..circuits.state import read_state
 from ..patients import conditions_xml, stabilized_state
 from ..runtime import compound_names, import_pybiogears, runtime_dir, state_path
+from ..states import SAVE_CONFIG, saver_from_config
 
 SETPOINTS = ("hemorrhage_rate_mL_per_min", "iv_rate_mL_per_min")
 _BLEED_REFUSED = "bleed rate higher than the cardiac output"
@@ -28,18 +31,6 @@ START_CONFIG = {
 }
 
 
-def check_loadable_state(path, action_types=("HemorrhageData", "SubstanceCompoundInfusionData")) -> None:
-    """Refuse a state that already holds an action the process's setpoints send.
-
-    Setpoints are sent only when they change from their baselines, so an action
-    already active in the state would keep running unseen by the setpoint ports.
-    """
-    active = sorted(set(read_state(path).active_actions) & set(action_types))
-    if active:
-        raise ValueError(f"state {path.name} has active {', '.join(active)}, which this process's setpoints "
-                         "also drive; viva-biogears processes start from states without them")
-
-
 def check_intervention_config(config) -> None:
     check_start(config)
     check_hemorrhage_config(config)
@@ -49,6 +40,7 @@ def check_intervention_config(config) -> None:
 
 INTERVENTION_CONFIG = {
     **START_CONFIG,
+    **SAVE_CONFIG,
     "hemorrhage_compartment": {"_type": "string", "_default": "RightLeg"},
     "iv_compound": {"_type": "string", "_default": "Saline"},
     "iv_bag_volume_L": {"_type": "float", "_default": 10.0},
@@ -130,14 +122,23 @@ class EngineBridge:
         self.engine = None
         self.alive = True
         self.applied = {k: 0.0 for k in SETPOINTS}
+        self.saver = saver_from_config(config)
 
     def ensure(self):
         if self.engine is not None:
             return self.engine
         runtime, path = resolve_state(self.config)
         check_compound(runtime, self.config["iv_compound"])
-        check_loadable_state(path)
+        # A state saved mid-run carries its bleed and infusion: start from their values,
+        # so the same setpoints continue the run and different ones send the change.
+        state = read_state(path)
+        bleed = loaded_hemorrhage(state, self.config)
+        infusion = loaded_infusion(state, self.config)
+        self.applied = {**(bleed or {"hemorrhage_rate_mL_per_min": None}),
+                        **(infusion or {"iv_rate_mL_per_min": None})}
         self.engine = load_engine(runtime, path, self.requests)
+        if self.saver:
+            self.saver(self.engine)
         return self.engine
 
     def values(self) -> list[float]:
@@ -168,4 +169,6 @@ class EngineBridge:
         if not self.alive:
             return False
         self.alive = advance(engine, seconds, self.applied["hemorrhage_rate_mL_per_min"])
+        if self.alive and self.saver:
+            self.saver(engine)
         return self.alive

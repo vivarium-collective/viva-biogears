@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 from circuit_helpers import direct, direct_values, flat, make, run
 
-from viva_biogears.circuits.cardiovascular import hemorrhage_xml
 from viva_biogears.circuits.respiratory import VENTILATOR_BASELINE
 from viva_biogears.circuits.state import read_state
 from viva_biogears.circuits.thermal import (
@@ -86,34 +85,22 @@ def test_cannula_raises_oxygen_and_stops_at_zero():
     assert on["oxygenation"]["oxygen_saturation"] > init["oxygenation"]["oxygen_saturation"]
 
 
-def test_intubated_state_is_refused():
-    """A state intubated before load would make the intubated store (0) wrong."""
+def test_an_intubated_state_starts_intubated():
+    """A state intubated before load starts the intubated setpoint group at 1 (a branch
+    with 0 extubates); another tube type than the config's raises."""
     p = make(["respiratory"])
     e = direct(p)
     e.process_actions('<Action xsi:type="IntubationData" Type="Tracheal"/>')
     e.advance(1.0)
-    path = runtime_dir() / ".." / "viva_test_intubated.xml"
+    path = (runtime_dir() / ".." / "viva_test_intubated.xml").resolve()
     try:
         e.save_state(path)
         assert read_state(path).intubation != "Off"
-        with pytest.raises(ValueError, match="intubated"):
-            make(["respiratory"], state_file=str(path.resolve())).initial_state()
-        make(["vitals"], state_file=str(path.resolve())).initial_state()  # no intubation setpoint: fine
-    finally:
-        path.unlink(missing_ok=True)
-
-
-def test_state_with_an_active_driven_action_is_refused():
-    p = make(["cardiovascular"])
-    e = direct(p)
-    e.process_actions(hemorrhage_xml("RightLeg", 100.0))
-    e.advance(2.0)
-    path = (runtime_dir() / ".." / "viva_test_bleeding.xml").resolve()
-    try:
-        e.save_state(path)
-        with pytest.raises(ValueError, match="HemorrhageData"):
-            make(["cardiovascular"], state_file=str(path)).initial_state()
-        make(["thermal"], state_file=str(path)).initial_state()  # doesn't drive hemorrhages: fine
+        q = make(["respiratory"], state_file=str(path))
+        q.initial_state()
+        assert q._applied[("respiratory", 0)] == {"intubated": 1.0}
+        with pytest.raises(ValueError, match="intubation_type"):
+            make(["respiratory"], state_file=str(path), intubation_type="LeftMainstem").initial_state()
     finally:
         path.unlink(missing_ok=True)
 
@@ -151,7 +138,7 @@ def test_environment_change_is_read_back_and_cools():
     assert out["heat_loss"]["skin_W"] > 150
 
 
-def test_nonstandard_environment_state_is_refused():
+def test_a_changed_environment_is_read_from_the_state():
     from viva_biogears.circuits.thermal import environment_xml
     p = make(["thermal"])
     e = direct(p)
@@ -160,8 +147,9 @@ def test_nonstandard_environment_state_is_refused():
     path = (runtime_dir() / ".." / "viva_test_dry.xml").resolve()
     try:
         e.save_state(path)
-        with pytest.raises(ValueError, match="environment differs"):
-            make(["thermal"], state_file=str(path)).initial_state()
+        q = make(["thermal"], state_file=str(path))
+        assert q.initial_state()["thermal"]["environment"]["relative_humidity"] == 0.2
+        assert q._applied[("thermal", 0)] == {**ENVIRONMENT_BASELINE, "relative_humidity": 0.2}
     finally:
         path.unlink(missing_ok=True)
 

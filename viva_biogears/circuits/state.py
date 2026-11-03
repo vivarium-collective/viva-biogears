@@ -58,6 +58,8 @@ class StateInfo:
     active_actions: list[str]                                   # xsi:type of each active action
     airway_mode: str
     intubation: str
+    actions: list = field(default_factory=list)                 # (xsi:type, element) of each active action
+    systems: dict = field(default_factory=dict)                 # system xsi:type -> element
 
 
 @lru_cache(maxsize=16)
@@ -67,7 +69,7 @@ def _parse(path: str, mtime: float) -> StateInfo:
     circuits, node_volume, path_ends = {}, {}, {}
     compartments: dict[str, dict[str, Compartment]] = {}
     graphs: dict[str, dict[str, set[str]]] = {}
-    substances, actions = {}, []
+    substances, actions, elements, systems = {}, [], [], {}
     airway, intubation = "Free", "Off"
     for el in root:
         t = _tag(el)
@@ -105,15 +107,47 @@ def _parse(path: str, mtime: float) -> StateInfo:
             substances[_text(el, "Name")] = frozenset(_tag(x) for x in el if _tag(x) not in ("Name", "State"))
         elif t == "ActiveAction":
             actions.append(el.get(xsi_type, ""))
+            elements.append((el.get(xsi_type, ""), el))
+        elif t == "System":
+            systems[el.get(xsi_type, "")] = el
         elif t == "AirwayMode":
             airway = el.text or "Free"
         elif t == "Intubation":
             intubation = el.text or "Off"
     return StateInfo(Path(path), circuits, node_volume, path_ends, compartments, graphs, substances, actions,
-                     airway, intubation)
+                     airway, intubation, elements, systems)
 
 
 def read_state(path: Path) -> StateInfo:
     """The parsed state (cached per path and modification time)."""
     path = Path(path).resolve()
     return _parse(str(path), path.stat().st_mtime)
+
+
+_TO_SI = {
+    "degC": lambda v: v, "degF": lambda v: (v - 32.0) * 5.0 / 9.0, "K": lambda v: v - 273.15,
+}
+
+
+def scalar(el, tag: str, unit: str = "") -> float | None:
+    """The value of child ``tag`` of ``el`` in ``unit`` (degC, or as stored when it is
+    ``unit``); None when absent or in another unit (the caller then treats it as unknown)."""
+    c = _child(el, tag) if el is not None else None
+    if c is None or c.get("value") is None:
+        return None
+    value, stored = float(c.get("value")), c.get("unit", "")
+    if stored == unit:
+        return value
+    if unit == "degC" and stored in _TO_SI:
+        return _TO_SI[stored](value)
+    if unit == "" and stored == "unitless":
+        return value
+    return None
+
+
+def child(el, tag):
+    return _child(el, tag) if el is not None else None
+
+
+def text(el, tag, default=""):
+    return _text(el, tag, default) if el is not None else default

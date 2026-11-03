@@ -26,8 +26,8 @@ Setpoints:
   relative humidity, air velocity and clothing resistance, sent as one
   ``EnvironmentChange``, which BioGears merges into the current conditions. The
   baselines are BioGears' ``environments/Standard.xml``, which the shipped states
-  use; a state whose environment differs fails the load (``check_loaded``), because
-  the group is always sent whole and would silently reset it.
+  use. A state with other conditions (saved after a change) starts the group at
+  them, read from the state, so a branch that keeps them sends nothing.
 - ``thermal_application`` group: active heating and cooling power, each with the
   fraction of skin area it covers, and an applied temperature (on/off, temperature,
   area fraction), sent as one ``ThermalApplication`` that replaces the previous one.
@@ -57,6 +57,8 @@ from .base import (
     scalar,
     validate_switch,
 )
+from .state import child
+from .state import scalar as state_scalar
 
 _ENERGY = {
     "core_temperature_C": ("CoreTemperature", "degC"),
@@ -183,13 +185,52 @@ def thermal_application_xml(values: dict[str, float]) -> str:
             + "</AppliedTemperature></Action>")
 
 
-def _check_loaded_environment(readings) -> None:
-    loaded = readings["environment"]
-    mismatched = {p: loaded[p] for p, v in ENVIRONMENT_BASELINE.items() if abs(loaded[p] - v) > 1e-9}
-    if mismatched:
-        raise ValueError(f"the loaded state's environment differs from the thermal module's baselines "
-                         f"(BioGears' Standard.xml) at {mismatched}; the first environment change would "
-                         f"silently reset them to {ENVIRONMENT_BASELINE}")
+_CONDITION_TAGS = {
+    "ambient_temperature_C": ("AmbientTemperature", "degC"),
+    "mean_radiant_temperature_C": ("MeanRadiantTemperature", "degC"),
+    "respiration_ambient_temperature_C": ("RespirationAmbientTemperature", "degC"),
+    "relative_humidity": ("RelativeHumidity", ""),
+    "air_velocity_m_per_s": ("AirVelocity", "m/s"),
+    "clothing_resistance_clo": ("ClothingResistance", "clo"),
+}
+
+
+def _loaded_environment(state, config):
+    """The environmental conditions the state holds (a saved run may have changed them)."""
+    conditions = child(state.systems.get("BioGearsEnvironmentData"), "Conditions")
+    values = {}
+    for port, (tag, unit) in _CONDITION_TAGS.items():
+        v = state_scalar(conditions, tag, unit)
+        if v is None:
+            return None
+        values[port] = v
+    return values
+
+
+def _loaded_thermal_application(state, config):
+    """The thermal application the state carries (absent parts: off)."""
+    values = dict(THERMAL_APPLICATION_BASELINE)
+    for kind, el in state.actions:
+        if kind != "ThermalApplicationData":
+            continue
+        for part, prefix in (("ActiveHeating", "active_heating"), ("ActiveCooling", "active_cooling")):
+            p = child(el, part)
+            if p is not None:
+                power, fraction = state_scalar(p, "Power", "W"), state_scalar(p, "SurfaceAreaFraction")
+                if power is None or (fraction is None and child(p, "SurfaceAreaFraction") is not None):
+                    return None
+                values[f"{prefix}_W"] = power
+                values[f"{prefix}_area_fraction"] = 1.0 if fraction is None else fraction
+        a = child(el, "AppliedTemperature")
+        if a is not None:
+            on = child(a, "State")
+            temp, fraction = state_scalar(a, "Temperature", "degC"), state_scalar(a, "SurfaceAreaFraction")
+            if temp is None:
+                return None
+            values["applied_temperature_on"] = 1.0 if on is not None and on.text == "On" else 0.0
+            values["applied_temperature_C"] = temp
+            values["applied_temperature_area_fraction"] = 1.0 if fraction is None else fraction
+    return values
 
 
 THERMAL = CircuitModule(
@@ -200,9 +241,10 @@ THERMAL = CircuitModule(
     outputs=_outputs(),
     bindings=(
         ActionBinding(ports=dict(ENVIRONMENT_BASELINE), build=lambda v, c: environment_xml(v),
-                      action_types=("EnvironmentChangeData",), validate=_validate_environment),
+                      action_types=("EnvironmentChangeData",), validate=_validate_environment,
+                      loaded=_loaded_environment),
         ActionBinding(ports=dict(THERMAL_APPLICATION_BASELINE), build=lambda v, c: thermal_application_xml(v),
-                      action_types=("ThermalApplicationData",), validate=_validate_thermal_application),
+                      action_types=("ThermalApplicationData",), validate=_validate_thermal_application,
+                      loaded=_loaded_thermal_application),
     ),
-    check_loaded=_check_loaded_environment,
 )

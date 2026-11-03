@@ -23,6 +23,7 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
 
 - `viva_biogears/runtime.py` finds the BioGears runtime directory: the `runtime_dir` config, then `$BIOGEARS_RUNTIME`, then the installer's default. An explicitly given invalid location raises `BioGearsNotFoundError` and never falls back. It also checks that pybiogears drives 8.2.0.
 - `viva_biogears/patients.py` stabilizes a `patient_file` (with optional chronic `conditions`) once through pybiogears' `initialize` and caches the state (`stabilized_state`; key: patient bytes, conditions, install identity). `_bridge.resolve_state` picks `state_file` or the cached patient; `check_start` makes them exclusive.
+- `viva_biogears/states.py` saves states (`save_states`, `StateSaver` for `save_state_times_s`, a CLI). pybiogears fixes BioGears' save/load bugs (equipment-request segfault, empty chamber states, blood lost, NaN thermal parts).
 - `viva_biogears/processes/` is registered automatically by `core.build_core()` (`register_package_processes`).
   - `biogears.py` has `BioGearsProcess`, with the same contract as viva-pulse's `PulseProcess`:
     - the engine loads lazily; setpoints (`overwrite[float]`) are sent only when they change, because resending a hemorrhage restarts BioGears' bleed;
@@ -32,7 +33,7 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
     - `HEMORRHAGE_COMPARTMENTS`: an unknown compartment crashes BioGears;
     - a bleed rate above cardiac output raises (BioGears refuses it every step);
     - a second airway device raises (BioGears fails every step, then can be left unrecoverable);
-    - states holding an action the process's setpoints send are refused at load, as are intubated states;
+    - a state saved mid-run starts each setpoint group at the state's values (`ActionBinding.loaded`, read by `circuits/state.py`); an active action a group can't address, or an airway device the process doesn't control, raises;
     - `iv_compound` must be a BioGears compound file.
   - `_bridge.py` has the shared engine handling (`load_engine`, `advance`) and `EngineBridge` for `BioGearsProcess`.
   - `circuit.py` has `BioGearsCircuitProcess` (viva-pulse's `PulseCircuitProcess`): setpoints under one `setpoints` input port, readings nested per module, send-on-change, validation before any action, the airway rule.
