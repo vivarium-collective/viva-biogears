@@ -1,38 +1,17 @@
-"""BioGearsCircuitProcess against the real engine.
+"""BioGearsCircuitProcess against the real engine: the bridge, and the lymph and tissue-fluid modules.
 
 Oracles: a pybiogears engine driven directly with the same requests and actions
 (bridge equality), and conservation laws that hold on BioGears' own circuit
 (lymph pool mass balance, Ohm's law on the lymph return path)."""
 import numpy as np
 import pytest
+from circuit_helpers import direct, direct_values, flat, make, run
 
 from viva_biogears.circuits import MODULES, TISSUES
-from viva_biogears.core import build_core
-from viva_biogears.processes import VITALS, BioGearsCircuitProcess, BioGearsProcess
-from viva_biogears.runtime import import_pybiogears, runtime_dir
-
-_CORE = build_core()
-_REST = {"hemorrhage_rate_mL_per_min": 0.0, "iv_rate_mL_per_min": 0.0}
-
-
-def make(modules, **config):
-    return BioGearsCircuitProcess({"modules": modules, **config}, core=_CORE)
-
-
-def _run(proc, seconds, **setpoints):
-    state = {"interventions": {**_REST, **setpoints}}
-    return [proc.update(state, 1.0) for _ in range(int(seconds))]
-
-
-def _flat(module, out):
-    """Module output -> values in MODULES[module].requests order."""
-    vals = []
-    for req in MODULES[module].requests:
-        d = out[module]
-        for p in req.path:
-            d = d[p]
-        vals.append(d)
-    return np.array(vals, dtype=float)
+from viva_biogears.circuits.cardiovascular import hemorrhage_xml, infusion_xml
+from viva_biogears.circuits.supplemental_oxygen import nasal_cannula_xml
+from viva_biogears.circuits.thermal import ENVIRONMENT_BASELINE, environment_xml
+from viva_biogears.processes import VITALS, BioGearsProcess
 
 
 @pytest.mark.parametrize("modules, match", [
@@ -42,51 +21,66 @@ def test_invalid_modules_raise(modules, match):
         make(modules)
 
 
+def test_every_module_is_documented_and_reachable():
+    for name, m in MODULES.items():
+        assert m.name == name and m.description, name
+
+
 def test_ports_nest_per_module_and_are_disjoint_from_inputs():
-    p = make(["lymph", "tissue_fluid"])
+    p = make(["lymph", "tissue_fluid", "cardiovascular"])
     out = p.outputs()
-    assert set(out) == {"lymph", "tissue_fluid", "irreversible_state"}
+    assert set(out) == {"lymph", "tissue_fluid", "cardiovascular", "irreversible_state"}
     assert set(out["lymph"]["formation"]) == {f"{k}_mL_per_min" for k in TISSUES}
     assert set(out["tissue_fluid"]) >= set(TISSUES)
+    assert set(p.inputs()) == {"setpoints"} and set(p.inputs()["setpoints"]) == {"cardiovascular"}
     assert not set(out) & set(p.inputs())
 
 
 def test_readings_equal_a_directly_driven_engine():
-    """Falsifies: wrong request order, a dropped negate, or actions sent at the wrong time."""
-    modules = ["vitals", "lymph", "tissue_fluid"]
+    """Falsifies: wrong request order, a dropped negate, shared requests mixed up, or
+    actions sent at the wrong time. Every module with static outputs, several actions."""
+    modules = ["vitals", "cardiovascular", "respiratory", "supplemental_oxygen", "thermal", "lymph", "tissue_fluid"]
     p = make(modules)
     init = p.initial_state()
-    _run(p, 5)
-    out = _run(p, 10, iv_rate_mL_per_min=150.0)[-1]
+    e = direct(p)
+    want0, got0 = direct_values(p, e), flat(p, init)
+    np.testing.assert_array_equal(np.isnan(got0), np.isnan(want0))
+    np.testing.assert_array_equal(got0[~np.isnan(got0)], want0[~np.isnan(want0)])
 
-    pb = import_pybiogears()
-    rt = runtime_dir()
-    reqs = [r for m in modules for r in MODULES[m].requests]
-    e = pb.BioGearsEngine(rt)
-    e.set_requests([pb.DataRequest(r.category, r.property, r.unit, compartment=r.compartment,
-                                   substance=r.substance) for r in reqs])
-    e.load_state(rt / "states" / "StandardMale@0s.xml")
-    sign = np.array([-1.0 if r.negate else 1.0 for r in reqs])
-    got0 = np.concatenate([_flat(m, init) for m in modules])
-    np.testing.assert_array_equal(got0[:9], (e.pull()[1:] * sign)[:9])  # vitals[9]: NaN before a bleed
-    np.testing.assert_array_equal(got0[10:], (e.pull()[1:] * sign)[10:])
+    run(p, 5)
+    run(p, 5, cardiovascular={"hemorrhage_rate_mL_per_min": 150.0, "iv_rate_mL_per_min": 100.0},
+        supplemental_oxygen={"oxygen_connected": 1.0})
+    env = {**ENVIRONMENT_BASELINE, "ambient_temperature_C": 10.0}
+    out = run(p, 5, cardiovascular={"hemorrhage_rate_mL_per_min": 150.0, "iv_rate_mL_per_min": 100.0},
+              supplemental_oxygen={"oxygen_connected": 1.0}, thermal=env)[-1]
+
     for _ in range(5):
         e.advance(1.0)
-    e.process_actions(pb.actions.substance_compound_infusion("Saline", 10000.0, 150.0))
-    for _ in range(10):
+    e.process_actions([hemorrhage_xml("RightLeg", 150.0), infusion_xml("Saline", 10.0, 100.0),
+                       nasal_cannula_xml(4.0)])
+    for _ in range(5):
         e.advance(1.0)
-    got = np.concatenate([_flat(m, out) for m in modules])
-    want = e.pull()[1:] * sign
-    np.testing.assert_allclose(got[:9], want[:9], rtol=1e-12)
-    np.testing.assert_allclose(got[10:], want[10:], rtol=1e-12)
+    e.process_actions(environment_xml(env))
+    for _ in range(5):
+        e.advance(1.0)
+    np.testing.assert_allclose(flat(p, out), direct_values(p, e), rtol=1e-12)
+    assert out["thermal"]["environment"]["ambient_temperature_C"] == 10.0
+
+
+def test_shared_requests_are_read_once():
+    p = make(["vitals", "cardiovascular", "lymph"])
+    keys = [r.key() for r in p._requests]
+    assert len(keys) == len(set(keys))
+    assert len(p._slots) > len(p._requests)  # e.g. CVP is in all three
 
 
 def test_vitals_module_matches_biogears_process():
-    c, v = make(["vitals"]), BioGearsProcess({}, core=_CORE)
+    from circuit_helpers import CORE
+    c, v = make(["vitals", "cardiovascular"]), BioGearsProcess({}, core=CORE)
     c.initial_state(), v.initial_state()
-    oc = _run(c, 10, hemorrhage_rate_mL_per_min=200.0)[-1]
+    oc = run(c, 10, cardiovascular={"hemorrhage_rate_mL_per_min": 200.0})[-1]
     for _ in range(10):
-        ov = v.update({**_REST, "hemorrhage_rate_mL_per_min": 200.0}, 1.0)
+        ov = v.update({"hemorrhage_rate_mL_per_min": 200.0, "iv_rate_mL_per_min": 0.0}, 1.0)
     for k in VITALS:
         assert oc["vitals"][k] == ov[k], k
 
@@ -95,7 +89,7 @@ def test_lymph_pool_mass_balance_and_return_ohms_law():
     """The pool changes by the integral of (formation - return), and the return path
     is a passive resistor: return = (P_pool - P_venacava) / R."""
     p = make(["lymph"])
-    rows = [p.initial_state()["lymph"]] + [o["lymph"] for o in _run(p, 60)]
+    rows = [p.initial_state()["lymph"]] + [o["lymph"] for o in run(p, 60)]
     net = [sum(r["formation"].values()) - r["return_mL_per_min"] for r in rows]
     dpool = rows[-1]["pool_volume_mL"] - rows[0]["pool_volume_mL"]
     assert abs(dpool) > 0.5  # StandardMale@0s is not at fluid steady state (pybiogears P5)
@@ -109,9 +103,9 @@ def test_lymph_pool_mass_balance_and_return_ohms_law():
 def test_infusion_raises_cvp_and_throttles_lymph_return():
     """Saline raises venous pressure, which lowers the passive lymph return while
     formation rises: the coupling McDaniel 2019 relies on for fluid overload."""
-    p = make(["lymph"])
+    p = make(["lymph", "cardiovascular"])
     init = p.initial_state()["lymph"]
-    out = _run(p, 120, iv_rate_mL_per_min=200.0)[-1]["lymph"]
+    out = run(p, 120, cardiovascular={"iv_rate_mL_per_min": 200.0})[-1]["lymph"]
     assert out["central_venous_pressure_mmHg"] > init["central_venous_pressure_mmHg"] + 0.2
     assert out["return_mL_per_min"] < init["return_mL_per_min"] - 0.5
     assert sum(out["formation"].values()) > sum(init["formation"].values())
@@ -138,6 +132,18 @@ def test_equilibrated_state_is_shipped_and_does_not_drift():
     from viva_biogears.runtime import EQUILIBRATED_STATE
     p = make(["lymph", "tissue_fluid"], state_file=EQUILIBRATED_STATE)
     init = p.initial_state()
-    out = _run(p, 120)[-1]
+    out = run(p, 120)[-1]
     assert abs(out["lymph"]["pool_volume_mL"] - init["lymph"]["pool_volume_mL"]) < 1.0
     assert init["tissue_fluid"]["blood_volume_mL"] == pytest.approx(5880, abs=1)
+
+
+def test_send_on_change_does_not_restart_the_bleed():
+    """Falsifies: setpoints resent every update (resending a hemorrhage restarts BioGears' bleed)."""
+    p = make(["cardiovascular"])
+    p.initial_state()
+    out = run(p, 30, cardiovascular={"hemorrhage_rate_mL_per_min": 300.0})[-1]
+    e = direct(p)
+    e.process_actions(hemorrhage_xml("RightLeg", 300.0))
+    for _ in range(30):
+        e.advance(1.0)
+    np.testing.assert_allclose(flat(p, out), direct_values(p, e), rtol=1e-12, equal_nan=True)

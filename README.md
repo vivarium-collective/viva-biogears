@@ -7,14 +7,18 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
 ## Status
 
 - **Available:**
-  - processes: `BioGearsProcess`, `BioGearsCircuitProcess` (lymph and tissue-fluid readouts) and `MapFluidController`;
-  - composites: `biogears_hemorrhage`, `biogears_resuscitation` and `biogears_lymph`.
+  - processes: `BioGearsProcess`, `BioGearsCircuitProcess` and `MapFluidController`;
+  - circuit modules: `vitals`, `cardiovascular`, `respiratory`, `mechanical_ventilator`, `thermal`, `supplemental_oxygen`, `cardiovascular_points`, `respiratory_points`, `substances`, `tissues`, `lymph` and `tissue_fluid`;
+  - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body_circuits` and `biogears_lymph`.
 
   All are tested against the real engine.
-- **Next:**
-  - phase 3: the McDaniel et al. 2019 sepsis replication as a workspace study.
+- **Next (viva-pulse parity, in this order):**
+  - patients: stabilize any patient file and cache the state;
+  - saved states and branching from them;
+  - circuit additions;
+  - the Sphinx documentation and tutorials.
 
-  The plan and the probe results are in pybiogears' `experiments/` and `docs/plan-viva-biogears.md`.
+  Then phase 3, the McDaniel et al. 2019 sepsis replication as a workspace study.
 
 ## Requirements
 
@@ -66,7 +70,15 @@ rows = gather_emitter_results(sim)[("emitter",)]
 |---|---|---|
 | `biogears_hemorrhage` | an untreated hemorrhage; emits vitals every second | `state_file`, `compartment`, `rate_mL_per_min` |
 | `biogears_resuscitation` | the same, plus `MapFluidController` setting the IV rate from MAP | also `compound`, `target_map_mmHg`, `gain`, `max_rate_mL_per_min` |
-| `biogears_lymph` | lymph and tissue fluid at rest or under a constant infusion; emits lymph return, pool, CVP, muscle filtration, albumin, fluid volumes, MAP | `state_file`, `iv_rate_mL_per_min`, `compound` |
+| `biogears_cardiovascular` | the cardiovascular circuit (renal, cerebral and tissue branches) under a hemorrhage and an infusion | `hemorrhage_compartment`, `hemorrhage_rate_mL_per_min`, `iv_compound`, `iv_rate_mL_per_min`, `point_reads`, `substance_outputs`, `tissue_outputs` |
+| `biogears_respiratory` | the airway circuit, with intubation | `intubated`, `intubation_type`, `point_reads` |
+| `biogears_mechanical_ventilation` | intubated, on the anesthesia-machine ventilator | the ventilator settings, `ventilator_connection` |
+| `biogears_thermal` | the temperature circuit under the environment and heating, cooling or an applied temperature | the environment and the thermal application |
+| `biogears_supplemental_oxygen` | a nasal cannula | `oxygen_connected`, `oxygen_flow_L_per_min` |
+| `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine | all of the above |
+| `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state | `state_file`, `iv_rate_mL_per_min`, `iv_compound` |
+
+Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites use viva-pulse's store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
 
 ### `BioGearsProcess`
 
@@ -96,17 +108,50 @@ How it differs from Pulse:
 
 ### `BioGearsCircuitProcess`
 
-The same engine handling, config and setpoints as `BioGearsProcess` (setpoints arrive under one `interventions` input port), plus `modules`, a list of readout modules from `viva_biogears.circuits.MODULES`. Each module's outputs nest under its name, all `overwrite[float]`:
+The pattern is viva-pulse's `PulseCircuitProcess`. `config.modules` lists modules from `viva_biogears.circuits.MODULES`.
 
-| module | outputs |
-|---|---|
-| `vitals` | `BioGearsProcess`'s vitals |
-| `lymph` | `return_mL_per_min`, `return_resistance_mmHg_min_per_mL`, `pool_volume_mL`, `pool_pressure_mmHg`, `vena_cava_pressure_mmHg`, `central_venous_pressure_mmHg`, `formation/<tissue>_mL_per_min` for 13 tissues |
-| `tissue_fluid` | per tissue: extracellular and intracellular volume, interstitial albumin, capillary filtration and endothelial resistance, plasma and interstitial oncotic pressure, interstitial pressure; whole-body plasma albumin, blood, extravascular, intracellular and total fluid |
+- **Outputs.** Each module's readings nest under its name, as `overwrite[float]` (e.g. `cardiovascular/central/aorta/pressure_mmHg`).
+- **Inputs.** The module's setpoints sit under one `setpoints` input port (e.g. `setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). Each is sent to BioGears only when it changes.
+- **Validation.**
+  - Changed setpoint groups are validated before any action is sent.
+  - A NaN reading raises, naming the request.
+  - A request BioGears doesn't connect fails the load.
+  - A state that already has an action active that the process's setpoints also send is refused, and so is an intubated state or a state whose airway device is already connected.
 
-BioGears 8.2.0 has no compartment links for lymph, so these are circuit reads (pybiogears `FluidPath`/`FluidNode`). The one transformation is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
+| module | readings | setpoints |
+|---|---|---|
+| `vitals` | `BioGearsProcess`'s vitals | none |
+| `cardiovascular` | 23 hemodynamic values; pressure, volume, inflow and outflow for 42 compartments under `central/`, `cerebral/`, `renal/` and `peripheral/` | `hemorrhage_rate_mL_per_min` (at `hemorrhage_compartment`), `iv_rate_mL_per_min` (of `iv_compound`) |
+| `respiratory` | 18 breathing-mechanics values; airway, lung and pleural gas compartments | `intubated` (with `intubation_type`); extubation works |
+| `mechanical_ventilator` | the anesthesia-machine settings as applied; its circuit's gas compartments | `connected` plus pressure, PEEP, rate, I:E, O2 fraction and inlet flow (with `ventilator_connection` `Tube` or `Mask`) |
+| `thermal` | core and skin temperatures, sweat, metabolic rate, heat losses, the environment as applied; temperature and heat flows of 17 thermal compartments, and the heat flows of the applied-temperature node | the environment group and the thermal-application group (heating, cooling, applied temperature) |
+| `supplemental_oxygen` | arterial blood gases, end-tidal CO2, nosepiece O2 fraction | `oxygen_connected`, `oxygen_flow_L_per_min` (nasal cannula) |
+| `cardiovascular_points` | pressure (and volume, where finite) of each of the 169 nodes of `FullCardiovascular`, signed flow of each of its 296 paths | none |
+| `respiratory_points` | the same for the 17 nodes and 27 paths of `Respiratory` | none |
+| `substances` | the quantities listed in `substance_outputs` (in a compartment, or whole-body) | none |
+| `tissues` | the tissue values listed in `tissue_outputs` | none |
+| `lymph` | `return_mL_per_min`, `return_resistance_mmHg_min_per_mL`, `pool_volume_mL`, `pool_pressure_mmHg`, `vena_cava_pressure_mmHg`, `central_venous_pressure_mmHg`, `formation/<tissue>_mL_per_min` for 13 tissues | none |
+| `tissue_fluid` | per tissue: extracellular and intracellular volume, interstitial albumin, capillary filtration and endothelial resistance, plasma and interstitial oncotic pressure, interstitial pressure; whole-body plasma albumin, blood, extravascular, intracellular and total fluid | none |
+
+Each module's docstring in `viva_biogears/circuits/` gives the details.
+
+**How the modules differ from viva-pulse's:**
+
+| | Pulse 4.4.0 | BioGears 8.2.0 |
+|---|---|---|
+| circuit resistance/compliance multipliers | yes | no equivalent action; not offered |
+| lymph | a stub that carries no flow | active; the `lymph` and `tissue_fluid` modules |
+| ventilator | a pressure-control ventilator | the anesthesia machine (pressure control, Tube or Mask) |
+| supplemental oxygen | nasal cannula, simple mask, non-rebreather | nasal cannula; masks are the anesthesia machine with `Mask` |
+| extubation | refused (Pulse's Python API drops it) | works |
+| point reads | the process edits the state to add compartments and links | read directly from the circuit; nothing is edited |
+| thermal application | works | needs pybiogears' workaround for two BioGears bugs (omitted parts become NaN; an Off applied temperature still applies) |
+
+**Lymph.** BioGears 8.2.0 has no compartment links for lymph, so lymph is read from circuit nodes and paths (pybiogears `FluidPath`/`FluidNode`). The one transformation in any module is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
 
 Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from the shipped `StandardMale@equilibrated.xml` (5 h at rest with hourly water; `viva_biogears/states/README.md`), the default for `biogears_lymph`. A relative `state_file` is looked up in `<runtime>/states`, then in the package's `states/`.
+
+**What was measured** to choose these: `workspace/experiments/circuits-probe-2026-11-03`.
 
 ## License
 

@@ -1,0 +1,161 @@
+"""Declarative description of one BioGears circuit family as process-bigraph ports.
+
+A ``CircuitModule`` names the BioGears data requests that become its output ports
+and the BioGears actions that its setpoint input ports drive. It computes nothing:
+``BioGearsCircuitProcess`` turns the selected modules into ports, requests and
+actions against one real BioGears engine. (viva-pulse's ``viva_pulse.circuits.base``
+is the model; the differences are that BioGears reads circuit nodes and paths
+directly, so no module edits the state, and that actions are BioGears scenario XML.)
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Callable
+
+# Top-level port names of BioGearsCircuitProcess that a module name must not shadow.
+RESERVED_NAMES = frozenset({"setpoints", "irreversible_state"})
+
+#: pybiogears DataRequest categories (pybiogears ``BioGearsThunk::set_requests``).
+CATEGORIES = frozenset({"Physiology", "Patient", "Environment", "Equipment", "Substance",
+                        "LiquidCompartment", "GasCompartment", "TissueCompartment",
+                        "ThermalCompartment", "FluidPath", "FluidNode"})
+
+
+@dataclass(frozen=True)
+class Request:
+    """One BioGears data request, emitted at ``path`` inside its module's port tree.
+
+    ``category`` is a pybiogears DataRequest category (``CATEGORIES``); ``unit`` is
+    BioGears' unit string ("" for unitless). ``compartment`` is a compartment,
+    circuit node or circuit path name; ``substance`` a substance name.
+
+    ``negate`` reports the negative (BioGears stores some pressures as negative
+    sources). ``allow_nan`` marks a value BioGears leaves NaN in some states (total
+    blood volume lost before the first bleed); any other NaN raises, naming the request.
+    """
+
+    path: tuple[str, ...]
+    category: str
+    property: str
+    unit: str = ""
+    compartment: str = ""
+    substance: str = ""
+    negate: bool = False
+    allow_nan: bool = False
+
+    def __post_init__(self):
+        if self.category not in CATEGORIES:
+            raise ValueError(f"unknown data request category {self.category!r}")
+
+    def key(self) -> tuple:
+        """Identity of the underlying BioGears request; equal keys share one request."""
+        return (self.category, self.property, self.unit, self.compartment, self.substance)
+
+    def as_tuple(self) -> tuple:
+        return self.key()
+
+    def label(self) -> str:
+        where = ".".join(x for x in (self.compartment, self.substance) if x)
+        return f"{self.category}:{where + '.' if where else ''}{self.property}"
+
+
+@dataclass(frozen=True)
+class ActionBinding:
+    """A group of setpoint ports forwarded to BioGears as one action.
+
+    ``ports`` maps each port name to its baseline value (the value at which no
+    action is needed). Whenever any port in the group changes, ``build`` is called
+    with every port's current value plus the process config and returns the
+    BioGears action XML (one ``<Action>``, or several concatenated). ``validate``
+    raises ``ValueError`` on bad values; ``check_transition(previous, values)``
+    raises ``ValueError`` on a change BioGears cannot make. ``action_types`` are the
+    BioGears action types (``xsi:type``) ``build`` sends: a state holding one of them
+    active is refused at load, because the group's stores would not describe it.
+    """
+
+    ports: dict[str, float]
+    build: Callable[[dict[str, float], dict[str, Any]], str]
+    action_types: tuple[str, ...]
+    validate: Callable[[dict[str, float], dict[str, Any]], None] | None = None
+    check_transition: Callable[[dict[str, float], dict[str, float]], None] | None = None
+
+
+def check_outputs(module: str, outputs: tuple[Request, ...]) -> None:
+    """Output paths must be unique, and none may be a prefix of another."""
+    paths = [r.path for r in outputs]
+    if len(set(paths)) != len(paths):
+        raise ValueError(f"{module}: duplicate output paths")
+    ordered = sorted(paths)
+    for a, b in zip(ordered, ordered[1:]):
+        if b[: len(a)] == a:
+            raise ValueError(f"{module}: output path {a} is a prefix of {b}")
+
+
+def validate_switch(port: str, value: float) -> None:
+    """A 0/1 setpoint."""
+    if value not in (0.0, 1.0):
+        raise ValueError(f"{port} must be 0 or 1, got {value}")
+
+
+def check_fraction(port: str, value: float, *, zero: bool = False) -> None:
+    lo_ok = value >= 0.0 if zero else value > 0.0
+    if not (lo_ok and value <= 1.0):
+        raise ValueError(f"{port} must be in {'[' if zero else '('}0, 1], got {value}")
+
+
+def check_nonnegative(port: str, value: float) -> None:
+    if not (value >= 0.0 and value != float("inf")):
+        raise ValueError(f"{port} must be a finite number >= 0, got {value}")
+
+
+@dataclass(frozen=True)
+class CircuitModule:
+    """One circuit family: its outputs, its setpoint bindings, its config params.
+
+    ``params`` are ``config_schema`` entries that ``BioGearsCircuitProcess`` exposes,
+    and ``check_config`` validates them, raising ``ValueError``. ``check_loaded``
+    receives the module's readings (nested like its outputs) once the engine is
+    loaded, and raises ``ValueError`` if the loaded state contradicts the module's
+    setpoint baselines. ``airway_device`` names the module's 0/1 setpoint that is 1
+    while its equipment occupies BioGears' airway: BioGears allows one airway device
+    at a time (``BioGears::SetAirwayMode``).
+
+    A module whose outputs depend on the starting state or the config sets
+    ``prepare`` instead of ``outputs``: ``prepare(config, state, modules)`` gets the
+    parsed state (``viva_biogears.circuits.state.StateInfo``) and the names of all
+    modules on the process, and returns the outputs. Nothing is edited.
+    """
+
+    name: str
+    description: str = ""
+    outputs: tuple[Request, ...] = ()
+    bindings: tuple[ActionBinding, ...] = ()
+    params: dict[str, dict[str, Any]] = field(default_factory=dict)
+    check_config: Callable[[dict[str, Any]], None] | None = None
+    check_loaded: Callable[[dict[str, Any]], None] | None = None
+    airway_device: str | None = None
+    prepare: Callable[[dict[str, Any], Any, list[str]], tuple[Request, ...]] | None = None
+
+    def __post_init__(self):
+        if self.name in RESERVED_NAMES:
+            raise ValueError(f"circuit module name {self.name!r} is reserved")
+        if self.prepare is not None and self.outputs:
+            raise ValueError(f"{self.name}: a module with prepare declares no static outputs")
+        check_outputs(self.name, self.outputs)
+        ports = [p for b in self.bindings for p in b.ports]
+        if len(set(ports)) != len(ports):
+            raise ValueError(f"{self.name}: duplicate setpoint ports")
+        if self.airway_device is not None and self.airway_device not in ports:
+            raise ValueError(f"{self.name}: airway_device {self.airway_device!r} is not a setpoint port")
+
+    @property
+    def requests(self) -> tuple[Request, ...]:
+        """Static outputs (empty for a ``prepare`` module)."""
+        return self.outputs
+
+
+def scalar(tag: str, value: float, unit: str = "") -> str:
+    """``<tag value=".." unit=".."/>``, BioGears' scalar XML."""
+    u = f' unit="{unit}"' if unit else ""
+    return f'<{tag} value="{float(value)!r}"{u}/>'

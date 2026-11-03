@@ -3,40 +3,35 @@
 from __future__ import annotations
 
 import math
-import re
 
+from ..circuits.cardiovascular import (  # noqa: F401
+    HEMORRHAGE_COMPARTMENTS,
+    check_hemorrhage_config,
+    hemorrhage_xml,
+    infusion_xml,
+)
+from ..circuits.state import read_state
 from ..runtime import compound_names, import_pybiogears, runtime_dir, state_path
 
-#: Compartments BioGears 8.2.0 can bleed from: those with a "<name>Bleed" path in
-#: the cardiovascular circuit (BioGearsCircuits.h). Any other name is accepted by
-#: BioGears and then segfaults on the next step (pybiogears probe P7).
-HEMORRHAGE_COMPARTMENTS = (
-    "Aorta", "Brain", "Myocardium", "LeftLung", "RightLung", "LeftArm", "RightArm", "Spleen",
-    "SmallIntestine", "LargeIntestine", "Splanchnic", "RightKidney", "LeftKidney", "Liver",
-    "Portal", "LeftLeg", "RightLeg", "VenaCava",
-)
 SETPOINTS = ("hemorrhage_rate_mL_per_min", "iv_rate_mL_per_min")
+_BLEED_REFUSED = "bleed rate higher than the cardiac output"
+_AIRWAY_REFUSED = "Can only change airway mode"
 
-_ACTIVE_ACTION = re.compile(r'<ActiveAction xsi:type="(\w+)"')
 
+def check_loadable_state(path, action_types=("HemorrhageData", "SubstanceCompoundInfusionData")) -> None:
+    """Refuse a state that already holds an action the process's setpoints send.
 
-def check_loadable_state(path) -> None:
-    """Refuse a state that already holds a hemorrhage or an infusion.
-
-    Setpoints are sent only when they change from the baseline 0.0, so an action
+    Setpoints are sent only when they change from their baselines, so an action
     already active in the state would keep running unseen by the setpoint ports.
     """
-    active = sorted({t for t in _ACTIVE_ACTION.findall(path.read_text(errors="ignore"))
-                     if t in ("HemorrhageData", "SubstanceCompoundInfusionData")})
+    active = sorted(set(read_state(path).active_actions) & set(action_types))
     if active:
-        raise ValueError(f"state {path.name} has active {', '.join(active)}; viva-biogears processes start "
-                         "from states without an active hemorrhage or infusion")
+        raise ValueError(f"state {path.name} has active {', '.join(active)}, which this process's setpoints "
+                         "also drive; viva-biogears processes start from states without them")
 
 
 def check_intervention_config(config) -> None:
-    if config["hemorrhage_compartment"] not in HEMORRHAGE_COMPARTMENTS:
-        raise ValueError(f"hemorrhage_compartment must be one of {HEMORRHAGE_COMPARTMENTS}, "
-                         f"got {config['hemorrhage_compartment']!r}")
+    check_hemorrhage_config(config)
     if not (config["iv_bag_volume_L"] > 0 and math.isfinite(config["iv_bag_volume_L"])):
         raise ValueError(f"iv_bag_volume_L must be > 0, got {config['iv_bag_volume_L']}")
 
@@ -50,8 +45,55 @@ INTERVENTION_CONFIG = {
 }
 
 
+def resolve_state(config):
+    """(runtime directory, absolute state path) for a process config."""
+    runtime = runtime_dir(config["runtime_dir"])
+    return runtime, state_path(runtime, config["state_file"])
+
+
+def check_compound(runtime, compound: str) -> None:
+    if compound not in compound_names(runtime):
+        raise ValueError(f"iv_compound {compound!r} is not a BioGears compound; "
+                         f"available: {compound_names(runtime)}")
+
+
+def load_engine(runtime, path, requests):
+    """A pybiogears engine with ``requests`` ((category, property, unit, compartment,
+    substance) tuples), loaded from ``path``; raises if BioGears connects any request."""
+    pb = import_pybiogears()
+    engine = pb.BioGearsEngine(runtime)
+    engine.set_requests([pb.DataRequest(c, p, u, compartment=cm, substance=s) for c, p, u, cm, s in requests])
+    engine.load_state(path)
+    if engine.unconnected:
+        raise RuntimeError("BioGears did not connect "
+                           f"{[(r.category, r.compartment, r.substance, r.property, r.unit) for r in engine.unconnected]}")
+    return engine
+
+
+def advance(engine, seconds: float, applied_bleed: float | None = None) -> bool:
+    """Advance ``engine``; False if BioGears reached its irreversible state.
+
+    Raises ``ValueError`` for what BioGears refuses on every step without stopping
+    (a bleed rate above cardiac output) and for a second airway device.
+    """
+    import pybiogears as pb
+    n_log = len(engine.log)
+    try:
+        engine.advance(float(seconds))
+    except pb.IrreversibleStateError:
+        return False
+    except RuntimeError as ex:
+        if _AIRWAY_REFUSED in str(ex):
+            raise ValueError(f"BioGears refused an airway device: {ex}") from ex
+        raise
+    refused = [m.text for m in list(engine.log)[n_log:] if _BLEED_REFUSED in m.text]
+    if refused:
+        raise ValueError(f"BioGears refused hemorrhage_rate_mL_per_min = {applied_bleed}: {refused[0]}")
+    return True
+
+
 class EngineBridge:
-    """One BioGears engine: loads lazily, sends setpoints on change, advances safely."""
+    """One BioGears engine for BioGearsProcess: loads lazily, sends setpoints on change, advances safely."""
 
     def __init__(self, config, requests):
         """``requests``: (category, property, unit, compartment, substance) tuples, in pull order."""
@@ -64,33 +106,20 @@ class EngineBridge:
     def ensure(self):
         if self.engine is not None:
             return self.engine
-        pb = import_pybiogears()
-        runtime = runtime_dir(self.config["runtime_dir"])
-        if self.config["iv_compound"] not in compound_names(runtime):
-            raise ValueError(f"iv_compound {self.config['iv_compound']!r} is not a BioGears compound; "
-                             f"available: {compound_names(runtime)}")
-        path = state_path(runtime, self.config["state_file"])
+        runtime, path = resolve_state(self.config)
+        check_compound(runtime, self.config["iv_compound"])
         check_loadable_state(path)
-        engine = pb.BioGearsEngine(runtime)
-        engine.set_requests([pb.DataRequest(c, p, u, compartment=cm, substance=s)
-                             for c, p, u, cm, s in self.requests])
-        engine.load_state(path)
-        if engine.unconnected:
-            raise RuntimeError("BioGears did not connect "
-                               f"{[(r.category, r.compartment, r.property) for r in engine.unconnected]}")
-        self.engine = engine
-        return engine
+        self.engine = load_engine(runtime, path, self.requests)
+        return self.engine
 
     def values(self) -> list[float]:
         return [float(v) for v in self.ensure().pull()[1:]]
 
     def _send(self, port: str, value: float) -> None:
-        from pybiogears import actions
         if port == "hemorrhage_rate_mL_per_min":
-            xml = actions.hemorrhage(self.config["hemorrhage_compartment"], value)
+            xml = hemorrhage_xml(self.config["hemorrhage_compartment"], value)
         else:
-            xml = actions.substance_compound_infusion(self.config["iv_compound"],
-                                                      self.config["iv_bag_volume_L"] * 1000.0, value)
+            xml = infusion_xml(self.config["iv_compound"], self.config["iv_bag_volume_L"], value)
         self.engine.process_actions(xml)
         self.applied[port] = value
 
@@ -107,19 +136,8 @@ class EngineBridge:
 
     def advance(self, seconds: float) -> bool:
         """Advance; False once BioGears has reached its irreversible state (then never again)."""
-        import pybiogears as pb
         engine = self.ensure()
         if not self.alive:
             return False
-        n_log = len(engine.log)
-        try:
-            engine.advance(float(seconds))
-        except pb.IrreversibleStateError:
-            self.alive = False
-            return False
-        refused = [m.text for m in list(engine.log)[n_log:]
-                   if "bleed rate higher than the cardiac output" in m.text]
-        if refused:
-            raise ValueError(f"BioGears refused hemorrhage_rate_mL_per_min = "
-                             f"{self.applied['hemorrhage_rate_mL_per_min']}: {refused[0]}")
-        return True
+        self.alive = advance(engine, seconds, self.applied["hemorrhage_rate_mL_per_min"])
+        return self.alive

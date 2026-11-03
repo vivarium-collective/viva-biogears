@@ -6,6 +6,7 @@ from typing import Any
 
 from process_bigraph import Process
 
+from ..circuits.vitals import VITALS  # noqa: E402  (re-exported)
 from ._bridge import (  # noqa: F401
     HEMORRHAGE_COMPARTMENTS,
     INTERVENTION_CONFIG,
@@ -13,22 +14,6 @@ from ._bridge import (  # noqa: F401
     check_intervention_config,
     check_loadable_state,
 )
-
-#: Output port -> (BioGears physiology property, unit). Order is the data-request
-#: order, i.e. the order of BioGearsEngine.pull()[1:].
-VITALS: dict[str, tuple[str, str]] = {
-    "heart_rate_bpm": ("HeartRate", "1/min"),
-    "mean_arterial_pressure_mmHg": ("MeanArterialPressure", "mmHg"),
-    "systolic_pressure_mmHg": ("SystolicArterialPressure", "mmHg"),
-    "diastolic_pressure_mmHg": ("DiastolicArterialPressure", "mmHg"),
-    "oxygen_saturation": ("OxygenSaturation", ""),
-    "respiration_rate_bpm": ("RespirationRate", "1/min"),
-    "cardiac_output_L_per_min": ("CardiacOutput", "L/min"),
-    "central_venous_pressure_mmHg": ("CentralVenousPressure", "mmHg"),
-    "blood_volume_mL": ("BloodVolume", "mL"),
-    # NaN until the first hemorrhage (BioGears creates the value then).
-    "total_blood_volume_lost_mL": ("TotalBloodVolumeLost", "mL"),
-}
 
 
 class BioGearsProcess(Process):
