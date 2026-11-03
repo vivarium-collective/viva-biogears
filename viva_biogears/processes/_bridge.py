@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from ..circuits.additions import added_state, check_additions
 from ..circuits.cardiovascular import (
     HEMORRHAGE_COMPARTMENTS,  # noqa: F401  (re-exported)
     check_hemorrhage_config,
@@ -27,6 +28,7 @@ START_CONFIG = {
     "state_file": {"_type": "string", "_default": "StandardMale@0s.xml"},
     "patient_file": {"_type": "string", "_default": ""},
     "conditions": {"_type": "map", "_default": {}},
+    "circuit_additions": {"_type": "map", "_default": {}},
     "runtime_dir": {"_type": "string", "_default": ""},
 }
 
@@ -58,17 +60,22 @@ def check_start(config) -> None:
                              "patient that is stabilized first, so set one or the other")
         if config["conditions"]:
             conditions_xml(config["conditions"])  # validates names and values
+    check_additions(config["circuit_additions"])
 
 
 def resolve_state(config):
     """(runtime directory, absolute state path) for a process config: ``state_file``,
     or, when ``patient_file`` or ``conditions`` is set, that patient (default
-    StandardMale.xml) stabilized with them, from the cache (``viva_biogears.patients``)."""
+    StandardMale.xml) stabilized with them, from the cache (``viva_biogears.patients``);
+    with ``circuit_additions``, that state with the paths added (``circuits.additions``)."""
     runtime = runtime_dir(config["runtime_dir"])
     if config.get("patient_file") or config.get("conditions"):
-        return runtime, stabilized_state(config["patient_file"] or "StandardMale.xml", runtime,
-                                         dict(config["conditions"]))
-    return runtime, state_path(runtime, config["state_file"])
+        path = stabilized_state(config["patient_file"] or "StandardMale.xml", runtime, dict(config["conditions"]))
+    else:
+        path = state_path(runtime, config["state_file"])
+    if config.get("circuit_additions"):
+        path = added_state(path, dict(config["circuit_additions"]))
+    return runtime, path
 
 
 def check_compound(runtime, compound: str) -> None:

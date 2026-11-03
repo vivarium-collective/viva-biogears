@@ -13,9 +13,9 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
 
   All are tested against the real engine.
   - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
-  - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`).
-- **Next (viva-pulse parity, in this order):**
-  - circuit additions;
+  - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`);
+  - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.circuits.additions`).
+- **Next (viva-pulse parity):**
   - the Sphinx documentation and tutorials.
 
   Then phase 3, the McDaniel et al. 2019 sepsis replication as a workspace study.
@@ -91,6 +91,23 @@ The same can be done from the command line: `python -m viva_biogears.states Stan
   - An active action the process can't address: a bleed in another compartment, an infusion of another compound, another tube type.
   - An airway device the process doesn't control.
 - **BioGears bugs.** pybiogears works around four BioGears 8.2.0 save/load bugs: a segfault saving with equipment requests, ventilator states that didn't reload, blood lost reset on load, and NaN thermal parts. See `workspace/experiments/save-states-2026-11-03`.
+
+### Circuit additions
+
+`circuit_additions` adds resistance paths to the cardiovascular circuit before the state loads. It is available on both processes and every composite:
+
+```python
+{"circuit_additions": {"Shunt": {"source": "Aorta1", "target": "VenaCava", "resistance_mmHg_s_per_mL": 2.0}}}
+```
+
+- **What the body does.** An addition is a perturbation, not a different patient: the body responds over time. A 2 mmHg s/mL aorta-to-vena-cava shunt carries about 1.7 L/min; MAP falls from 96 to 82 mmHg, and HR and cardiac output rise.
+- **How it is added.** Each path comes with a liquid link between its nodes' compartments, so blood substances follow it. A path alone corrupts concentrations, and a large one is fatal within seconds.
+- **What is accepted.** Both nodes must be in `FullCardiovascular`, in two different vascular compartments. In the state, an addition named `Shunt` becomes path and link `VivaAddedShunt`. `cardiovascular_points` reads its flow.
+- **Fixed resistance.** BioGears' vascular tone doesn't scale an added path.
+- **When it fails.** A bad addition raises when the process is built.
+- **Where the edited state goes.** It is written once to `~/.cache/viva-biogears/additions/`.
+
+See `workspace/experiments/additions-2026-11-03`.
 
 ## Usage
 

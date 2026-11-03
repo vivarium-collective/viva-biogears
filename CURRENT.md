@@ -1,6 +1,6 @@
 ## Current session
 
-**State (2026-11-03): viva-pulse parity, circuits, patients and saved-states batches done.**
+**State (2026-11-03): viva-pulse parity: circuits, patients, saved states and circuit additions done; the Sphinx docs remain.**
 - Phase 1: `BioGearsProcess`, `MapFluidController`, `biogears_hemorrhage`, `biogears_resuscitation`.
 - Phase 2: `lymph` and `tissue_fluid` modules, `biogears_lymph`, and the equilibrated baseline `viva_biogears/states/StandardMale@equilibrated.xml`.
 - **viva-pulse parity, batch 1 (circuits).**
@@ -14,6 +14,7 @@
     - its thermal application needs pybiogears' `prune_thermal_application` (pybiogears commit de52065).
 - **Patients** (batch 2): `patient_file` and chronic `conditions` on every process and composite, stabilized once (40–70 s) and cached (`viva_biogears/patients.py`; pybiogears 3cdba22 adds conditions to `initialize`). Probe: `workspace/experiments/stabilization-2026-11-03`.
 - **Saved states** (batch 3): `viva_biogears/states.py` (StateSaver, save_states, CLI); branching reads active actions from the state (`ActionBinding.loaded`), so same setpoints continue exactly. pybiogears 1066a39 fixes four BioGears save/load bugs. Probe: `workspace/experiments/save-states-2026-11-03`.
+- **Circuit additions** (batch 4): `viva_biogears/circuits/additions.py`, a path plus its liquid link. Probe: `workspace/experiments/additions-2026-11-03`.
 - All engine tests pass on Linux (cloud). The Mac run is still to do; first reinstall pybiogears there (it now has the thermal, conditions and save/load fixes).
 
 **Decided with the user:**
@@ -22,5 +23,5 @@
 - viva-pulse parity, circuits first. Then patients, saved states and branching, circuit additions, and the Sphinx docs.
 
 **Next:**
-1. Circuit additions (viva-pulse `circuits/additions.py`), then `documentation/` with the tutorials.
+1. `documentation/` (Sphinx, executed tutorials) as in viva-pulse.
 2. Phase 3: McDaniel 2019 in `workspace/studies/`.

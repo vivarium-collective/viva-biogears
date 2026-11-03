@@ -93,6 +93,8 @@ class BioGearsCircuitProcess(Process):
             raise ValueError(f"modules listed twice: {names}")
         self._modules = [MODULES[n] for n in names]
         check_start(self.config)
+        if self.config["circuit_additions"]:
+            resolve_state(self.config)  # edits the state now, so a bad addition fails at construction
         for module in self._modules:
             if module.check_config:
                 module.check_config(self.config)

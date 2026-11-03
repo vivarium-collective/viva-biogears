@@ -12,6 +12,7 @@ from ._bridge import (  # noqa: F401
     INTERVENTION_CONFIG,
     EngineBridge,
     check_intervention_config,
+    resolve_state,
 )
 
 
@@ -53,6 +54,8 @@ class BioGearsProcess(Process):
     def __init__(self, config=None, core=None):
         super().__init__(config=config, core=core)
         check_intervention_config(self.config)
+        if self.config["circuit_additions"]:
+            resolve_state(self.config)  # edits the state now, so a bad addition fails at construction
         self._bridge = EngineBridge(self.config, [("Physiology", p, u, "", "") for p, u in VITALS.values()])
 
     def inputs(self):

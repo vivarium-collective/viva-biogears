@@ -21,3 +21,4 @@ workspace/experiments/*/out/*@*min.xml
 workspace/experiments/*/out/*.log
 workspace/experiments/stabilization-2026-11-03/out/*.xml
 workspace/experiments/save-states-2026-11-03/out/
+workspace/experiments/additions-2026-11-03/out/
