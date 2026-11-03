@@ -44,6 +44,17 @@ build-backend = "hatchling.build"
 
 # Allow ecosystem git-direct-reference deps (viva-superpowers / vivarium-workbench
 # @ git+https://…) that workspaces commonly add — hatchling rejects them otherwise.
+# The user documentation (`make docs`); its tutorials run the real engine, so it
+# builds in this project's venv: `uv pip install --group docs`.
+[dependency-groups]
+docs = [
+    "furo>=2025.12.19",
+    "ipykernel>=7.4.0",
+    "matplotlib",
+    "myst-nb>=1.4.0",
+    "sphinx>=8.2",
+]
+
 [tool.hatch.metadata]
 allow-direct-references = true
 

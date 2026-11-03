@@ -5,10 +5,13 @@ requests read ``BioGearsCircuits::GetFluidNode``/``GetFluidPath``), so unlike
 viva-pulse nothing is added to the state: the modules list the circuit's nodes and
 paths from the starting state and read them directly.
 
-| module | BioGears circuit | node ports | path ports |
-|---|---|---|---|
-| ``cardiovascular_points`` | ``FullCardiovascular`` (with renal, cerebral and tissue branches, 170 nodes, 296 paths) | ``nodes/<node>/pressure_mmHg``, ``nodes/<node>/volume_mL`` | ``paths/<path>/flow_mL_per_min`` |
-| ``respiratory_points`` | ``Respiratory`` (17 nodes, 27 paths) | ``nodes/<node>/absolute_pressure_cmH2O``, ``nodes/<node>/volume_mL`` | ``paths/<path>/flow_L_per_min`` |
+- ``cardiovascular_points``: BioGears' ``FullCardiovascular`` circuit (with the renal,
+  cerebral and tissue branches; 170 nodes, 296 paths). Ports
+  ``nodes/<node>/pressure_mmHg``, ``nodes/<node>/volume_mL`` and
+  ``paths/<path>/flow_mL_per_min``.
+- ``respiratory_points``: the ``Respiratory`` circuit (17 nodes, 27 paths). Ports
+  ``nodes/<node>/absolute_pressure_cmH2O``, ``nodes/<node>/volume_mL`` and
+  ``paths/<path>/flow_L_per_min``.
 
 - **Selecting points.** By default every node and path is read. The config lists
   ``cardiovascular_point_nodes``/``cardiovascular_point_paths`` (and the

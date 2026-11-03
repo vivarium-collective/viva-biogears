@@ -15,6 +15,7 @@ source .venv/bin/activate
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q                                   # ~5 min, real engine
 python -m pytest -q tests/test_processes.py -k zero   # one test
+make docs                                             # user docs; runs every tutorial (~15 min)
 ```
 
 Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), not failed.
@@ -49,5 +50,5 @@ The tests drive a pybiogears engine directly with the same actions and compare t
 
 ## Conventions
 
-- Keep README.md current with every user-visible change.
+- Keep README.md and `documentation/` current with every user-visible change; the tutorials run in `tests/test_docs.py`.
 - Don't modify BioGears. Work around engine issues in pybiogears or here, and document them where they are worked around.

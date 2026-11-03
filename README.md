@@ -14,11 +14,10 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   All are tested against the real engine.
   - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
   - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`);
-  - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.circuits.additions`).
-- **Next (viva-pulse parity):**
-  - the Sphinx documentation and tutorials.
-
-  Then phase 3, the McDaniel et al. 2019 sepsis replication as a workspace study.
+  - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.circuits.additions`);
+  - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`).
+- **Next:**
+  - phase 3, the McDaniel et al. 2019 sepsis replication as a workspace study.
 
 ## Requirements
 
@@ -108,6 +107,17 @@ The same can be done from the command line: `python -m viva_biogears.states Stan
 - **Where the edited state goes.** It is written once to `~/.cache/viva-biogears/additions/`.
 
 See `workspace/experiments/additions-2026-11-03`.
+
+## Documentation
+
+`make docs` builds the user documentation in `documentation/` (Sphinx, MyST notebooks) and opens it. It runs every tutorial against the real engine, about 15 minutes. The tutorials:
+1. a hemorrhage, untreated and resuscitated;
+2. the cardiovascular circuit, beat by beat and node by node;
+3. lymph and tissue fluid under a fluid load;
+4. every circuit on one engine;
+5. your own patient, and branching from a checkpoint.
+
+On Read the Docs (`.readthedocs.yaml`), which can't build BioGears, the tutorials are published as code only. `tests/test_docs.py` builds both versions.
 
 ## Usage
 
@@ -209,7 +219,7 @@ Each module's docstring in `viva_biogears/circuits/` gives the details.
 
 **Lymph.** BioGears 8.2.0 has no compartment links for lymph, so lymph is read from circuit nodes and paths (pybiogears `FluidPath`/`FluidNode`). The one transformation in any module is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
 
-Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from the shipped `StandardMale@equilibrated.xml` (5 h at rest with hourly water; `viva_biogears/states/README.md`), the default for `biogears_lymph`. A relative `state_file` is looked up in `<runtime>/states`, then in the package's `states/`.
+Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises, and from the equilibrated state it reverses within 10 minutes (about −1 mL/min): the return path has no valve, so fluid flows from the vena cava back into the pool. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from the shipped `StandardMale@equilibrated.xml` (5 h at rest with hourly water; `viva_biogears/states/README.md`), the default for `biogears_lymph`. A relative `state_file` is looked up in `<runtime>/states`, then in the package's `states/`.
 
 **What was measured** to choose these: `workspace/experiments/circuits-probe-2026-11-03`.
 
