@@ -1,15 +1,22 @@
 [project]
-name = "biogears"
-version = "0.0.0"
-description = "Process-bigraph research workspace"
+name = "viva-biogears"
+version = "0.1.0"
+description = "Process-bigraph wrapper for the BioGears physiology engine (8.2.0, via pybiogears)"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
+# BioGears and pybiogears are not on PyPI: build them with pybiogears'
+# scripts/install_biogears.sh and install pybiogears into this venv (see
+# README.md). Engine tests skip when no build is found.
 dependencies = [
-    # Floor: 1.8.5 ships the composite `core_extensions` mechanism (1.8.0) the
-    # dashboard relies on AND the emitter fix (#217) + `requests`/`fire` server
-    # deps. Below this, composite type-registration and agent-embedded emits
-    # break — the root cause behind the map[...] type errors seen in the field.
-    "process-bigraph>=1.8.5",
-    "bigraph-schema>=1.8.1",
+    # 1.10.1: initial_state() is kept on overwrite[float] and boolean output ports
+    # (process-bigraph #268); the vitals ports rely on it (viva-pulse found this).
+    "process-bigraph>=1.10.1",
+    "bigraph-schema>=1.8.3",
+    "numpy",
+    # (The template's floor for process-bigraph, 1.8.5, for composite
+    # core_extensions and the emitter fix #217, is covered by 1.10.1 above.)
     "bigraph-viz>=2.0.3",
     "pyyaml>=6.0",
     "jsonschema[format-nongpl]>=4.21",
@@ -31,7 +38,7 @@ cli = ["typer", "rich"]
 biogears = "viva_biogears.cli.__main__:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]  # PEP 639 license expression
 build-backend = "hatchling.build"
 
 # Allow ecosystem git-direct-reference deps (viva-superpowers / vivarium-workbench
