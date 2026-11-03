@@ -62,12 +62,22 @@ def import_pybiogears():
     return pybiogears
 
 
+#: States shipped with viva-biogears (see viva_biogears/states/README.md).
+PACKAGE_STATES = Path(__file__).parent / "states"
+#: StandardMale@0s after 5 h at rest with 150 mL water/h (equilibration-2026-11-03).
+EQUILIBRATED_STATE = "StandardMale@equilibrated.xml"
+
+
 def state_path(runtime: Path, state_file: str) -> Path:
-    """``<runtime>/states/<state_file>``, or ``state_file`` itself if absolute; must exist."""
+    """``state_file`` if absolute, else ``<runtime>/states/<state_file>``, else the
+    package's ``states/<state_file>``; must exist."""
     p = Path(state_file)
-    p = p if p.is_absolute() else runtime / "states" / state_file
+    if not p.is_absolute():
+        candidates = [runtime / "states" / state_file, PACKAGE_STATES / state_file]
+        p = next((c for c in candidates if c.is_file()), candidates[0])
     if not p.is_file():
-        raise FileNotFoundError(f"BioGears state file not found: {p}")
+        raise FileNotFoundError(f"BioGears state file not found: {state_file} "
+                                f"(looked in {runtime / 'states'} and {PACKAGE_STATES})")
     return p
 
 

@@ -12,7 +12,6 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
 
   All are tested against the real engine.
 - **Next:**
-  - an equilibrated baseline state (`workspace/experiments/equilibration-2026-11-03`);
   - phase 3: the McDaniel et al. 2019 sepsis replication as a workspace study.
 
   The plan and the probe results are in pybiogears' `experiments/` and `docs/plan-viva-biogears.md`.
@@ -107,7 +106,7 @@ The same engine handling, config and setpoints as `BioGearsProcess` (setpoints a
 
 BioGears 8.2.0 has no compartment links for lymph, so these are circuit reads (pybiogears `FluidPath`/`FluidNode`). The one transformation is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
 
-Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from an equilibrated state.
+Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from the shipped `StandardMale@equilibrated.xml` (5 h at rest with hourly water; `viva_biogears/states/README.md`), the default for `biogears_lymph`. A relative `state_file` is looked up in `<runtime>/states`, then in the package's `states/`.
 
 ## License
 

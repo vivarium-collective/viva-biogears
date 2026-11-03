@@ -3,6 +3,7 @@
 from process_bigraph.composite_generator import composite_generator
 
 from ..core import build_core
+from ..runtime import EQUILIBRATED_STATE
 
 #: Emitted scalars: column -> store path.
 EMIT = {
@@ -25,8 +26,9 @@ EMIT = {
     description="Lymph formation, pool and return, and tissue-fluid exchange in the real BioGears 8.2.0 engine, "
                 "at rest or under a saline (or other compound) infusion; emits every second.",
     parameters={
-        "state_file": {"type": "string", "default": "StandardMale@0s.xml",
-                       "description": "BioGears state in <runtime>/states (or an absolute path)"},
+        "state_file": {"type": "string", "default": EQUILIBRATED_STATE,
+                       "description": "BioGears state (default: StandardMale equilibrated 5 h at rest; "
+                                      "see viva_biogears/states/README.md)"},
         "iv_rate_mL_per_min": {"type": "float", "default": 0.0,
                                "description": "Constant infusion rate from t = 0; 0 for rest"},
         "compound": {"type": "string", "default": "Saline", "description": "Infused BioGears compound"},
@@ -35,7 +37,7 @@ EMIT = {
     default_n_steps=600,
     fidelity="real-bridge",
 )
-def biogears_lymph(core=None, *, state_file="StandardMale@0s.xml", iv_rate_mL_per_min=0.0, compound="Saline"):
+def biogears_lymph(core=None, *, state_file=EQUILIBRATED_STATE, iv_rate_mL_per_min=0.0, compound="Saline"):
     modules = ["vitals", "lymph", "tissue_fluid"]
     return {
         "biogears": {

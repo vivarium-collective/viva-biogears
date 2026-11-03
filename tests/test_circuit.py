@@ -129,3 +129,15 @@ def test_tissue_fluid_readings_are_physical():
         assert t["endothelial_resistance_mmHg_min_per_mL"] > 0, key
     assert tf["total_body_fluid_mL"] == pytest.approx(
         tf["blood_volume_mL"] + tf["extravascular_fluid_mL"], rel=0.15)
+
+
+def test_equilibrated_state_is_shipped_and_does_not_drift():
+    """Falsifies: the shipped baseline isn't found by name, or its lymph pool isn't
+    settled (StandardMale@0s gains 3.4 mL in 2 min; this state 0.1 mL). Blood volume
+    is not checked: with hourly drinks it swings by tens of mL within each hour."""
+    from viva_biogears.runtime import EQUILIBRATED_STATE
+    p = make(["lymph", "tissue_fluid"], state_file=EQUILIBRATED_STATE)
+    init = p.initial_state()
+    out = _run(p, 120)[-1]
+    assert abs(out["lymph"]["pool_volume_mL"] - init["lymph"]["pool_volume_mL"]) < 1.0
+    assert init["tissue_fluid"]["blood_volume_mL"] == pytest.approx(5880, abs=1)

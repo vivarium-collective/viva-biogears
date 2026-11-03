@@ -35,7 +35,7 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
   - `_bridge.py` has `EngineBridge`, the engine handling both processes share (lazy load, send-on-change, the guards above, the irreversible latch).
   - `circuit.py` has `BioGearsCircuitProcess` (viva-pulse's `PulseCircuitProcess` pattern): readout modules declared in `viva_biogears/circuits/__init__.py` as data requests at port paths; the modules compute nothing.
   - `controllers.py` has `MapFluidController`, identical to viva-pulse's.
-- `viva_biogears/composites/lymph.py` has `biogears_lymph` (vitals + lymph + tissue_fluid under an optional infusion).
+- `viva_biogears/composites/lymph.py` has `biogears_lymph` (vitals + lymph + tissue_fluid under an optional infusion), starting from `viva_biogears/states/StandardMale@equilibrated.xml` (see that folder's README; `runtime.state_path` looks there after `<runtime>/states`).
 - `viva_biogears/composites/hemorrhage.py` has `biogears_hemorrhage` and `biogears_resuscitation`, built with `composite_generator` and `core_extensions=[build_core]`, with a 1 s interval and a RAM emitter.
 
 ## Test oracles
