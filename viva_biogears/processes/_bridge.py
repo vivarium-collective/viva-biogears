@@ -11,11 +11,21 @@ from ..circuits.cardiovascular import (  # noqa: F401
     infusion_xml,
 )
 from ..circuits.state import read_state
+from ..patients import conditions_xml, stabilized_state
 from ..runtime import compound_names, import_pybiogears, runtime_dir, state_path
 
 SETPOINTS = ("hemorrhage_rate_mL_per_min", "iv_rate_mL_per_min")
 _BLEED_REFUSED = "bleed rate higher than the cardiac output"
 _AIRWAY_REFUSED = "Can only change airway mode"
+
+
+#: Config keys every process has for choosing its starting state.
+START_CONFIG = {
+    "state_file": {"_type": "string", "_default": "StandardMale@0s.xml"},
+    "patient_file": {"_type": "string", "_default": ""},
+    "conditions": {"_type": "map", "_default": {}},
+    "runtime_dir": {"_type": "string", "_default": ""},
+}
 
 
 def check_loadable_state(path, action_types=("HemorrhageData", "SubstanceCompoundInfusionData")) -> None:
@@ -31,23 +41,41 @@ def check_loadable_state(path, action_types=("HemorrhageData", "SubstanceCompoun
 
 
 def check_intervention_config(config) -> None:
+    check_start(config)
     check_hemorrhage_config(config)
     if not (config["iv_bag_volume_L"] > 0 and math.isfinite(config["iv_bag_volume_L"])):
         raise ValueError(f"iv_bag_volume_L must be > 0, got {config['iv_bag_volume_L']}")
 
 
 INTERVENTION_CONFIG = {
-    "state_file": {"_type": "string", "_default": "StandardMale@0s.xml"},
-    "runtime_dir": {"_type": "string", "_default": ""},
+    **START_CONFIG,
     "hemorrhage_compartment": {"_type": "string", "_default": "RightLeg"},
     "iv_compound": {"_type": "string", "_default": "Saline"},
     "iv_bag_volume_L": {"_type": "float", "_default": 10.0},
 }
 
 
+def check_start(config) -> None:
+    """A process starts from ``state_file`` or from ``patient_file`` (with optional
+    ``conditions``), not both. A process can't tell an explicit default from an omitted
+    one, so only a non-default ``state_file`` counts as set."""
+    if config["patient_file"] or config["conditions"]:
+        if config["state_file"] != START_CONFIG["state_file"]["_default"]:
+            raise ValueError(f"state_file {config['state_file']!r} is a stabilized state; patient_file "
+                             f"{config['patient_file']!r} and conditions {config['conditions']} start from a "
+                             "patient that is stabilized first, so set one or the other")
+        if config["conditions"]:
+            conditions_xml(config["conditions"])  # validates names and values
+
+
 def resolve_state(config):
-    """(runtime directory, absolute state path) for a process config."""
+    """(runtime directory, absolute state path) for a process config: ``state_file``,
+    or, when ``patient_file`` or ``conditions`` is set, that patient (default
+    StandardMale.xml) stabilized with them, from the cache (``viva_biogears.patients``)."""
     runtime = runtime_dir(config["runtime_dir"])
+    if config.get("patient_file") or config.get("conditions"):
+        return runtime, stabilized_state(config["patient_file"] or "StandardMale.xml", runtime,
+                                         dict(config["conditions"]))
     return runtime, state_path(runtime, config["state_file"])
 
 

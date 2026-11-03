@@ -8,12 +8,14 @@ from ..processes import VITALS
 _VITAL_PATHS = {name: ["vitals", name] for name in VITALS}
 
 
-def _biogears_node(state_file, compartment, compound):
+def _biogears_node(state_file, compartment, compound, patient_file="", conditions=None):
     return {
         "_type": "process",
         "address": "local:BioGearsProcess",
         "config": {
             "state_file": state_file,
+            "patient_file": patient_file,
+            "conditions": dict(conditions or {}),
             "hemorrhage_compartment": compartment,
             "iv_compound": compound,
         },
@@ -41,6 +43,12 @@ def _emitter():
 _COMMON_PARAMETERS = {
     "state_file": {"type": "string", "default": "StandardMale@0s.xml",
                    "description": "BioGears state in <runtime>/states (or an absolute path)"},
+    "patient_file": {"type": "string", "default": "",
+                     "description": "Patient file in <runtime>/patients (or a path), stabilized once and cached; "
+                                    "replaces state_file"},
+    "conditions": {"type": "map", "default": {},
+                   "description": "Chronic conditions applied while the patient stabilizes, e.g. "
+                                  "{ChronicAnemia: {ReductionFactor: 0.3}}"},
     "compartment": {"type": "string", "default": "RightLeg",
                     "description": "Hemorrhage site (a compartment with a BioGears bleed path)"},
     "rate_mL_per_min": {"type": "float", "default": 250.0,
@@ -57,9 +65,9 @@ _COMMON_PARAMETERS = {
     fidelity="real-bridge",
 )
 def biogears_hemorrhage(core=None, *, state_file="StandardMale@0s.xml", compartment="RightLeg",
-                        rate_mL_per_min=250.0):
+                        rate_mL_per_min=250.0, patient_file="", conditions=None):
     return {
-        "biogears": _biogears_node(state_file, compartment, "Saline"),
+        "biogears": _biogears_node(state_file, compartment, "Saline", patient_file, conditions),
         "interventions": {"hemorrhage_rate_mL_per_min": rate_mL_per_min, "iv_rate_mL_per_min": 0.0},
         "vitals": {},
         "emitter": _emitter(),
@@ -82,10 +90,11 @@ def biogears_hemorrhage(core=None, *, state_file="StandardMale@0s.xml", compartm
     fidelity="real-bridge",
 )
 def biogears_resuscitation(core=None, *, state_file="StandardMale@0s.xml", compartment="RightLeg",
-                           rate_mL_per_min=250.0, compound="Saline",
+                           rate_mL_per_min=250.0, compound="Saline", patient_file="", conditions=None,
                            target_map_mmHg=90.0, gain=25.0, max_rate_mL_per_min=250.0):
-    doc = biogears_hemorrhage(core, state_file=state_file, compartment=compartment, rate_mL_per_min=rate_mL_per_min)
-    doc["biogears"] = _biogears_node(state_file, compartment, compound)
+    doc = biogears_hemorrhage(core, state_file=state_file, compartment=compartment, rate_mL_per_min=rate_mL_per_min,
+                              patient_file=patient_file, conditions=conditions)
+    doc["biogears"] = _biogears_node(state_file, compartment, compound, patient_file, conditions)
     doc["controller"] = {
         "_type": "step",
         "address": "local:MapFluidController",

@@ -10,15 +10,18 @@ from process_bigraph import Process
 from ..circuits import MODULES
 from ..circuits.base import check_outputs
 from ..circuits.state import read_state
-from ._bridge import advance, check_compound, load_engine, resolve_state
+from ._bridge import (
+    START_CONFIG,
+    advance,
+    check_compound,
+    check_start,
+    load_engine,
+    resolve_state,
+)
 
 
 def _config_schema() -> dict[str, Any]:
-    schema: dict[str, Any] = {
-        "modules": {"_type": "list[string]", "_default": []},
-        "state_file": {"_type": "string", "_default": "StandardMale@0s.xml"},
-        "runtime_dir": {"_type": "string", "_default": ""},
-    }
+    schema: dict[str, Any] = {"modules": {"_type": "list[string]", "_default": []}, **START_CONFIG}
     for module in MODULES.values():
         for key, spec in module.params.items():
             if key in schema and schema[key] != spec:
@@ -84,6 +87,7 @@ class BioGearsCircuitProcess(Process):
         if len(set(names)) != len(names):
             raise ValueError(f"modules listed twice: {names}")
         self._modules = [MODULES[n] for n in names]
+        check_start(self.config)
         for module in self._modules:
             if module.check_config:
                 module.check_config(self.config)

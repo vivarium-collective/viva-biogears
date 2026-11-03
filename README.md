@@ -12,8 +12,8 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body_circuits` and `biogears_lymph`.
 
   All are tested against the real engine.
+  - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`).
 - **Next (viva-pulse parity, in this order):**
-  - patients: stabilize any patient file and cache the state;
   - saved states and branching from them;
   - circuit additions;
   - the Sphinx documentation and tutorials.
@@ -48,6 +48,26 @@ python -m pytest -q        # ~5 min, real engine
 3. `~/biogears-8.2.0-install/share/biogears/runtime`, the installer's default.
 
 A location that is given but is not a BioGears runtime raises `BioGearsNotFoundError`; it never falls back to another location. pybiogears must be importable and drive BioGears 8.2.0. When no build is found, the engine tests are skipped, not failed, so CI without a build stays green.
+
+### Patients and conditions
+
+Every process and composite starts from `state_file` (a stabilized state) or from `patient_file`, optionally with `conditions`:
+
+```python
+BioGearsProcess({"patient_file": "Male_44_Normal.xml"})                     # a shipped patient file
+BioGearsProcess({"patient_file": "/path/to/MyPatient.xml"})                  # your own
+BioGearsCircuitProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {"ReductionFactor": 0.3}}})
+```
+
+- **Stabilization.** A patient file describes a person (sex, age, weight, height, body fat, resting baselines). BioGears stabilizes it the first time it is used: it builds the body and runs it at rest until it settles. The result is cached in `~/.cache/viva-biogears/states` (`$VIVA_BIOGEARS_CACHE_DIR` overrides it), so later runs load it in about 0.2 s.
+- **Cost.** About 40 s, or 70 s with a condition (`workspace/experiments/stabilization-2026-11-03`).
+- **Cache key.** It covers the patient file's bytes, the conditions and the BioGears install.
+- **Conditions** are BioGears' chronic conditions, applied during stabilization: `ChronicAnemia`, `ChronicHeartFailure`, `ChronicVentricularSystolicDysfunction`, `ChronicObstructivePulmonaryDisease`, `ChronicPericardialEffusion`, `ChronicRenalStenosis`, `Dehydration`, `ImpairedAlveolarExchange`, `LobarPneumonia`, `Starvation`.
+  - Fields follow `PatientConditions.xsd`. A value is a number or `"<value> <unit>"` (`{"Starvation": {"TimeSinceMeal": "72 hr"}}`).
+  - Conditions without `patient_file` apply to `StandardMale.xml`.
+  - They play the role of viva-pulse's `circuit_modifiers`: the result is a different patient, not a perturbation.
+  - Chronic anemia removes hemoglobin but leaves hematocrit unchanged in BioGears 8.2.0.
+- **Rules.** Setting `state_file` and `patient_file` (or `conditions`) together raises. `biogears_lymph` drops its equilibrated default when a patient is given; that patient is not equilibrated.
 
 ## Usage
 

@@ -22,6 +22,7 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
 ## Architecture
 
 - `viva_biogears/runtime.py` finds the BioGears runtime directory: the `runtime_dir` config, then `$BIOGEARS_RUNTIME`, then the installer's default. An explicitly given invalid location raises `BioGearsNotFoundError` and never falls back. It also checks that pybiogears drives 8.2.0.
+- `viva_biogears/patients.py` stabilizes a `patient_file` (with optional chronic `conditions`) once through pybiogears' `initialize` and caches the state (`stabilized_state`; key: patient bytes, conditions, install identity). `_bridge.resolve_state` picks `state_file` or the cached patient; `check_start` makes them exclusive.
 - `viva_biogears/processes/` is registered automatically by `core.build_core()` (`register_package_processes`).
   - `biogears.py` has `BioGearsProcess`, with the same contract as viva-pulse's `PulseProcess`:
     - the engine loads lazily; setpoints (`overwrite[float]`) are sent only when they change, because resending a hemorrhage restarts BioGears' bleed;

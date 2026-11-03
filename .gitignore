@@ -19,3 +19,4 @@ tmp/
 # equilibration checkpoints (large; the chosen baseline is kept under states/)
 workspace/experiments/*/out/*@*min.xml
 workspace/experiments/*/out/*.log
+workspace/experiments/stabilization-2026-11-03/out/*.xml

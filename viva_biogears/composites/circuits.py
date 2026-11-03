@@ -28,12 +28,14 @@ from ..circuits.thermal import (
 from ..core import build_core
 
 
-def circuit_node(modules, *, state_file="StandardMale@0s.xml", interval=1.0, **params):
+def circuit_node(modules, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0,
+                 **params):
     """A ``BioGearsCircuitProcess`` node wired to the standard store layout."""
     return {
         "_type": "process",
         "address": "local:BioGearsCircuitProcess",
-        "config": {"modules": list(modules), "state_file": state_file, **params},
+        "config": {"modules": list(modules), "state_file": state_file, "patient_file": patient_file,
+                   "conditions": dict(conditions or {}), **params},
         "interval": interval,
         "inputs": {"setpoints": ["interventions"]},
         "outputs": {**{name: ["circuits", name] for name in modules},
@@ -75,6 +77,13 @@ _INTERVAL = {"type": "float", "default": 1.0,
                             "to float time accumulation."}
 _STATE_FILE = {"type": "string", "default": "StandardMale@0s.xml",
                "description": "BioGears state in <runtime>/states or the package's states/ (or an absolute path)"}
+_PATIENT_FILE = {"type": "string", "default": "",
+                 "description": "Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and "
+                                "then cached; replaces state_file"}
+_CONDITIONS = {"type": "map", "default": {},
+               "description": "Chronic conditions applied while the patient stabilizes, e.g. "
+                              "{ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. "
+                              "A different patient, not a perturbation"}
 _POINT_READS = {"type": "boolean", "default": False,
                 "description": "Also read every node and path of the circuit, under circuits/<circuit>_points/"}
 _SUBSTANCE_OUTPUTS = {"type": "list", "default": [],
@@ -126,14 +135,14 @@ _CARDIOVASCULAR_PARAMETERS = {
     description="The BioGears cardiovascular circuit (with its renal, cerebral and tissue branches) in the real "
                 "engine: hemodynamics plus per-compartment pressures, volumes and flows, driven by a hemorrhage "
                 "and an IV infusion. Optional point, substance and tissue readings.",
-    parameters={"state_file": _STATE_FILE, "interval": _INTERVAL, "point_reads": _POINT_READS,
+    parameters={"state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS, "interval": _INTERVAL, "point_reads": _POINT_READS,
                 "substance_outputs": _SUBSTANCE_OUTPUTS, "tissue_outputs": _TISSUE_OUTPUTS,
                 **_CARDIOVASCULAR_PARAMETERS},
     core_extensions=[build_core],
     default_n_steps=600,
     fidelity="real-bridge",
 )
-def biogears_cardiovascular(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, point_reads=False,
+def biogears_cardiovascular(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, point_reads=False,
                             substance_outputs=None, tissue_outputs=None, hemorrhage_compartment="RightLeg",
                             iv_compound="Saline", iv_bag_volume_L=10.0, **overrides):
     config = {"hemorrhage_compartment": hemorrhage_compartment, "iv_compound": iv_compound,
@@ -143,7 +152,7 @@ def biogears_cardiovascular(core=None, *, state_file="StandardMale@0s.xml", inte
     reject_unknown(overrides)
     modules = with_readings(with_points(["cardiovascular"], point_reads), substance_outputs, tissue_outputs)
     return {
-        "biogears": circuit_node(modules, state_file=state_file, interval=interval, **config,
+        "biogears": circuit_node(modules, state_file=state_file, patient_file=patient_file, conditions=conditions, interval=interval, **config,
                                  **_reading_config(substance_outputs, tissue_outputs)),
         "interventions": {"cardiovascular": values},
         "circuits": {},
@@ -152,7 +161,7 @@ def biogears_cardiovascular(core=None, *, state_file="StandardMale@0s.xml", inte
 
 
 _RESPIRATORY_PARAMETERS = {
-    "state_file": _STATE_FILE, "interval": _INTERVAL, "point_reads": _POINT_READS,
+    "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS, "interval": _INTERVAL, "point_reads": _POINT_READS,
     "intubation_type": {"type": "string", "default": "Tracheal", "choices": list(INTUBATION_TYPES),
                         "description": "Tube placement used when intubated = 1"},
 }
@@ -168,14 +177,14 @@ _RESPIRATORY_PARAMETERS = {
     default_n_steps=120,
     fidelity="real-bridge",
 )
-def biogears_respiratory(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, point_reads=False,
+def biogears_respiratory(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, point_reads=False,
                          intubation_type="Tracheal", **overrides):
     config = {"intubation_type": intubation_type}
     RESPIRATORY.check_config(config)
     values = setpoints(RESPIRATORY, overrides, config)
     reject_unknown(overrides)
     return {
-        "biogears": circuit_node(with_points(["respiratory"], point_reads), state_file=state_file,
+        "biogears": circuit_node(with_points(["respiratory"], point_reads), state_file=state_file, patient_file=patient_file, conditions=conditions,
                                  interval=interval, **config),
         "interventions": {"respiratory": values},
         "circuits": {},
@@ -211,7 +220,7 @@ _VENTILATOR_DESCRIPTIONS = {
     default_n_steps=120,
     fidelity="real-bridge",
 )
-def biogears_mechanical_ventilation(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, point_reads=False,
+def biogears_mechanical_ventilation(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, point_reads=False,
                                     intubation_type="Tracheal", ventilator_connection="Tube", **overrides):
     overrides.setdefault("intubated", 1.0)
     overrides.setdefault("connected", 1.0)
@@ -223,7 +232,7 @@ def biogears_mechanical_ventilation(core=None, *, state_file="StandardMale@0s.xm
     reject_unknown(overrides)
     return {
         "biogears": circuit_node(with_points(["respiratory", "mechanical_ventilator"], point_reads),
-                                 state_file=state_file, interval=interval, **config),
+                                 state_file=state_file, patient_file=patient_file, conditions=conditions, interval=interval, **config),
         "interventions": {"respiratory": respiratory, "mechanical_ventilator": ventilator},
         "circuits": {},
         "emitter": circuit_emitter(),
@@ -255,18 +264,18 @@ _THERMAL_DESCRIPTIONS = {
                 "ambient air) in the real engine: core and skin temperatures, sweat, metabolic rate, heat-loss "
                 "rates and per-compartment temperatures and heat flows, driven by the environment and by active "
                 "heating, cooling or an applied temperature.",
-    parameters={"state_file": _STATE_FILE, "interval": _INTERVAL,
+    parameters={"state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS, "interval": _INTERVAL,
                 **{port: {"type": "float", "default": value, "description": _THERMAL_DESCRIPTIONS[port]}
                    for port, value in {**ENVIRONMENT_BASELINE, **THERMAL_APPLICATION_BASELINE}.items()}},
     core_extensions=[build_core],
     default_n_steps=1800,
     fidelity="real-bridge",
 )
-def biogears_thermal(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, **overrides):
+def biogears_thermal(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, **overrides):
     values = setpoints(THERMAL, overrides, {})
     reject_unknown(overrides)
     return {
-        "biogears": circuit_node(["thermal"], state_file=state_file, interval=interval),
+        "biogears": circuit_node(["thermal"], state_file=state_file, patient_file=patient_file, conditions=conditions, interval=interval),
         "interventions": {"thermal": values},
         "circuits": {},
         "emitter": circuit_emitter(),
@@ -282,20 +291,20 @@ _OXYGEN_FLOW = {"type": "float", "default": OXYGEN_BASELINE["oxygen_flow_L_per_m
     description="Oxygen by nasal cannula in the real BioGears engine: the cannula circuit combined with the "
                 "respiratory circuit, emitting breathing mechanics, airway and lung compartments and arterial "
                 "blood gases.",
-    parameters={"state_file": _STATE_FILE, "interval": _INTERVAL,
+    parameters={"state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS, "interval": _INTERVAL,
                 "oxygen_connected": {"type": "float", "default": 1.0, "description": "1 = cannula on, 0 = off"},
                 "oxygen_flow_L_per_min": _OXYGEN_FLOW},
     core_extensions=[build_core],
     default_n_steps=300,
     fidelity="real-bridge",
 )
-def biogears_supplemental_oxygen(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, **overrides):
+def biogears_supplemental_oxygen(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, **overrides):
     overrides.setdefault("oxygen_connected", 1.0)
     config = {"intubation_type": "Tracheal"}
     oxygen = setpoints(SUPPLEMENTAL_OXYGEN, overrides, config)
     reject_unknown(overrides)
     return {
-        "biogears": circuit_node(["respiratory", "supplemental_oxygen"], state_file=state_file,
+        "biogears": circuit_node(["respiratory", "supplemental_oxygen"], state_file=state_file, patient_file=patient_file, conditions=conditions,
                                  interval=interval, **config),
         "interventions": {"respiratory": setpoints(RESPIRATORY, {}, config), "supplemental_oxygen": oxygen},
         "circuits": {},
@@ -314,7 +323,7 @@ WHOLE_BODY_MODULES = (CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMA
                 "cannula start disconnected, and only one of them can be connected at a time. Optional point, "
                 "substance and tissue readings.",
     parameters={
-        "state_file": _STATE_FILE, "interval": _INTERVAL, "point_reads": _POINT_READS,
+        "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS, "interval": _INTERVAL, "point_reads": _POINT_READS,
         "substance_outputs": _SUBSTANCE_OUTPUTS, "tissue_outputs": _TISSUE_OUTPUTS,
         **_CARDIOVASCULAR_PARAMETERS,
         "intubation_type": _RESPIRATORY_PARAMETERS["intubation_type"],
@@ -332,7 +341,7 @@ WHOLE_BODY_MODULES = (CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMA
     default_n_steps=600,
     fidelity="real-bridge",
 )
-def biogears_whole_body_circuits(core=None, *, state_file="StandardMale@0s.xml", interval=1.0, point_reads=False,
+def biogears_whole_body_circuits(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, interval=1.0, point_reads=False,
                                  substance_outputs=None, tissue_outputs=None, hemorrhage_compartment="RightLeg",
                                  iv_compound="Saline", iv_bag_volume_L=10.0, intubation_type="Tracheal",
                                  ventilator_connection="Tube", **overrides):
@@ -351,7 +360,7 @@ def biogears_whole_body_circuits(core=None, *, state_file="StandardMale@0s.xml",
     modules = with_readings(with_points([m.name for m in WHOLE_BODY_MODULES], point_reads)
                             + ["lymph", "tissue_fluid"], substance_outputs, tissue_outputs)
     return {
-        "biogears": circuit_node(modules, state_file=state_file, interval=interval, **config,
+        "biogears": circuit_node(modules, state_file=state_file, patient_file=patient_file, conditions=conditions, interval=interval, **config,
                                  **_reading_config(substance_outputs, tissue_outputs)),
         "interventions": interventions,
         "circuits": {},
