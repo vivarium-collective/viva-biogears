@@ -27,17 +27,20 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
     - the engine loads lazily; setpoints (`overwrite[float]`) are sent only when they change, because resending a hemorrhage restarts BioGears' bleed;
     - vitals are `overwrite[float]`, seeded by `initial_state()`;
     - an `irreversible_state` latch, after which the engine is not advanced.
-  - BioGears-specific guards in `biogears.py`:
+  - BioGears-specific guards (in `_bridge.py`, shared with `BioGearsCircuitProcess`):
     - `HEMORRHAGE_COMPARTMENTS`: an unknown compartment crashes BioGears;
     - a bleed rate above cardiac output raises (BioGears refuses it every step);
     - states holding an active hemorrhage or infusion are refused at load;
     - `iv_compound` must be a BioGears compound file.
+  - `_bridge.py` has `EngineBridge`, the engine handling both processes share (lazy load, send-on-change, the guards above, the irreversible latch).
+  - `circuit.py` has `BioGearsCircuitProcess` (viva-pulse's `PulseCircuitProcess` pattern): readout modules declared in `viva_biogears/circuits/__init__.py` as data requests at port paths; the modules compute nothing.
   - `controllers.py` has `MapFluidController`, identical to viva-pulse's.
+- `viva_biogears/composites/lymph.py` has `biogears_lymph` (vitals + lymph + tissue_fluid under an optional infusion).
 - `viva_biogears/composites/hemorrhage.py` has `biogears_hemorrhage` and `biogears_resuscitation`, built with `composite_generator` and `core_extensions=[build_core]`, with a 1 s interval and a RAM emitter.
 
 ## Test oracles
 
-The tests drive a pybiogears engine directly with the same actions and compare the results with `BioGearsProcess`; pybiogears itself matches BioGears' own `bg-scenario` (probe P4). Physical checks use bounds, not fitted numbers: for example, blood volume lost is at least the blood-volume drop. Each new guard needs a test that fails without it.
+The tests drive a pybiogears engine directly with the same actions and compare the results with `BioGearsProcess`; pybiogears itself matches BioGears' own `bg-scenario` (probe P4). Circuit modules are also checked against conservation laws on BioGears' own circuit: the lymph pool changes by ∫(formation − return), and return = (P_pool − P_vena_cava)/R. Physical checks use bounds, not fitted numbers: for example, blood volume lost is at least the blood-volume drop. Each new guard needs a test that fails without it.
 
 ## Conventions
 

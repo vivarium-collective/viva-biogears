@@ -6,13 +6,13 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
 
 ## Status
 
-- **Available (phase 1):**
-  - processes: `BioGearsProcess` and `MapFluidController`;
-  - composites: `biogears_hemorrhage` and `biogears_resuscitation`.
+- **Available:**
+  - processes: `BioGearsProcess`, `BioGearsCircuitProcess` (lymph and tissue-fluid readouts) and `MapFluidController`;
+  - composites: `biogears_hemorrhage`, `biogears_resuscitation` and `biogears_lymph`.
 
-  Both are tested against the real engine.
+  All are tested against the real engine.
 - **Next:**
-  - phase 2: lymph and tissue-fluid circuit modules (pybiogears' `FluidPath`/`FluidNode` requests) and an equilibrated baseline state;
+  - an equilibrated baseline state (`workspace/experiments/equilibration-2026-11-03`);
   - phase 3: the McDaniel et al. 2019 sepsis replication as a workspace study.
 
   The plan and the probe results are in pybiogears' `experiments/` and `docs/plan-viva-biogears.md`.
@@ -67,6 +67,7 @@ rows = gather_emitter_results(sim)[("emitter",)]
 |---|---|---|
 | `biogears_hemorrhage` | an untreated hemorrhage; emits vitals every second | `state_file`, `compartment`, `rate_mL_per_min` |
 | `biogears_resuscitation` | the same, plus `MapFluidController` setting the IV rate from MAP | also `compound`, `target_map_mmHg`, `gain`, `max_rate_mL_per_min` |
+| `biogears_lymph` | lymph and tissue fluid at rest or under a constant infusion; emits lymph return, pool, CVP, muscle filtration, albumin, fluid volumes, MAP | `state_file`, `iv_rate_mL_per_min`, `compound` |
 
 ### `BioGearsProcess`
 
@@ -93,6 +94,20 @@ How it differs from Pulse:
 | a rate above cardiac output | — | BioGears refuses it on every step without stopping; `BioGearsProcess` raises `ValueError` |
 | a hemorrhage on an unknown compartment | — | crashes BioGears; it is rejected at construction |
 | starting state | — | a state that already holds a hemorrhage or an infusion is refused at load, so the setpoint ports always describe what is running |
+
+### `BioGearsCircuitProcess`
+
+The same engine handling, config and setpoints as `BioGearsProcess` (setpoints arrive under one `interventions` input port), plus `modules`, a list of readout modules from `viva_biogears.circuits.MODULES`. Each module's outputs nest under its name, all `overwrite[float]`:
+
+| module | outputs |
+|---|---|
+| `vitals` | `BioGearsProcess`'s vitals |
+| `lymph` | `return_mL_per_min`, `return_resistance_mmHg_min_per_mL`, `pool_volume_mL`, `pool_pressure_mmHg`, `vena_cava_pressure_mmHg`, `central_venous_pressure_mmHg`, `formation/<tissue>_mL_per_min` for 13 tissues |
+| `tissue_fluid` | per tissue: extracellular and intracellular volume, interstitial albumin, capillary filtration and endothelial resistance, plasma and interstitial oncotic pressure, interstitial pressure; whole-body plasma albumin, blood, extravascular, intracellular and total fluid |
+
+BioGears 8.2.0 has no compartment links for lymph, so these are circuit reads (pybiogears `FluidPath`/`FluidNode`). The one transformation is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
+
+Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from an equilibrated state.
 
 ## License
 

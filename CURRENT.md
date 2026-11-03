@@ -1,15 +1,17 @@
 ## Current session
 
-**State (2026-11-03): phase 1 done.**
-- `BioGearsProcess`, `MapFluidController`, `biogears_hemorrhage` and `biogears_resuscitation` are in place.
-- 28 engine tests pass on Linux (cloud), including a mutation check of the send-on-change rule. The Mac run is still to do.
-- The workspace was scaffolded by the user with `viva-scaffold workspace --name biogears --target . --in-place --branch main --package viva_biogears` (viva-superpowers 0.24.0).
+**State (2026-11-03): phase 2 code done; equilibrated baseline in progress.**
+- Phase 1: `BioGearsProcess`, `MapFluidController`, `biogears_hemorrhage`, `biogears_resuscitation`.
+- Phase 2: `BioGearsCircuitProcess` with `vitals`/`lymph`/`tissue_fluid` modules (`viva_biogears/circuits`), the shared `EngineBridge`, and `biogears_lymph`. 38 engine tests pass on Linux (cloud), including mutation checks of send-on-change and the oncotic-pressure sign. The Mac run is still to do.
+- Lymph findings: the pool mass balance and Ohm's law on LymphToVenaCava hold to 0.1 % and 1e-9; saline at 200 mL/min drops lymph return from 3.2 to 0.4 mL/min in 5 min (return is passive, CVP-driven).
+- Equilibration probe `workspace/experiments/equilibration-2026-11-03` (5 h at rest, with and without 150 mL water/h) decides the baseline state.
+- The workspace was scaffolded with `viva-scaffold workspace --name biogears --target . --in-place --branch main --package viva_biogears` (viva-superpowers 0.24.0).
 
 **Decided with the user:**
 - D3 = both, vitals first. Phase 1: vitals plus hemorrhage and infusion. Phase 2: lymph and tissue-fluid modules. Phase 3: the McDaniel 2019 sepsis replication as a study.
 - BioGears 8.2.0, unmodified (D1, D2).
 
 **Next:**
-1. The user sets up `.venv` on the Mac (README *Setup*) and runs the tests.
-2. Phase 2: a circuit process with lymph and tissue-fluid outputs, read through pybiogears' `FluidPath`/`FluidNode` (lymph return, the 13 tissue lymph flows, the lymph pool, endothelial resistances, albumin); an equilibrated baseline state (4–5 h at rest, pybiogears P5); CVP reported alongside lymph.
+1. Finish the equilibration probe, save the equilibrated baseline state, and default `biogears_lymph` to it.
+2. The user sets up `.venv` on the Mac (README *Setup*) and runs the tests.
 3. Phase 3: `workspace/studies/` for McDaniel 2019; its run and analysis scripts are in pybiogears `studies/mcdaniel2019`.

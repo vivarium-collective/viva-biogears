@@ -52,3 +52,18 @@ def test_lethal_hemorrhage_reaches_irreversible_state_and_stops(run_composite):
     frozen = rows[dead[0]:]
     assert all(r["blood_volume_mL"] == frozen[0]["blood_volume_mL"] for r in frozen)
     assert not math.isnan(frozen[0]["blood_volume_mL"])
+
+
+def test_lymph_composite_registered_and_tracks_the_engine(run_composite):
+    from viva_biogears.composites import biogears_lymph
+    from viva_biogears.composites.lymph import EMIT
+    assert [eid for eid in _REGISTRY if eid.endswith(".biogears_lymph")]
+    sim, rows = run_composite(biogears_lymph, 30.0, iv_rate_mL_per_min=200.0)
+    assert len(rows) == 31 and rows[0]["time"] == 0.0
+    truth = sim.state["biogears"]["instance"].read()
+    for col, path in EMIT.items():
+        want = truth
+        for p in path:
+            want = want[p]
+        assert rows[-1][col] == pytest.approx(want, rel=1e-12), col
+    assert rows[-1]["central_venous_pressure_mmHg"] > rows[0]["central_venous_pressure_mmHg"]
