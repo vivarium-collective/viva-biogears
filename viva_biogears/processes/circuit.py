@@ -121,6 +121,9 @@ class BioGearsCircuitProcess(Process):
         self._engine = None
         self._alive = True
         self._saver = saver_from_config(self.config)
+        # Timed one-shot actions of all modules, in time order: (time s, module, xml).
+        self._schedule = sorted(((float(t), m.name, xml) for m in self._modules if m.schedule
+                                 for t, xml in m.schedule(self.config)), key=lambda e: e[0])
 
     # -- ports -------------------------------------------------------------
     def inputs(self):
@@ -160,6 +163,9 @@ class BioGearsCircuitProcess(Process):
                                  f"{[m.name for m in self._modules if m.airway_device]} would fail every step")
         engine = load_engine(runtime, path, [r.key() for r in self._requests])
         self._engine = engine
+        # A run from a saved state skips the timed actions that came before its time.
+        start = round(engine.sim_time_s, 6)
+        self._schedule = [e for e in self._schedule if round(e[0], 6) >= start]
         if self._saver:
             self._saver(engine)
         values = self._pull()
@@ -209,6 +215,21 @@ class BioGearsCircuitProcess(Process):
             self._engine.process_actions(b.build(values, self.config))
             self._applied[key] = values
 
+    def events(self) -> list[tuple[float, str, bool]]:
+        """BioGears' patient events so far (time s, event name, active), e.g.
+        ``(98760.0, "SevereSepsis", True)``; the latest ones (pybiogears keeps a bounded log)."""
+        if self._engine is None:
+            return []
+        return [(float(e.sim_time_s), str(e.event), bool(e.active)) for e in self._engine.events]
+
+    def _send_due(self) -> None:
+        """Send the timed actions due at the start of this update (time <= now)."""
+        now = round(self._engine.sim_time_s, 6)
+        due = [e for e in self._schedule if round(e[0], 6) <= now]
+        if due:
+            self._engine.process_actions([xml for _, _, xml in due])
+            self._schedule = self._schedule[len(due):]
+
     def _device_connected(self, m) -> bool:
         """Whether module ``m``'s airway device is connected as far as the process knows
         (an unknown group, None, counts as connected)."""
@@ -234,6 +255,7 @@ class BioGearsCircuitProcess(Process):
         if not self._alive:
             return {}
         self._apply_setpoints(state)
+        self._send_due()
         if not advance(self._engine, interval, self._bleed_rate()):
             self._alive = False
             return {"irreversible_state": True}

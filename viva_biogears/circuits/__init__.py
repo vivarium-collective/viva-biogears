@@ -11,6 +11,7 @@ from .lymph import LYMPH, TISSUE_FLUID
 from .lymph import TISSUES as LYMPH_TISSUES
 from .points import CARDIOVASCULAR_POINTS, RESPIRATORY_POINTS
 from .respiratory import MECHANICAL_VENTILATOR, RESPIRATORY
+from .sepsis import INFECTION, NUTRITION
 from .substances import SUBSTANCES
 from .substances import TISSUES as TISSUE_READINGS
 from .supplemental_oxygen import SUPPLEMENTAL_OXYGEN
@@ -24,7 +25,7 @@ TISSUES = LYMPH_TISSUES
 MODULES: dict[str, CircuitModule] = {
     m.name: m for m in (VITALS_MODULE, CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMAL,
                         SUPPLEMENTAL_OXYGEN, CARDIOVASCULAR_POINTS, RESPIRATORY_POINTS, SUBSTANCES,
-                        TISSUE_READINGS, LYMPH, TISSUE_FLUID)
+                        TISSUE_READINGS, LYMPH, TISSUE_FLUID, INFECTION, NUTRITION)
 }
 
 __all__ = ["ActionBinding", "CircuitModule", "HEMORRHAGE_COMPARTMENTS", "MODULES", "Request", "TISSUES", "VITALS"]

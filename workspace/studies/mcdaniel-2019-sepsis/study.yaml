@@ -1,0 +1,64 @@
+schema_version: 4
+name: mcdaniel-2019-sepsis
+title: Replicating McDaniel et al. 2019 (sepsis in BioGears) on BioGears 8.2.0
+created: '2026-11-03'
+status: in_progress
+execution_status: not_started
+phase: Run
+question: >
+  Does BioGears 8.2.0, driven through viva-biogears, reproduce the sepsis progression
+  McDaniel et al. (2019) report for BioGears' infection model: the inflammatory response
+  by infection severity, the timing of hypotension, sepsis and septic shock in a severe
+  untreated infection, and the response to a 1000 mL saline challenge?
+hypothesis: >
+  The severe arm reaches lactate > 2 mM after about 20 h, SBP < 100 mmHg at about 26 h,
+  sepsis (SBP < 100 and tachypnea) at about 30 h and septic shock (MAP < 65 and lactate
+  > 2 mM) at about 45 h, with SVR falling toward 60 % of baseline, as in the paper; the
+  timings may shift because the paper's code predates 8.2.0 by 93 commits to the
+  blood-chemistry and tissue models.
+literature_anchors:
+- citation: >
+    McDaniel M, Keller JM, White S, Baird A (2019). A Whole-Body Mathematical Model of
+    Sepsis Progression and Treatment Designed in the BioGears Physiology Engine.
+    Front. Physiol. 10:1321. doi:10.3389/fphys.2019.01321
+  figures: [4, 5, 6, 7, 9]
+conditions:
+  baseline:
+  - name: control
+    composite: viva_biogears.composites.sepsis.biogears_sepsis
+    params: {severity: none, nutrition: infection_scenario, interval: 60.0, n_steps: 2880}
+  variants:
+  - name: mild
+    composite: viva_biogears.composites.sepsis.biogears_sepsis
+    parameter_overrides: {severity: mild, nutrition: infection_scenario, interval: 60.0, n_steps: 2880}
+  - name: moderate
+    composite: viva_biogears.composites.sepsis.biogears_sepsis
+    parameter_overrides: {severity: moderate, nutrition: infection_scenario, interval: 60.0, n_steps: 2880}
+  - name: severe
+    composite: viva_biogears.composites.sepsis.biogears_sepsis
+    parameter_overrides: {severity: severe, nutrition: infection_scenario, interval: 60.0, n_steps: 2880}
+  - name: challenge
+    description: >
+      Branch from severe's 44 h checkpoint; saline 16.67 mL/min from 44.0 to 45.0 h
+      (1000 mL as two 500 mL boluses over 30 min each), observed to 46 h. Driven by run.py.
+runtime:
+  note: >
+    48 simulated hours take about 8 h of wall time per arm at BioGears' ~6x real time.
+    run.py checkpoints every 4 h and resumes; run the arms in parallel on a machine with
+    four or more cores.
+readouts:
+- {name: inflammation, store_path: circuits.infection.inflammation, units: arbitrary}
+- {name: clinical-signs, store_path: circuits.infection.clinical}
+- {name: lymph, store_path: circuits.lymph}
+- {name: tissue-fluid, store_path: circuits.tissue_fluid}
+- {name: hemodynamics, store_path: circuits.cardiovascular.hemodynamics}
+expected_behavior:
+- name: severity-orders-the-response
+  observable: circuits.infection.inflammation.blood_pathogen, tumor_necrosis_factor, interleukin_6
+  condition: peaks rise from mild to moderate to severe; the control stays at baseline
+- name: severe-reaches-septic-shock
+  observable: circuits.infection.clinical (MAP, lactate)
+  condition: MAP < 65 mmHg and lactate > 2 mM, sustained 30 min, near 45 h
+- name: lymph-carries-the-leak
+  observable: circuits.lymph.formation, circuits.tissue_fluid
+  condition: as tissue integrity falls, filtration and lymph formation rise and blood volume falls

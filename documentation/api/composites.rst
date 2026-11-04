@@ -13,3 +13,4 @@ Composites
 .. autofunction:: viva_biogears.composites.biogears_supplemental_oxygen
 .. autofunction:: viva_biogears.composites.biogears_whole_body_circuits
 .. autofunction:: viva_biogears.composites.biogears_lymph
+.. autofunction:: viva_biogears.composites.biogears_sepsis

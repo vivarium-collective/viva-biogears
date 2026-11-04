@@ -1,6 +1,6 @@
 ## Current session
 
-**State (2026-11-03): viva-pulse parity done** (circuits, patients, saved states, circuit additions, documentation). Not ported: viva-pulse's workbench results page and studies, which come with phase 3.
+**State (2026-11-03): viva-pulse parity done** (circuits, patients, saved states, circuit additions, documentation). Phase 3 started: sepsis modules and the McDaniel 2019 study (runs pending).
 - Phase 1: `BioGearsProcess`, `MapFluidController`, `biogears_hemorrhage`, `biogears_resuscitation`.
 - Phase 2: `lymph` and `tissue_fluid` modules, `biogears_lymph`, and the equilibrated baseline `viva_biogears/states/StandardMale@equilibrated.xml`.
 - **viva-pulse parity, batch 1 (circuits).**
@@ -16,6 +16,7 @@
 - **Saved states** (batch 3): `viva_biogears/states.py` (StateSaver, save_states, CLI); branching reads active actions from the state (`ActionBinding.loaded`), so same setpoints continue exactly. pybiogears 1066a39 fixes four BioGears save/load bugs. Probe: `workspace/experiments/save-states-2026-11-03`.
 - **Circuit additions** (batch 4): `viva_biogears/circuits/additions.py`, a path plus its liquid link. Probe: `workspace/experiments/additions-2026-11-03`.
 - **Documentation** (batch 5): `documentation/` with five executed tutorials; `make docs`; `.readthedocs.yaml`. Tutorial 3 shows BioGears' lymph return reversing under saline (no valve on the return path).
+- **Phase 3 (sepsis)**: `infection` and `nutrition` modules (`circuits/sepsis.py`), timed actions (`CircuitModule.schedule`), `biogears_sepsis`, and `workspace/studies/mcdaniel-2019-sepsis` (run.py with checkpoint/resume, tested to 5e-8; analyze.py ported from pybiogears). The 48 h runs (~8 h wall per arm) are to run on the Mac.
 - All engine tests pass on Linux (cloud). The Mac run is still to do; first reinstall pybiogears there (it now has the thermal, conditions and save/load fixes).
 
 **Decided with the user:**
@@ -24,4 +25,5 @@
 - viva-pulse parity, circuits first. Then patients, saved states and branching, circuit additions, and the Sphinx docs.
 
 **Next:**
-1. Phase 3: McDaniel 2019 in `workspace/studies/`.
+1. Run the McDaniel arms on the Mac (`run.py all --jobs 4`), then `analyze.py`; compare with the paper's event timings.
+2. If wanted: antibiotics (the paper's treatment arm) through a substance-infusion module.

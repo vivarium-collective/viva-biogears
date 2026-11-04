@@ -138,6 +138,11 @@ class CircuitModule:
     while its equipment occupies BioGears' airway: BioGears allows one airway device
     at a time (``BioGears::SetAirwayMode``).
 
+    ``schedule(config)`` returns timed actions, ``(simulation time in s, action XML)``:
+    one-shot actions such as a meal, which no setpoint can describe. The process sends
+    each at the first update that starts at or after its time; a run starting from a
+    saved state skips the ones before its own time (they happened before the save).
+
     A module whose outputs depend on the starting state or the config sets
     ``prepare`` instead of ``outputs``: ``prepare(config, state, modules)`` gets the
     parsed state (``viva_biogears.circuits.state.StateInfo``) and the names of all
@@ -153,6 +158,7 @@ class CircuitModule:
     check_loaded: Callable[[dict[str, Any]], None] | None = None
     airway_device: str | None = None
     prepare: Callable[[dict[str, Any], Any, list[str]], tuple[Request, ...]] | None = None
+    schedule: Callable[[dict[str, Any]], list[tuple[float, str]]] | None = None
 
     def __post_init__(self):
         if self.name in RESERVED_NAMES:

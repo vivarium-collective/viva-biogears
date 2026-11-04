@@ -1,0 +1,312 @@
+{
+ "source": "BioGears 8.2.0 share/Scenarios/Patient/InfectionModerate.xml, ConsumeNutrientsData actions in the first 48 h",
+ "events": [
+  {
+   "hour": 1.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 2.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 3.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 4.0,
+   "nutrition": {
+    "Carbohydrate": 130.0,
+    "Fat": 27.0,
+    "Protein": 20.0,
+    "Calcium": 0.5,
+    "Sodium": 0.75,
+    "Water": 0.5
+   }
+  },
+  {
+   "hour": 5.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 6.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 7.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 8.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 9.0,
+   "nutrition": {
+    "Carbohydrate": 130.0,
+    "Fat": 27.0,
+    "Protein": 20.0,
+    "Calcium": 0.5,
+    "Sodium": 0.75,
+    "Water": 0.5
+   }
+  },
+  {
+   "hour": 10.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 11.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 12.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 13.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 14.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 15.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 16.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 17.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 18.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 19.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 20.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 21.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 22.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 23.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 24.0,
+   "nutrition": {
+    "Carbohydrate": 130.0,
+    "Fat": 27.0,
+    "Protein": 20.0,
+    "Calcium": 0.5,
+    "Sodium": 0.75,
+    "Water": 0.5
+   }
+  },
+  {
+   "hour": 25.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 26.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 27.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 28.0,
+   "nutrition": {
+    "Carbohydrate": 130.0,
+    "Fat": 27.0,
+    "Protein": 20.0,
+    "Calcium": 0.5,
+    "Sodium": 0.75,
+    "Water": 0.5
+   }
+  },
+  {
+   "hour": 29.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 30.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 31.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 32.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 33.0,
+   "nutrition": {
+    "Carbohydrate": 130.0,
+    "Fat": 27.0,
+    "Protein": 20.0,
+    "Calcium": 0.5,
+    "Sodium": 0.75,
+    "Water": 0.5
+   }
+  },
+  {
+   "hour": 34.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 35.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 36.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 37.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 38.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 39.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 40.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 41.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 42.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 43.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 44.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 45.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 46.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  },
+  {
+   "hour": 47.0,
+   "nutrition": {
+    "Water": 0.15
+   }
+  }
+ ]
+}

@@ -15,9 +15,8 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
   - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`);
   - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.circuits.additions`);
-  - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`).
-- **Next:**
-  - phase 3, the McDaniel et al. 2019 sepsis replication as a workspace study.
+  - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`);
+  - sepsis: the `infection` and `nutrition` modules and `biogears_sepsis`; the McDaniel et al. 2019 replication study in `workspace/studies/mcdaniel-2019-sepsis` (runs take about 8 h per arm; see its README).
 
 ## Requirements
 
@@ -147,6 +146,7 @@ rows = gather_emitter_results(sim)[("emitter",)]
 | `biogears_supplemental_oxygen` | a nasal cannula | `oxygen_connected`, `oxygen_flow_L_per_min` |
 | `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine | all of the above |
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state | `state_file`, `iv_rate_mL_per_min`, `iv_compound` |
+| `biogears_sepsis` | an infection (BioGears' sepsis model) with meals, lymph, tissue fluid and hemodynamics, sampled each minute | `severity`, `infection_location`, `infection_mic_mg_per_L`, `nutrition`, `iv_rate_mL_per_min` |
 
 Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites use viva-pulse's store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
 
@@ -202,6 +202,8 @@ The pattern is viva-pulse's `PulseCircuitProcess`. `config.modules` lists module
 | `tissues` | the tissue values listed in `tissue_outputs` | none |
 | `lymph` | `return_mL_per_min`, `return_resistance_mmHg_min_per_mL`, `pool_volume_mL`, `pool_pressure_mmHg`, `vena_cava_pressure_mmHg`, `central_venous_pressure_mmHg`, `formation/<tissue>_mL_per_min` for 13 tissues | none |
 | `tissue_fluid` | per tissue: extracellular and intracellular volume, interstitial albumin, capillary filtration and endothelial resistance, plasma and interstitial oncotic pressure, interstitial pressure; whole-body plasma albumin, blood, extravascular, intracellular and total fluid | none |
+| `infection` | BioGears' inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and the clinical signs of sepsis (WBC, temperature, lactate, SVR, urine, ...) | `infection_severity` 0–3, one-way (BioGears reads it once and can't end an infection) |
+| `nutrition` | stomach contents, chyme absorption, body fluid, urine volume | none: meals and drinks come from `nutrition_schedule`, sent at their times |
 
 Each module's docstring in `viva_biogears/circuits/` gives the details.
 

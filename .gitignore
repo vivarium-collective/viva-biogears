@@ -24,3 +24,4 @@ workspace/experiments/save-states-2026-11-03/out/
 workspace/experiments/additions-2026-11-03/out/
 documentation/_build/
 documentation/jupyter_execute/
+workspace/studies/*/out/

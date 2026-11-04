@@ -18,6 +18,8 @@ become its output ports and the actions its setpoints drive.
 | `tissues` | the tissue values listed in `tissue_outputs` | none |
 | `lymph` | lymph formation in 13 tissues, the lymph pool, its return and CVP | none |
 | `tissue_fluid` | per tissue: fluid volumes, filtration, endothelial resistance, oncotic and interstitial pressures, albumin; body fluid totals | none |
+| `infection` | the inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and clinical signs of sepsis | `infection_severity` 0–3, one-way |
+| `nutrition` | stomach contents, chyme absorption, body fluid | none; meals come from `nutrition_schedule` at their times |
 
 Each module's docstring (in the {doc}`../api/circuits` reference) gives the details.
 
@@ -60,6 +62,18 @@ NaN on many bad requests, so a bad entry raises first.
 `circuit_additions` adds resistance paths between two `FullCardiovascular` nodes in
 different vascular compartments, each with a liquid link so substances follow. A path
 alone would carry blood without its oxygen; a large one is then fatal within seconds.
+
+## Timed actions and the infection
+
+Some interventions are one-shot actions no setpoint can describe, such as a meal. A
+module can declare a `schedule` of timed actions; the process sends each at the first
+update starting at or after its time, and a run from a saved state skips the ones before
+its own time. The `nutrition` module schedules meals and drinks this way.
+
+The `infection` module starts BioGears' sepsis model (McDaniel et al. 2019): a pathogen
+grows, the immune response follows, tissue integrity falls and the endothelium leaks, so
+plasma moves into the tissues (`tissue_fluid`) and lymph (`lymph`). BioGears reads the
+severity once, so `infection_severity` can only go from 0 to 1, 2 or 3.
 
 ## Rules that come from BioGears
 
