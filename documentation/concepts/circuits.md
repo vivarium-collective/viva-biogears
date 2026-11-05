@@ -14,8 +14,8 @@ become its output ports and the actions its setpoints drive.
 | `supplemental_oxygen` | arterial blood gases, end-tidal CO2 | `oxygen_connected`, `oxygen_flow_L_per_min` (nasal cannula) |
 | `cardiovascular_points` | pressure (and volume) of each of the 169 nodes of `FullCardiovascular`, flow of each of its 296 paths | none |
 | `respiratory_points` | the same for the 17 nodes and 27 paths of `Respiratory` | none |
-| `substances` | the substance quantities listed in `substance_outputs` | none |
-| `tissues` | the tissue values listed in `tissue_outputs` | none |
+| `substances` | the substance quantities listed in `substance_outputs` (`LIQUID_PROPERTIES`, `GAS_PROPERTIES`, `BODY_PROPERTIES`) | none |
+| `tissues` | the tissue values listed in `tissue_outputs` (`TISSUE_PROPERTIES`, `TISSUE_FLUID_PROPERTIES`) | none |
 | `lymph` | lymph formation in 13 tissues, the lymph pool, its return and CVP | none |
 | `tissue_fluid` | per tissue: fluid volumes, filtration, endothelial resistance, oncotic and interstitial pressures, albumin; body fluid totals | none |
 | `infection` | the inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and clinical signs of sepsis | `infection_severity` 0–3, one-way |

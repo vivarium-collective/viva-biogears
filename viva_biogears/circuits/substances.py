@@ -10,7 +10,7 @@ So these modules read only the entries listed in their config:
   or ``<Substance>/body/<port>``, e.g. ``Oxygen/Aorta/partial_pressure_mmHg``.
 - ``tissues`` (config ``tissue_outputs``): a tissue compartment's composition
   (``MuscleTissue``: ``MatrixVolume``, ``TotalMass``, ... constants) or a tissue fluid
-  compartment's volume, pressure, flows, pH (``MuscleTissueExtracellular``,
+  compartment's volume and pressure (``MuscleTissueExtracellular``,
   ``...Intracellular``). Ports ``<Compartment>/<port>``.
 
 Each entry is a map of strings: ``substance`` (``substances`` only), ``compartment``
@@ -41,6 +41,42 @@ from typing import Any
 
 from .base import CircuitModule, Request
 
+#: The properties each kind of entry can read, with a BioGears unit for each ("" for
+#: unitless; any unit of the same kind works, and a wrong one fails the load). These are
+#: the scalar properties BioGears' data requests serve (``SELiquidSubstanceQuantity``,
+#: ``SEGasSubstanceQuantity``, ``SESubstance``, ``SETissueCompartment``,
+#: ``SELiquidCompartment``); an entry must also name one the state stores for it.
+#: Substance quantity in a liquid (vascular or tissue fluid) compartment.
+LIQUID_PROPERTIES = {
+    "Concentration": "g/L", "Mass": "g", "MassCleared": "g", "MassDeposited": "g", "MassExcreted": "g",
+    "Molarity": "mmol/L", "PartialPressure": "mmHg", "Saturation": "",
+}
+#: Substance quantity in a gas (airway) compartment.
+GAS_PROPERTIES = {"PartialPressure": "mmHg", "Volume": "mL", "VolumeFraction": ""}
+#: Whole-body substance values (no compartment). A substance has only some of them (the
+#: gas ones for gases, BloodConcentration and SystemicMassCleared for solutes): the state
+#: says which. Left out because BioGears 8.2.0 doesn't serve them for its active
+#: substances: AreaUnderCurve, MaximumDiffusionFlux, MembraneResistance (not connected),
+#: MichaelisCoefficient, PlasmaConcentration, EffectSiteConcentration (drug values; no
+#: drug is active until dosed, and viva-biogears can't dose one yet).
+BODY_PROPERTIES = {
+    "MassInBody": "g", "MassInBlood": "g", "MassInTissue": "g", "BloodConcentration": "g/L",
+    "SystemicMassCleared": "g", "EndTidalFraction": "", "EndTidalPressure": "mmHg", "AlveolarTransfer": "mL/s",
+    "DiffusingCapacity": "mL/s mmHg", "RelativeDiffusionCoefficient": "", "SolubilityCoefficient": "1/mmHg",
+    "Density": "g/mL", "MolarMass": "g/mol",
+}
+#: A tissue compartment's composition (constants).
+TISSUE_PROPERTIES = {
+    "MatrixVolume": "mL", "TotalMass": "g", "AcidicPhospohlipidConcentration": "mg/g", "MembranePotential": "mV",
+    "NeutralLipidsVolumeFraction": "", "NeutralPhospholipidsVolumeFraction": "", "ReflectionCoefficient": "",
+    "TissueToPlasmaAlbuminRatio": "", "TissueToPlasmaAlphaAcidGlycoproteinRatio": "",
+    "TissueToPlasmaLipoproteinRatio": "",
+}
+#: A tissue fluid compartment (``<Tissue>TissueExtracellular`` / ``Intracellular``).
+#: Not InFlow/OutFlow (tissue fluid has no compartment links in BioGears 8.2.0, so they
+#: read NaN; the ``tissue_fluid`` module reads filtration from the circuit) or pH (NaN).
+TISSUE_FLUID_PROPERTIES = {"Volume": "mL", "Pressure": "mmHg", "WaterVolumeFraction": ""}
+
 #: Liquid graphs BioGears moves blood and its substances over.
 CIRCULATION_GRAPHS = ("ActiveCardiovascular", "Cardiovascular", "Renal", "Cerebral")
 AIRWAY_GRAPH = "Respiratory"
@@ -50,7 +86,6 @@ NOT_READ = {
     "Ground": "the circuit reference, which holds nothing",
 }
 _TISSUE_FLUID = re.compile(r"Tissue(Extracellular|Intracellular)$")
-_FLUID_PROPERTIES = frozenset({"Volume", "Pressure", "InFlow", "OutFlow"})
 
 
 def _snake(name: str) -> str:
@@ -146,6 +181,9 @@ def _substance_outputs(config, state, modules) -> tuple[Request, ...]:
             raise ValueError(f"{e['_name']}: {sub!r} is not an active substance of the state; "
                              f"active: {sorted(state.substances)}")
         if "compartment" not in e:
+            if prop not in BODY_PROPERTIES:
+                raise ValueError(f"{e['_name']}: {prop!r} is not a whole-body substance property; "
+                                 f"BODY_PROPERTIES: {sorted(BODY_PROPERTIES)}")
             if prop not in state.substances[sub]:
                 raise ValueError(f"{e['_name']}: {sub} has no whole-body {prop!r}; it has {sorted(state.substances[sub])}")
             out.append(Request((sub, "body", _port(prop, unit)), "Substance", prop, unit, "", sub))
@@ -154,6 +192,10 @@ def _substance_outputs(config, state, modules) -> tuple[Request, ...]:
         why = _refusal(state, kind, comp, sub)
         if why:
             raise ValueError(f"{e['_name']}: {comp.name} can't be read for {sub}: {why}")
+        table = LIQUID_PROPERTIES if kind == "LiquidCompartment" else GAS_PROPERTIES
+        if prop not in table:
+            raise ValueError(f"{e['_name']}: {prop!r} is not a {kind[:-11].lower()} substance property; "
+                             f"{'LIQUID' if table is LIQUID_PROPERTIES else 'GAS'}_PROPERTIES: {sorted(table)}")
         leaf = comp.leaves(state.compartments[kind])[0]
         if prop not in leaf.quantities[sub]:
             raise ValueError(f"{e['_name']}: {sub} in {comp.name} has no {prop!r}; it has {sorted(leaf.quantities[sub])}")
@@ -168,11 +210,12 @@ def _tissue_outputs(config, state, modules) -> tuple[Request, ...]:
     for e in _entries(config, "tissue_outputs", {"compartment", "property"}, {"unit"}):
         name, prop, unit = e["compartment"], e["property"], e.get("unit", "")
         if name in tissues:
-            if prop not in tissues[name].properties:
-                raise ValueError(f"{e['_name']}: tissue {name} has no {prop!r}; it has {sorted(tissues[name].properties)}")
+            if prop not in TISSUE_PROPERTIES or prop not in tissues[name].properties:
+                readable = sorted(set(TISSUE_PROPERTIES) & tissues[name].properties)
+                raise ValueError(f"{e['_name']}: tissue {name} has no {prop!r}; it has {readable}")
             out.append(Request((name, _port(prop, unit)), "TissueCompartment", prop, unit, name))
         elif _TISSUE_FLUID.search(name) and name in liquids:
-            allowed = _FLUID_PROPERTIES | liquids[name].properties
+            allowed = set(TISSUE_FLUID_PROPERTIES)
             if prop not in allowed:
                 raise ValueError(f"{e['_name']}: tissue fluid {name} has no {prop!r}; it has {sorted(allowed)}")
             out.append(Request((name, _port(prop, unit)), "LiquidCompartment", prop, unit, name))

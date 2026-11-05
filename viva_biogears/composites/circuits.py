@@ -101,7 +101,7 @@ _SUBSTANCE_OUTPUTS = {"type": "list", "default": [],
 _TISSUE_OUTPUTS = {"type": "list", "default": [],
                    "description": "Tissue values to read, each {compartment, property, unit}: a tissue's "
                                   "composition (MuscleTissue: MatrixVolume, TotalMass, ...) or its fluid "
-                                  "(MuscleTissueExtracellular: Volume, Pressure, InFlow, OutFlow, PH); emitted "
+                                  "(MuscleTissueExtracellular: Volume, Pressure, WaterVolumeFraction); emitted "
                                   "under circuits/tissues/<compartment>/"}
 
 

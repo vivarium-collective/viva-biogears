@@ -198,8 +198,8 @@ The pattern is viva-pulse's `PulseCircuitProcess`. `config.modules` lists module
 | `supplemental_oxygen` | arterial blood gases, end-tidal CO2, nosepiece O2 fraction | `oxygen_connected`, `oxygen_flow_L_per_min` (nasal cannula) |
 | `cardiovascular_points` | pressure (and volume, where finite) of each of the 169 nodes of `FullCardiovascular`, signed flow of each of its 296 paths | none |
 | `respiratory_points` | the same for the 17 nodes and 27 paths of `Respiratory` | none |
-| `substances` | the quantities listed in `substance_outputs` (in a compartment, or whole-body) | none |
-| `tissues` | the tissue values listed in `tissue_outputs` | none |
+| `substances` | the quantities listed in `substance_outputs` (in a compartment, or whole-body); readable properties in `LIQUID_PROPERTIES`, `GAS_PROPERTIES`, `BODY_PROPERTIES` | none |
+| `tissues` | the tissue values listed in `tissue_outputs`; readable properties in `TISSUE_PROPERTIES`, `TISSUE_FLUID_PROPERTIES` | none |
 | `lymph` | `return_mL_per_min`, `return_resistance_mmHg_min_per_mL`, `pool_volume_mL`, `pool_pressure_mmHg`, `vena_cava_pressure_mmHg`, `central_venous_pressure_mmHg`, `formation/<tissue>_mL_per_min` for 13 tissues | none |
 | `tissue_fluid` | per tissue: extracellular and intracellular volume, interstitial albumin, capillary filtration and endothelial resistance, plasma and interstitial oncotic pressure, interstitial pressure; whole-body plasma albumin, blood, extravascular, intracellular and total fluid | none |
 | `infection` | BioGears' inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and the clinical signs of sepsis (WBC, temperature, lactate, SVR, urine, ...) | `infection_severity` 0–3, one-way (BioGears reads it once and can't end an infection) |

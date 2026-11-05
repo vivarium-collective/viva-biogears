@@ -260,7 +260,9 @@ def test_substance_and_tissue_readings_equal_a_direct_engine():
     ({"substance": "Morphine", "compartment": "Aorta", "property": "Concentration", "unit": "ug/mL"}, "not an active"),
     ({"substance": "Oxygen", "compartment": "Pericardium", "property": "PartialPressure", "unit": "mmHg"}, "transport"),
     ({"substance": "Sodium", "compartment": "LeftAlveoli", "property": "Concentration", "unit": "g/L"}, "holds no"),
-    ({"substance": "Oxygen", "compartment": "Aorta", "property": "Volume", "unit": "mL"}, "has no"),
+    ({"substance": "Oxygen", "compartment": "Aorta", "property": "Volume", "unit": "mL"}, "not a liquid substance"),
+    ({"substance": "Oxygen", "compartment": "LeftAlveoli", "property": "Mass", "unit": "g"}, "not a gas substance"),
+    ({"substance": "Oxygen", "property": "Clearance", "unit": "mL/min"}, "not a whole-body"),
     ({"substance": "Oxygen", "compartment": "Nowhere", "property": "Mass", "unit": "g"}, "no compartment"),
     ({"substance": "Oxygen", "compartment": "Aorta", "property": "Mass", "units": "g"}, "unknown keys"),
     ({"substance": "Oxygen", "compartment": "Ambient", "property": "PartialPressure", "unit": "mmHg"}, "environment"),
@@ -281,10 +283,32 @@ def test_wrong_unit_fails_the_load():
 @pytest.mark.parametrize("entry, match", [
     ({"compartment": "MuscleTissue", "property": "Volume", "unit": "mL"}, "has no"),
     ({"compartment": "Aorta", "property": "Volume", "unit": "mL"}, "not a tissue"),
+    ({"compartment": "MuscleTissueExtracellular", "property": "InFlow", "unit": "mL/min"}, "has no"),
+    ({"compartment": "MuscleTissueExtracellular", "property": "PH", "unit": ""}, "has no"),
 ])
 def test_bad_tissue_entries_are_refused(entry, match):
     with pytest.raises(ValueError, match=match):
         make(["tissues"], tissue_outputs=[entry])
+
+
+def test_every_property_table_entry_connects():
+    """Falsifies: a table entry BioGears 8.2.0 doesn't serve (it would fail the load or read NaN)."""
+    from viva_biogears.circuits.substances import (
+        BODY_PROPERTIES, GAS_PROPERTIES, LIQUID_PROPERTIES, TISSUE_FLUID_PROPERTIES, TISSUE_PROPERTIES)
+    subs = [{"substance": "Oxygen", "compartment": "Aorta", "property": k, "unit": u}
+            for k, u in LIQUID_PROPERTIES.items()]
+    subs += [{"substance": "Oxygen", "compartment": "LeftAlveoli", "property": k, "unit": u}
+             for k, u in GAS_PROPERTIES.items()]
+    solute_body = {"BloodConcentration", "SystemicMassCleared"}
+    subs += [{"substance": "Oxygen", "property": k, "unit": u}
+             for k, u in BODY_PROPERTIES.items() if k not in solute_body]
+    subs += [{"substance": "Albumin", "property": k, "unit": BODY_PROPERTIES[k]} for k in sorted(solute_body)]
+    tissues = [{"compartment": "MuscleTissue", "property": k, "unit": u} for k, u in TISSUE_PROPERTIES.items()]
+    tissues += [{"compartment": "MuscleTissueExtracellular", "property": k, "unit": u}
+                for k, u in TISSUE_FLUID_PROPERTIES.items()]
+    p = make(["substances", "tissues"], substance_outputs=subs, tissue_outputs=tissues)
+    p.initial_state()                                   # a NaN or an unconnected request raises
+    assert len(p._slots) == len(subs) + len(tissues)
 
 
 def test_empty_reading_lists_raise():
