@@ -27,7 +27,8 @@ and a property that quantity, substance or compartment stores. That refuses
 ``Ground``, ``Ambient``, the pneumothorax leak compartments, the equipment
 compartments, ``Pericardium`` on its own (in no transport graph, so its quantities
 stay at their loaded values) and the liquid copy of the airway (``LeftAlveoli`` as a
-liquid holds no substances). A wrong unit is caught when the engine loads (BioGears does
+liquid holds no substances). ``Saturation`` is offered only where every leaf holds
+hemoglobin (the ureters, bladder and other urine compartments hold none). A wrong unit is caught when the engine loads (BioGears does
 not connect the request). Unlike Pulse 4.4.0, BioGears' ``Lymph`` carries fluid and
 substances, so it can be read.
 
@@ -196,7 +197,12 @@ def _substance_outputs(config, state, modules) -> tuple[Request, ...]:
         if prop not in table:
             raise ValueError(f"{e['_name']}: {prop!r} is not a {kind[:-11].lower()} substance property; "
                              f"{'LIQUID' if table is LIQUID_PROPERTIES else 'GAS'}_PROPERTIES: {sorted(table)}")
-        leaf = comp.leaves(state.compartments[kind])[0]
+        leaves = comp.leaves(state.compartments[kind])
+        if prop == "Saturation" and not all(leaf.blood for leaf in leaves):
+            empty = [leaf.name for leaf in leaves if not leaf.blood]
+            raise ValueError(f"{e['_name']}: Saturation is a property of blood; {', '.join(empty)} holds no "
+                             f"hemoglobin in this state (it reads 0, or NaN for a parent)")
+        leaf = leaves[0]
         if prop not in leaf.quantities[sub]:
             raise ValueError(f"{e['_name']}: {sub} in {comp.name} has no {prop!r}; it has {sorted(leaf.quantities[sub])}")
         out.append(Request((sub, comp.name, _port(prop, unit)), kind, prop, unit, comp.name, sub))
@@ -223,6 +229,45 @@ def _tissue_outputs(config, state, modules) -> tuple[Request, ...]:
             raise ValueError(f"{e['_name']}: {name!r} is not a tissue or tissue fluid compartment; tissues: "
                              f"{sorted(tissues)}, fluids: <Tissue>TissueExtracellular/Intracellular")
     return _check_unique(out)
+
+
+def every_substance_output(state_file: str = "StandardMale@0s.xml", *, substances=None, compartments=None,
+                           properties=None, runtime_dir: str = "") -> list[dict[str, str]]:
+    """Every ``substance_outputs`` entry the state allows, in substance, compartment, property order.
+
+    ``state_file`` is found like the processes' (``<runtime>/states``, the package's
+    ``states/``, or an absolute path). ``substances`` and ``compartments`` narrow the
+    search (default: every active substance; whole-body values and every liquid and gas
+    compartment, ``None`` meaning whole-body); ``properties`` maps property to unit
+    (default: ``LIQUID_PROPERTIES``, ``GAS_PROPERTIES`` and ``BODY_PROPERTIES``, with their
+    units). Each candidate is checked exactly as the ``substances`` module checks it, so
+    the result can be passed as ``substance_outputs``. For StandardMale@0s.xml that is
+    about 17,000 entries; BioGears serves them all, and reading them adds little per step.
+    """
+    from ..runtime import runtime_dir as find_runtime
+    from ..runtime import state_path
+    from .state import read_state
+
+    state = read_state(state_path(find_runtime(runtime_dir), state_file))
+    properties = properties or {**LIQUID_PROPERTIES, **GAS_PROPERTIES, **BODY_PROPERTIES}
+    if compartments is None:
+        compartments = [None, *sorted(set(state.compartments["LiquidCompartment"])
+                                      | set(state.compartments.get("GasCompartment", {})))]
+    entries = []
+    for sub in sorted(substances or state.substances):
+        for comp in compartments:
+            for prop, unit in properties.items():
+                entry = {"substance": sub, "property": prop}
+                if comp is not None:
+                    entry["compartment"] = comp
+                if unit:
+                    entry["unit"] = unit
+                try:
+                    _substance_outputs({"substance_outputs": [entry]}, state, ["substances"])
+                except ValueError:
+                    continue
+                entries.append(entry)
+    return entries
 
 
 _LIST = {"_type": "list", "_default": []}

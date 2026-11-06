@@ -24,7 +24,7 @@ setpoints drive (inputs).
 .. automodule:: viva_biogears.circuits.points
 
 .. automodule:: viva_biogears.circuits.substances
-   :members: LIQUID_PROPERTIES, GAS_PROPERTIES, BODY_PROPERTIES, TISSUE_PROPERTIES, TISSUE_FLUID_PROPERTIES
+   :members: every_substance_output, LIQUID_PROPERTIES, GAS_PROPERTIES, BODY_PROPERTIES, TISSUE_PROPERTIES, TISSUE_FLUID_PROPERTIES
 
 .. automodule:: viva_biogears.circuits.lymph
 

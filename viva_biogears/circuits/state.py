@@ -39,6 +39,7 @@ class Compartment:
     has_nodes: bool
     properties: frozenset[str]      # scalar elements stored on the compartment (pH, MatrixVolume, ...)
     quantities: dict[str, frozenset[str]] = field(default_factory=dict)  # substance -> its properties
+    blood: bool = False             # holds hemoglobin (Mass > 0): Saturation is defined
 
     def leaves(self, by_name: dict[str, "Compartment"]) -> list["Compartment"]:
         if not self.children:
@@ -90,15 +91,19 @@ def _parse(path: str, mtime: float) -> StateInfo:
                 if ct in ("LiquidCompartment", "GasCompartment", "ThermalCompartment", "TissueCompartment"):
                     quantities = {}
                     props = set()
+                    blood = False
                     for x in c:
                         xt = _tag(x)
                         if xt == "SubstanceQuantity":
                             quantities[_text(x, "Substance")] = frozenset(
                                 _tag(y) for y in x if _tag(y) != "Substance")
+                            if _text(x, "Substance") == "Hemoglobin":
+                                mass = _child(x, "Mass")
+                                blood = mass is not None and float(mass.get("value", 0)) > 0
                         elif xt not in ("Name", "Node", "Child", "Link"):
                             props.add(xt)
                     comp = Compartment(ct, _text(c, "Name"), tuple(x.text for x in c if _tag(x) == "Child"),
-                                       any(_tag(x) == "Node" for x in c), frozenset(props), quantities)
+                                       any(_tag(x) == "Node" for x in c), frozenset(props), quantities, blood)
                     compartments.setdefault(ct, {})[comp.name] = comp
                 elif ct in ("LiquidGraph", "GasGraph"):
                     graphs.setdefault(ct, {})[_text(c, "Name")] = {

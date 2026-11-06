@@ -263,6 +263,8 @@ def test_substance_and_tissue_readings_equal_a_direct_engine():
     ({"substance": "Oxygen", "compartment": "Aorta", "property": "Volume", "unit": "mL"}, "not a liquid substance"),
     ({"substance": "Oxygen", "compartment": "LeftAlveoli", "property": "Mass", "unit": "g"}, "not a gas substance"),
     ({"substance": "Oxygen", "property": "Clearance", "unit": "mL/min"}, "not a whole-body"),
+    ({"substance": "Oxygen", "compartment": "Ureters", "property": "Saturation"}, "property of blood"),
+    ({"substance": "Oxygen", "compartment": "Bladder", "property": "Saturation"}, "property of blood"),
     ({"substance": "Oxygen", "compartment": "Nowhere", "property": "Mass", "unit": "g"}, "no compartment"),
     ({"substance": "Oxygen", "compartment": "Aorta", "property": "Mass", "units": "g"}, "unknown keys"),
     ({"substance": "Oxygen", "compartment": "Ambient", "property": "PartialPressure", "unit": "mmHg"}, "environment"),
@@ -294,7 +296,12 @@ def test_bad_tissue_entries_are_refused(entry, match):
 def test_every_property_table_entry_connects():
     """Falsifies: a table entry BioGears 8.2.0 doesn't serve (it would fail the load or read NaN)."""
     from viva_biogears.circuits.substances import (
-        BODY_PROPERTIES, GAS_PROPERTIES, LIQUID_PROPERTIES, TISSUE_FLUID_PROPERTIES, TISSUE_PROPERTIES)
+        BODY_PROPERTIES,
+        GAS_PROPERTIES,
+        LIQUID_PROPERTIES,
+        TISSUE_FLUID_PROPERTIES,
+        TISSUE_PROPERTIES,
+    )
     subs = [{"substance": "Oxygen", "compartment": "Aorta", "property": k, "unit": u}
             for k, u in LIQUID_PROPERTIES.items()]
     subs += [{"substance": "Oxygen", "compartment": "LeftAlveoli", "property": k, "unit": u}
@@ -309,6 +316,21 @@ def test_every_property_table_entry_connects():
     p = make(["substances", "tissues"], substance_outputs=subs, tissue_outputs=tissues)
     p.initial_state()                                   # a NaN or an unconnected request raises
     assert len(p._slots) == len(subs) + len(tissues)
+
+
+def test_every_substance_output_loads_without_nan():
+    """Falsifies: an entry the checks pass but BioGears doesn't serve (a NaN or an
+    unconnected request raises at load), e.g. Saturation of the urine-filled Ureters."""
+    from viva_biogears.circuits.substances import every_substance_output
+    entries = every_substance_output()
+    assert len(entries) > 15000
+    assert {"substance": "Oxygen", "compartment": "Aorta", "property": "Saturation"} in entries
+    assert {"substance": "Hemoglobin", "property": "MassInBlood", "unit": "g"} in entries
+    assert not [e for e in entries if e.get("compartment") in ("Ureters", "Bladder") and e["property"] == "Saturation"]
+    p = make(["substances"], substance_outputs=entries)
+    p.initial_state()
+    narrow = every_substance_output(substances=["Oxygen"], compartments=[None, "Aorta"])
+    assert {e["substance"] for e in narrow} == {"Oxygen"} and {e.get("compartment") for e in narrow} == {None, "Aorta"}
 
 
 def test_empty_reading_lists_raise():
