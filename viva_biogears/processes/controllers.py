@@ -31,3 +31,57 @@ class MapFluidController(Step):
         rate = self.config["gain_mL_per_min_per_mmHg"] * deficit
         rate = min(max(rate, 0.0), self.config["max_rate_mL_per_min"])
         return {"iv_rate_mL_per_min": rate}
+
+
+class TreatmentController(Step):
+    """McDaniel et al. 2019's sepsis treatment protocols (``viva_biogears.protocols``):
+    reads systolic and mean arterial pressure and mean urine output once per update and
+    writes the saline rate and the vasopressor rate setpoints of a
+    ``BioGearsCircuitProcess`` with the ``cardiovascular`` and ``treatment`` modules, plus
+    the saline given so far and the protocol's code (so figures can tell runs apart).
+    The antibiotic is a static ``treatment_schedule`` event (``TreatmentProtocol.schedule``).
+    """
+
+    config_schema = {
+        "protocol": {"_type": "string", "_default": "none"},
+        "challenge_h": {"_type": "float", "_default": 44.0},
+        "start_h": {"_type": "float", "_default": 46.0},
+        "duration_h": {"_type": "float", "_default": 6.0},
+        "bolus_rate_mL_per_min": {"_type": "float", "_default": 50.0},
+        "weight_kg": {"_type": "float", "_default": 75.8},
+        "interval_s": {"_type": "float", "_default": 60.0},
+    }
+
+    def __init__(self, config=None, core=None):
+        super().__init__(config=config, core=core)
+        from ..protocols import PROTOCOL_CODES, TreatmentProtocol
+        c = self.config
+        self.protocol = TreatmentProtocol(c["protocol"], challenge_h=c["challenge_h"], start_h=c["start_h"],
+                                          duration_h=c["duration_h"], bolus_rate_mL_per_min=c["bolus_rate_mL_per_min"],
+                                          weight_kg=c["weight_kg"], interval_s=c["interval_s"])
+        self.code = PROTOCOL_CODES[c["protocol"]]
+        self._last_t = None
+
+    def inputs(self):
+        return {"time": "float", "systolic_pressure_mmHg": "float", "mean_arterial_pressure_mmHg": "float",
+                "mean_urine_output_mL_per_min": "float"}
+
+    def outputs(self):
+        return {"iv_rate_mL_per_min": "overwrite[float]", "vasopressor_rate_ug_per_min": "overwrite[float]",
+                "saline_given_mL": "overwrite[float]", "protocol_code": "overwrite[float]"}
+
+    def update(self, state, interval=None):
+        t = float(state["time"])
+        if self._last_t is not None and t <= self._last_t + 1e-9:
+            # Called again without time advancing: repeat the current setpoints.
+            st = self.protocol.state
+            rate = st.get("last_rate", 0.0)
+        else:
+            rate, _ = self.protocol.setpoints(t, float(state["systolic_pressure_mmHg"]),
+                                              float(state["mean_arterial_pressure_mmHg"]),
+                                              float(state["mean_urine_output_mL_per_min"]))
+            self.protocol.state["last_rate"] = rate
+            self._last_t = t
+        st = self.protocol.state
+        return {"iv_rate_mL_per_min": rate, "vasopressor_rate_ug_per_min": st["vasopressor_ug_per_min"],
+                "saline_given_mL": st["given_mL"], "protocol_code": self.code}

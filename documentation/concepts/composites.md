@@ -14,7 +14,7 @@ A composite generator builds a ready-to-run document from a few parameters, with
 | `biogears_supplemental_oxygen` | a nasal cannula |
 | `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine |
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state |
-| `biogears_sepsis` | an infection with BioGears' meal schedule, lymph, tissue fluid and hemodynamics, each minute |
+| `biogears_sepsis` | an infection with BioGears' meal schedule, lymph, tissue fluid and hemodynamics, each minute; `treatment=` adds one of McDaniel et al. 2019's protocols |
 
 Every generator takes `state_file`, `patient_file`, `conditions` and `circuit_additions`;
 the circuit ones also take `interval`, and some `point_reads`, `substance_outputs` and

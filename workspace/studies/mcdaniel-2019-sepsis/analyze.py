@@ -4,8 +4,9 @@
 
 Ported from pybiogears studies/mcdaniel2019/analyze.py; run.py writes the same columns.
 
-Writes OUT/summary.md (event timings vs the paper, lymph and fluid numbers) and
-OUT/fig4.png ... fig9.png, fig_lymph.png. Works on partial runs (whatever hours exist).
+Writes OUT/summary.md (event timings vs the paper, lymph and fluid numbers, the
+treatment arms) and OUT/fig4.png ... fig13.png, fig_lymph.png. Works on partial runs
+(whatever hours and arms exist).
 """
 import sys
 from pathlib import Path
@@ -14,7 +15,12 @@ import numpy as np
 
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent / "out"
 RUNS = ["control", "mild", "moderate", "severe"]
-COLORS = {"control": "0.5", "mild": "#2a9d8f", "moderate": "#e9c46a", "severe": "#e76f51", "challenge": "#264653"}
+TREATED = ["challenge", "antibiotic", "refresh_control", "refresh_experimental", "refresh_control_delayed", "untreated"]
+COLORS = {"control": "0.5", "mild": "#2a9d8f", "moderate": "#e9c46a", "severe": "#e76f51", "challenge": "#264653",
+          "antibiotic": "#8e44ad", "refresh_control": "#2a78d6", "refresh_experimental": "#eb6834",
+          "refresh_control_delayed": "#1baf7a", "untreated": "0.35"}
+#: Treatment start (h) of each REFRESH arm, for the summary and Fig 13.
+STARTS = {"antibiotic": 46.0, "refresh_control": 46.0, "refresh_experimental": 46.0, "refresh_control_delayed": 58.0}
 LYMPH_TISSUES = ["Bone", "Brain", "Fat", "Gut", "LeftKidney", "LeftLung", "Liver", "Muscle",
                  "Myocardium", "RightKidney", "RightLung", "Skin", "Spleen"]
 
@@ -50,9 +56,9 @@ def events(run):
     return [(float(t), e, a == "1") for t, e, a in rows]
 
 
-data = {r: load(r) for r in RUNS + ["challenge"]}
+data = {r: load(r) for r in RUNS + TREATED}
 lines = ["# McDaniel et al. 2019 replication on BioGears 8.2.0: summary", ""]
-for r in RUNS + ["challenge"]:
+for r in RUNS + TREATED:
     d = data[r]
     lines.append(f"- {r}: " + ("no data" if d is None else f"{d['t_h'][0]:.1f}–{d['t_h'][-1]:.1f} h, {len(d['t_h'])} rows"))
 
@@ -109,7 +115,7 @@ lines.append("Paper: \"the total amount of fluid filtered and returned by the ly
 
 c = data["challenge"]
 if c is not None:
-    lines += ["", "## Fluid challenge (1000 mL saline, 44–45 h)", "", "| t (h) | SBP | MAP | HR | mean urine mL/min | blood vol mL | lymph return mL/min |", "|---|---|---|---|---|---|---|"]
+    lines += ["", "## Fluid challenge (2 x 500 mL saline at 50 mL/min, 44 and 44.5 h)", "", "| t (h) | SBP | MAP | HR | mean urine mL/min | blood vol mL | lymph return mL/min |", "|---|---|---|---|---|---|---|"]
     for hh in [44.0, 44.5, 45.0, 45.5, 46.0]:
         i = int(np.argmin(np.abs(c["t_h"] - hh)))
         if abs(c["t_h"][i] - hh) < 0.05:
@@ -117,6 +123,21 @@ if c is not None:
                          f"{c['BloodVolume'][i]:.0f} | {c['LymphReturn'][i]:.2f} |")
     lines.append("")
     lines.append("Paper (Fig 9): compared with the REFRESH goals SBP 90 mmHg and urine output 0.625 mL/min.")
+have = [r for r in STARTS if data[r] is not None]
+if have:
+    lines += ["", "## Antibiotic and REFRESH protocols (Figs 10-13)", "",
+              "| arm | start (h) | to (h) | saline given (mL) | goals met (SBP > 90, MAP > 65) | MAP at start / end | "
+              "blood pathogen at start / end | peak piperacillin (ug/mL) |", "|---|---|---|---|---|---|---|---|"]
+    for r in have:
+        d, st = data[r], STARTS[r]
+        t = d["t_h"]
+        i0 = int(np.argmin(np.abs(t - st)))
+        met = first_time(t[i0:], (d["SBP"][i0:] > 90.0) & (d["MAP"][i0:] > 65.0))
+        lines.append(f"| {r} | {st:g} | {t[-1]:.1f} | {np.nanmax(d['SalineGiven']):.0f} | {fmt(met)} | "
+                     f"{d['MAP'][i0]:.1f} / {d['MAP'][-1]:.1f} | {d['BloodPathogen'][i0]:.3g} / {d['BloodPathogen'][-1]:.3g} | "
+                     f"{np.nanmax(d['Piperacillin']):.1f} |")
+    lines += ["", "Paper: both REFRESH protocols reach the goals, the experimental one with less fluid (Figs 11-12); "
+              "the control protocol delayed 12 h needs more (Fig 13). Piperacillin MIC 16 mg/L (Fig 10)."]
 (OUT / "summary.md").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))
 
@@ -177,19 +198,51 @@ panel_fig("fig_lymph", ["LymphFormation", "LymphReturn", "LymphPool", "Extravasc
            "ExtravascularFluid": "extravascular fluid (mL)", "Albumin": "plasma albumin (g/dL)",
            "MuscleEndothelialResistance": "muscle endothelial R (mmHg min/mL)"},
           {"LymphFormation": [4000 / 1440], "LymphReturn": [4000 / 1440]})
-if data["challenge"] is not None:
-    c = data["challenge"]
-    fig, axes = plt.subplots(1, 4, figsize=(14, 3))
-    for ax, col, lab, ref in zip(axes, ["SBP", "MAP", "MeanUrineOutput", "HR"],
-                                 ["SBP (mmHg)", "MAP (mmHg)", "mean urine (mL/min)", "HR (1/min)"], [90, 65, 0.625, None]):
-        ax.plot(c["t_h"], c[col], color=COLORS["challenge"])
-        if ref is not None:
-            ax.axhline(ref, color="k", ls=":", lw=0.8)
-        for x in (44.0, 44.5):
-            ax.axvline(x, color="0.7", lw=0.6)
-        ax.set_ylabel(lab, fontsize=8)
-        ax.set_xlabel("time since infection (h)", fontsize=8)
-    fig.suptitle("Fig 9 analogue: 1000 mL saline challenge at 44 h", fontsize=10)
+
+
+def arm_fig(name, cols, runs, title, ylabels, refs=None, shift=None, xlabel="time since infection (h)", xlim=None):
+    """One row of panels for the treatment arms; ``shift`` maps an arm to the hours
+    subtracted from its time axis (Fig 13 aligns arms on their protocol start)."""
+    have = [r for r in runs if data[r] is not None]
+    if not have:
+        return
+    ncol = min(4, len(cols))
+    nrow = int(np.ceil(len(cols) / ncol))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(3.6 * ncol, 2.8 * nrow), squeeze=False)
+    for ax, col in zip(axes.flat, cols):
+        for r in have:
+            d = data[r]
+            x = d["t_h"] - (shift or {}).get(r, 0.0)
+            keep = np.ones_like(x, dtype=bool) if xlim is None else (x >= xlim[0]) & (x <= xlim[1])
+            ax.plot(x[keep], d[col][keep], color=COLORS[r], label=r.replace("_", " "), lw=1.2)
+        if (refs or {}).get(col) is not None:
+            ax.axhline(refs[col], color="k", ls=":", lw=0.8)
+        ax.set_ylabel(ylabels.get(col, col), fontsize=8)
+        ax.set_xlabel(xlabel, fontsize=8)
+        ax.tick_params(labelsize=7)
+    for ax in axes.flat[len(cols):]:
+        ax.axis("off")
+    axes.flat[0].legend(fontsize=7)
+    fig.suptitle(title, fontsize=10)
     fig.tight_layout()
-    fig.savefig(OUT / "fig9.png", dpi=110)
+    fig.savefig(OUT / f"{name}.png", dpi=110)
     plt.close(fig)
+
+
+LAB = {"SBP": "SBP (mmHg)", "MAP": "MAP (mmHg)", "MeanUrineOutput": "mean urine (mL/min)", "HR": "HR (1/min)",
+       "BloodVolume": "blood volume (mL)", "SalineGiven": "saline given (mL)", "VasopressorRate": "norepinephrine (ug/min)",
+       "BloodPathogen": "blood pathogen", "Piperacillin": "piperacillin (ug/mL)", "AntibioticActivity": "antibiotic activity",
+       "Lactate": "lactate (mM)"}
+REFS = {"SBP": 90.0, "MAP": 65.0, "MeanUrineOutput": 0.625, "Piperacillin": 16.0, "Lactate": 2.0}
+arm_fig("fig9", ["SBP", "MAP", "MeanUrineOutput", "HR", "BloodVolume"], ["untreated", "challenge"],
+        "Fig 9 analogue: 2 x 500 mL saline challenge at 44 and 44.5 h", LAB, REFS, xlim=(43.5, 46.0))
+arm_fig("fig10", ["Piperacillin", "AntibioticActivity", "BloodPathogen", "MAP"], ["challenge", "antibiotic"],
+        "Fig 10 analogue: piperacillin/tazobactam 4.5 g over 30 min at 46 h (MIC 16 mg/L)", LAB, REFS, xlim=(44.0, 52.0))
+arm_fig("fig11", ["SBP", "MAP", "MeanUrineOutput", "Lactate", "SalineGiven", "VasopressorRate", "BloodVolume",
+                  "BloodPathogen"], ["untreated", "refresh_control", "refresh_experimental"],
+        "Figs 11-12 analogue: REFRESH control (liberal fluid) vs experimental (norepinephrine, restricted fluid)",
+        LAB, REFS, xlim=(44.0, 52.0))
+arm_fig("fig13", ["SBP", "MAP", "MeanUrineOutput", "SalineGiven"], ["refresh_control", "refresh_control_delayed"],
+        "Fig 13 analogue: the REFRESH control protocol on time (46 h) and delayed 12 h (58 h)", LAB, REFS,
+        shift={"refresh_control": 46.0, "refresh_control_delayed": 58.0}, xlabel="time since protocol start (h)",
+        xlim=(-2.0, 6.0))

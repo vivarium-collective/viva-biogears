@@ -16,6 +16,7 @@ from .substances import SUBSTANCES
 from .substances import TISSUES as TISSUE_READINGS
 from .supplemental_oxygen import SUPPLEMENTAL_OXYGEN
 from .thermal import THERMAL
+from .treatment import TREATMENT
 from .vitals import VITALS, VITALS_MODULE
 
 #: Tissues with a lymph drainage path, as port keys -> BioGears names.
@@ -25,7 +26,7 @@ TISSUES = LYMPH_TISSUES
 MODULES: dict[str, CircuitModule] = {
     m.name: m for m in (VITALS_MODULE, CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMAL,
                         SUPPLEMENTAL_OXYGEN, CARDIOVASCULAR_POINTS, RESPIRATORY_POINTS, SUBSTANCES,
-                        TISSUE_READINGS, LYMPH, TISSUE_FLUID, INFECTION, NUTRITION)
+                        TISSUE_READINGS, LYMPH, TISSUE_FLUID, INFECTION, NUTRITION, TREATMENT)
 }
 
 __all__ = ["ActionBinding", "CircuitModule", "HEMORRHAGE_COMPARTMENTS", "MODULES", "Request", "TISSUES", "VITALS"]

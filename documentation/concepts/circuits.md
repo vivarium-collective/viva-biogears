@@ -20,6 +20,7 @@ become its output ports and the actions its setpoints drive.
 | `tissue_fluid` | per tissue: fluid volumes, filtration, endothelial resistance, oncotic and interstitial pressures, albumin; body fluid totals | none |
 | `infection` | the inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and clinical signs of sepsis | `infection_severity` 0–3, one-way |
 | `nutrition` | stomach contents, chyme absorption, body fluid | none; meals come from `nutrition_schedule` at their times |
+| `treatment` | antibiotic activity; concentrations of the `treatment_readouts` drugs | `vasopressor_rate_ug_per_min`; timed infusions come from `treatment_schedule` |
 
 Each module's docstring (in the {doc}`../api/circuits` reference) gives the details.
 
@@ -74,6 +75,14 @@ The `infection` module starts BioGears' sepsis model (McDaniel et al. 2019): a p
 grows, the immune response follows, tissue integrity falls and the endothelium leaks, so
 plasma moves into the tissues (`tissue_fluid`) and lymph (`lymph`). BioGears reads the
 severity once, so `infection_severity` can only go from 0 to 1, 2 or 3.
+
+The `treatment` module gives the paper's drugs: timed compound or substance infusions
+(`treatment_schedule`, e.g. piperacillin/tazobactam at 46 h) and a norepinephrine rate
+setpoint. `viva_biogears.protocols.TreatmentProtocol` turns the paper's fluid challenge
+and REFRESH protocols into the saline and norepinephrine setpoints, reassessed from the
+pressures and urine output each update; `biogears_sepsis(treatment=...)` runs it as a
+`TreatmentController` step. BioGears keeps one infusion per compound and per substance, so
+a setpoint can't drive what the schedule also infuses.
 
 ## Rules that come from BioGears
 

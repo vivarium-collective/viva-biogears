@@ -1,0 +1,59 @@
+schema_version: 2
+name: mcdaniel-2019
+title: Replicating McDaniel et al. 2019 (sepsis in BioGears) on BioGears 8.2.0
+created: '2026-11-16'
+status: planned
+runtime:
+  default_emitter: sqlite
+studies: []
+expert_docs: []
+acceptance_criteria:
+- study: mcdaniel-2019-sepsis
+  behavior: severity-orders-the-response
+- study: mcdaniel-2019-sepsis
+  behavior: only-severe-decompensates
+- study: mcdaniel-2019-sepsis
+  behavior: severe-hypovolemia
+- study: mcdaniel-2019-treatment
+  behavior: protocol-is-delivered
+- study: mcdaniel-2019-treatment
+  behavior: challenge-restores-volume
+- study: mcdaniel-2019-treatment
+  behavior: antibiotic-clears-pathogen
+- study: mcdaniel-2019-refresh
+  behavior: protocols-start-on-time
+- study: mcdaniel-2019-refresh
+  behavior: goals-met
+- study: mcdaniel-2019-refresh
+  behavior: experimental-spares-fluid
+- study: mcdaniel-2019-refresh
+  behavior: delay-costs-fluid
+members:
+- mcdaniel-2019-sepsis
+- mcdaniel-2019-treatment
+- mcdaniel-2019-refresh
+question: 'Does BioGears 8.2.0, driven through viva-biogears, reproduce McDaniel et al.
+  (2019): sepsis progression by infection severity (Figs 4-7), the fluid challenge and
+  antibiotic (Figs 9-10), and the REFRESH resuscitation protocols, on time and delayed
+  (Figs 11-13)?
+
+  '
+hypothesis: 'The progression follows the paper up to hypotension, but on 8.2.0 the severe
+  arm does not reach septic shock by 48 h; the treatments act as the paper describes:
+  the challenge restores volume, piperacillin exceeds the MIC and lowers the pathogen,
+  both REFRESH protocols reach the goals with the experimental one using less fluid, and
+  a 12 h delay costs more fluid.
+
+  '
+description: 'Three studies on the biogears_sepsis composite. Its treatment parameter
+  runs the paper''s protocols (viva_biogears.protocols, TreatmentController). Each arm is
+  a 48-64 h run (8-11 h of wall time) from t = 0; mcdaniel-2019-sepsis/run.py runs the
+  same arms faster outside the workbench, branching the treatments from the severe arm''s
+  44 h checkpoint, and analyze.py draws the paper''s figures. Fig 8 (inflammation parameter
+  changes) needs changes inside BioGears and is out of scope.
+
+  '
+literature_anchors:
+- citation: 'McDaniel M, Keller JM, White S, Baird A (2019). A Whole-Body Mathematical Model
+    of Sepsis Progression and Treatment Designed in the BioGears Physiology Engine. Front.
+    Physiol. 10:1321. doi:10.3389/fphys.2019.01321'

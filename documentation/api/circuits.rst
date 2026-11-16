@@ -30,6 +30,8 @@ setpoints drive (inputs).
 
 .. automodule:: viva_biogears.circuits.sepsis
 
+.. automodule:: viva_biogears.circuits.treatment
+
 .. automodule:: viva_biogears.circuits.additions
    :members: add_paths, check_additions, added_state
 

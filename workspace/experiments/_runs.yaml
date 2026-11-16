@@ -1,2 +1,7 @@
 # Recorded simulation runs (cross-phase, cross-model). Append-only.
-runs: []
+runs:
+- id: pilot-2026-11-16-hemorrhage
+  path: workspace/experiments/hemorrhage-pilot-2026-11-16
+  date: '2026-11-16'
+  purpose: Pilot of every arm of the biogears-hemorrhage studies before their criteria were written.
+  engine: BioGears 8.2.0 (Linux, cloud)

@@ -1,0 +1,203 @@
+schema_version: 4
+name: mcdaniel-2019-refresh
+title: REFRESH resuscitation protocols in severe sepsis (McDaniel et al. 2019, Figs 11-13)
+investigation: mcdaniel-2019
+created: '2026-11-16'
+status: planned
+question: 'Do the paper''s two REFRESH-trial protocols, liberal fluid boluses (control) and
+  restricted fluid with norepinephrine (experimental), reach the resuscitation goals in the
+  severe infection, with how much fluid, and what does a 12 h delay do to the control protocol
+  (Fig 13)?
+
+  '
+hypothesis: 'Both protocols raise SBP above 90 and MAP above 65 mmHg by the end of their 6
+  h; the experimental protocol does so with less saline than the control; the same control
+  protocol started 12 h later meets a more hypotensive patient and gives more saline.
+
+  '
+objective: 'Run biogears_sepsis (severe, 60 s updates) with treatment refresh_control and
+  refresh_experimental (challenge at 44 h, antibiotic and protocol from 46 to 52 h), and refresh_control
+  delayed by 12 h (challenge at 56 h, protocol from 58 to 64 h).
+
+  '
+literature_anchors:
+- expectation: 'Figs 11-12: both REFRESH protocols reach SBP > 90 and MAP > 65 mmHg; the experimental
+    (norepinephrine) protocol with less fluid'
+  model_observable: circuits.infection.clinical (SBP, MAP); protocol.saline_given_mL
+  cite: mcdaniel2019
+  status_in_workspace: Available (readouts recorded)
+- expectation: 'Fig 13: the control protocol delayed 12 h needs more fluid'
+  model_observable: protocol.saline_given_mL, refresh-control-delayed vs refresh-control
+  cite: mcdaniel2019
+  status_in_workspace: Available (readouts recorded)
+baseline:
+- name: refresh-control
+  composite: viva_biogears.composites.sepsis.biogears_sepsis
+  params:
+    severity: severe
+    nutrition: infection_scenario
+    interval: 60.0
+    treatment: refresh_control
+    n_steps: 3120
+variants:
+- name: refresh-experimental
+  composite: viva_biogears.composites.sepsis.biogears_sepsis
+  parameter_overrides:
+    severity: severe
+    nutrition: infection_scenario
+    interval: 60.0
+    treatment: refresh_experimental
+    n_steps: 3120
+- name: refresh-control-delayed
+  composite: viva_biogears.composites.sepsis.biogears_sepsis
+  parameter_overrides:
+    severity: severe
+    nutrition: infection_scenario
+    interval: 60.0
+    treatment: refresh_control
+    challenge_h: 56.0
+    treatment_start_h: 58.0
+    n_steps: 3840
+runtime:
+  note: Each arm runs from t = 0 (StandardMale@0s, severe infection), about 9-11 h of wall
+    time. mcdaniel-2019-sepsis/run.py runs the same protocols faster by branching from the
+    severe arm's 44 h checkpoint (outside the workbench); analyze.py draws Figs 9-13 from
+    its output.
+readouts:
+- name: blood-pathogen
+  store_path: circuits.infection.inflammation.blood_pathogen
+  units: arbitrary
+- name: tissue-integrity
+  store_path: circuits.infection.inflammation.tissue_integrity
+  units: fraction
+- name: heart-rate
+  store_path: circuits.infection.clinical.heart_rate_bpm
+  units: 1/min
+- name: systolic-pressure
+  store_path: circuits.infection.clinical.systolic_pressure_mmHg
+  units: mmHg
+- name: mean-arterial-pressure
+  store_path: circuits.infection.clinical.mean_arterial_pressure_mmHg
+  units: mmHg
+- name: blood-volume
+  store_path: circuits.infection.clinical.blood_volume_mL
+  units: mL
+- name: mean-urine-output
+  store_path: circuits.infection.clinical.mean_urine_output_mL_per_min
+  units: mL/min
+- name: lactate
+  store_path: circuits.infection.clinical.lactate_mmol_per_L
+  units: mmol/L
+- name: antibiotic-activity
+  store_path: circuits.treatment.antibiotic_activity_per_hr
+  units: 1/h
+  description: BioGears' AntibioticActivity (the pathogen kill rate the antibiotic adds)
+- name: piperacillin-plasma
+  store_path: circuits.treatment.Piperacillin.plasma_concentration_ug_per_mL
+  units: ug/mL
+  description: Recorded only in treated arms (asking BioGears for a drug activates it)
+- name: norepinephrine-blood
+  store_path: circuits.treatment.Norepinephrine.blood_concentration_ug_per_mL
+  units: ug/mL
+  description: Recorded only in treated arms
+- name: iv-rate
+  store_path: interventions.cardiovascular.iv_rate_mL_per_min
+  units: mL/min
+  description: Saline rate set by the TreatmentController (0 when untreated)
+- name: vasopressor-rate
+  store_path: interventions.treatment.vasopressor_rate_ug_per_min
+  units: ug/min
+  description: Norepinephrine rate set by the TreatmentController
+- name: saline-given
+  store_path: protocol.saline_given_mL
+  units: mL
+  description: Saline given by the protocol so far
+- name: protocol-code
+  store_path: protocol.code
+  description: Index of the protocol in viva_biogears.protocols.PROTOCOLS (0 untreated, 1
+    fluid_challenge, 2 antibiotic, 3 refresh_control, 4 refresh_experimental)
+- name: irreversible-state
+  store_path: circuits.irreversible_state
+  description: BioGears reported an irreversible state; the engine is no longer advanced.
+units_and_time:
+- quantity: time
+  unit: s
+  scale: one recorded row per 60 s update
+  note: BioGears' own clock; its internal solver step is 0.02 s.
+- quantity: fluid
+  unit: mL, mL/min
+  note: Saline (BioGears' Saline compound) set by the protocol.
+- quantity: drugs
+  unit: ug/mL, ug/min
+  note: As reported by BioGears.
+expected_behavior:
+- name: protocols-start-on-time
+  observable: interventions (iv_rate, vasopressor_rate)
+  condition: control starts a 1000 mL bolus at 46 h (58 h delayed); experimental starts norepinephrine
+    at 0.18 ug/kg/min and maintenance at 1 mL/kg/h at 46 h
+  test: tests/test_refresh.py::test_protocols_start_on_time
+- name: goals-met
+  observable: circuits.infection.clinical (SBP, MAP)
+  condition: SBP > 90 and MAP > 65 mmHg at the end of each 6 h protocol
+  test: tests/test_refresh.py::test_each_protocol_meets_the_goals
+- name: experimental-spares-fluid
+  observable: protocol.saline_given_mL
+  condition: the experimental protocol gives less saline than the control by 52 h
+  test: tests/test_refresh.py::test_experimental_uses_less_saline
+- name: delay-costs-fluid
+  observable: protocol.saline_given_mL, MAP
+  condition: the delayed control starts from a lower MAP and gives more saline than the on-time
+    control
+  test: tests/test_refresh.py::test_delay_meets_a_sicker_patient, test_delay_costs_more_saline
+visualizations:
+- name: treatment-response
+  address: local:SepsisTreatmentResponse
+  config:
+    inputs_map:
+      time: global_time
+      protocol_code: protocol.code
+      mean_arterial_pressure: circuits.infection.clinical.mean_arterial_pressure_mmHg
+      systolic_pressure: circuits.infection.clinical.systolic_pressure_mmHg
+      mean_urine_output: circuits.infection.clinical.mean_urine_output_mL_per_min
+      blood_pathogen: circuits.infection.inflammation.blood_pathogen
+      saline_given: protocol.saline_given_mL
+controls:
+- name: refresh-control
+  kind: positive
+  hypothesis: Liberal fluid is the trial's standard of care; it should reach the goals, showing
+    the readouts respond to treatment.
+  expected: SBP > 90 and MAP > 65 mmHg at 52 h.
+robustness:
+  n_replicates: 1
+  parameter_sweep: false
+  note: BioGears is deterministic.
+preregistered:
+  registered_at: '2026-11-16'
+  criteria:
+  - tests/test_refresh.py::test_arms_agree_before_treatment
+  - tests/test_refresh.py::test_protocols_start_on_time
+  - tests/test_refresh.py::test_saline_given_matches_the_recorded_rate
+  - tests/test_refresh.py::test_each_protocol_meets_the_goals
+  - tests/test_refresh.py::test_experimental_uses_less_saline
+  - tests/test_refresh.py::test_delay_meets_a_sicker_patient
+  - tests/test_refresh.py::test_delay_costs_more_saline
+  - tests/test_refresh.py::test_the_antibiotic_lowers_the_pathogen
+  predictions:
+  - 'Paper Figs 11-12: both protocols reach the goals; the experimental arm with less fluid.
+    Fig 13: delaying the control protocol 12 h needs more fluid.'
+  thresholds_provenance: The goals (SBP 90, MAP 65 mmHg, urine 0.625 mL/min) and doses are
+    the paper's; the comparisons are directions.
+  pilot: Not piloted (52-64 h runs). Protocol arithmetic is tested in tests/test_protocols.py
+    and the controller on the engine in tests/test_treatment.py (package tests).
+falsifiability: 'Refuted if either protocol ends below the goals, if the experimental arm
+  gives as much saline as the control or more, or if the delayed control starts from a MAP
+  no lower than the on-time one or gives no more saline.
+
+  '
+limitations:
+- The paper leaves the bolus rate and the norepinephrine concentration open; these follow
+  BioGears' InfectionSevere.xml (50 mL/min, 14 ug/mL).
+- On 8.2.0 the untreated patient never reaches septic shock by 48 h, so the protocols start
+  from a less hypotensive patient than the paper's; the goals may be met at the first reassessment.
+- Each delayed arm repeats the first 56 h of the severe infection; run.py branches from a
+  checkpoint instead.

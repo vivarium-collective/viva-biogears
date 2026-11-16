@@ -1,0 +1,177 @@
+schema_version: 4
+name: fluid-resuscitation
+title: Closed-loop fluid resuscitation (BioGears)
+investigation: biogears-hemorrhage
+created: '2026-11-16'
+status: planned
+question: 'Does a MAP-targeted IV infusion change the course of a right-leg hemorrhage
+  in BioGears, and does it matter whether the fluid is saline or O-negative blood?
+  (The viva-pulse study of the same name, ported to BioGears.)
+
+  '
+hypothesis: 'A closed loop that infuses once MAP falls below 90 mmHg ends the run with
+  more blood volume and a higher MAP than the untreated bleed, with saline and blood
+  alike over 10 minutes.
+
+  '
+objective: 'Run the untreated bleed (biogears_hemorrhage, RightLeg, 200 mL/min initial
+  rate, StandardMale@0s, 600 s) against biogears_resuscitation with Saline and with
+  Blood_ONegative (MapFluidController: target 90 mmHg, gain 25 mL/min per mmHg, cap
+  250 mL/min).
+
+  '
+baseline:
+- name: untreated
+  composite: viva_biogears.composites.hemorrhage.biogears_hemorrhage
+  params:
+    state_file: StandardMale@0s.xml
+    compartment: RightLeg
+    rate_mL_per_min: 200.0
+    n_steps: 600
+variants:
+- name: saline-map-90
+  composite: viva_biogears.composites.hemorrhage.biogears_resuscitation
+  parameter_overrides:
+    state_file: StandardMale@0s.xml
+    compartment: RightLeg
+    rate_mL_per_min: 200.0
+    compound: Saline
+    target_map_mmHg: 90.0
+    gain: 25.0
+    max_rate_mL_per_min: 250.0
+    n_steps: 600
+- name: blood-map-90
+  composite: viva_biogears.composites.hemorrhage.biogears_resuscitation
+  parameter_overrides:
+    state_file: StandardMale@0s.xml
+    compartment: RightLeg
+    rate_mL_per_min: 200.0
+    compound: Blood_ONegative
+    target_map_mmHg: 90.0
+    gain: 25.0
+    max_rate_mL_per_min: 250.0
+    n_steps: 600
+readouts:
+- name: mean-arterial-pressure
+  store_path: vitals.mean_arterial_pressure_mmHg
+  units: mmHg
+  status: available
+- name: heart-rate
+  store_path: vitals.heart_rate_bpm
+  units: 1/min
+  status: available
+- name: blood-volume
+  store_path: vitals.blood_volume_mL
+  units: mL
+  status: available
+- name: total-blood-volume-lost
+  store_path: vitals.total_blood_volume_lost_mL
+  units: mL
+  status: available
+- name: cardiac-output
+  store_path: vitals.cardiac_output_L_per_min
+  units: L/min
+  status: available
+- name: irreversible-state
+  store_path: vitals.irreversible_state
+  description: BioGears reported an irreversible state; the engine is no longer advanced.
+  status: available
+- name: iv-rate
+  store_path: interventions.iv_rate_mL_per_min
+  units: mL/min
+  description: Infusion rate commanded by the MAP controller (0 in the untreated arm).
+  status: available
+units_and_time:
+- quantity: time
+  unit: s
+  scale: 1 s per recorded row (BioGearsProcess interval 1.0)
+  note: BioGears' own clock; its internal solver step is 0.02 s.
+- quantity: pressures (MAP)
+  unit: mmHg
+  note: As reported by BioGears.
+- quantity: volumes (blood volume, blood lost)
+  unit: mL
+  note: As reported by BioGears.
+- quantity: infusion rate
+  unit: mL/min
+  note: Commanded by the MAP controller.
+expected_behavior:
+- name: treatment-preserves-volume-and-pressure
+  observable: vitals.blood_volume_mL, vitals.mean_arterial_pressure_mmHg
+  condition: both treated arms end with more blood volume and a higher MAP than the
+    untreated arm
+  test: tests/test_resuscitation.py::test_treated_arms_preserve_blood_volume, test_treated_arms_preserve_pressure
+visualizations:
+- name: resuscitation-response
+  address: local:FluidResuscitationResponse
+  config:
+    inputs_map:
+      time: global_time
+      mean_arterial_pressure: vitals.mean_arterial_pressure_mmHg
+      blood_volume: vitals.blood_volume_mL
+      iv_rate: interventions.iv_rate_mL_per_min
+comparative_visualizations:
+- name: map-by-arm
+  title: MAP-targeted infusion slows the fall in arterial pressure
+  observable_path: vitals.mean_arterial_pressure_mmHg
+  y_label: MAP (mmHg)
+  runs: &arms
+  - sim_name: untreated
+    label: Untreated
+  - sim_name: saline-map-90
+    label: Saline, MAP target 90
+  - sim_name: blood-map-90
+    label: O-negative blood, MAP target 90
+- name: blood-volume-by-arm
+  title: Blood volume by treatment arm
+  observable_path: vitals.blood_volume_mL
+  y_label: Blood volume (mL)
+  runs: *arms
+- name: infusion-by-arm
+  title: Infusion rate commanded by the MAP controller
+  observable_path: interventions.iv_rate_mL_per_min
+  y_label: Infusion (mL/min)
+  runs: *arms
+controls:
+- name: untreated
+  kind: negative
+  hypothesis: Without treatment the bleed runs its course; this is the reference the
+    treated arms must beat.
+  expected: The rate-200 arm of hemorrhage-severity-sweep (pilot blood volume 4888 mL,
+    MAP 87.9 mmHg at 10 min); no infusion.
+- name: saline-map-90
+  kind: positive
+  hypothesis: A closed loop that does engage should raise blood volume and MAP above
+    the untreated reference, confirming the treatment readout responds.
+  expected: Final blood volume and MAP above the untreated arm, with a non-zero commanded
+    infusion.
+robustness:
+  n_replicates: 1
+  parameter_sweep: false
+  note: BioGears is deterministic; the untreated arm repeats the severity sweep's rate-200
+    arm.
+preregistered:
+  registered_at: '2026-11-16'
+  criteria:
+  - tests/test_resuscitation.py::test_untreated_arm_reproduces_pilot
+  - tests/test_resuscitation.py::test_controller_engages_in_treated_arms
+  - tests/test_resuscitation.py::test_treated_arms_preserve_blood_volume
+  - tests/test_resuscitation.py::test_treated_arms_preserve_pressure
+  predictions:
+  - 'Pilot (2026-11-16, the three arms run directly for 600 s): untreated blood volume
+    4888 mL, MAP 87.93 mmHg; the controller first infuses at 427 s and gives 46 mL (saline)
+    / 45 mL (blood); treated blood volume 4934 / 4933 mL, MAP 88.72 / 88.74 mmHg.'
+  thresholds_provenance: The untreated reference values come from that pilot; the treated
+    criteria are directions only.
+  pilot: All three arms were piloted, so the criteria are regression checks. The effect
+    is small (about +46 mL and +0.8 mmHg) because MAP only drops below the 90 mmHg target
+    late in the run.
+falsifiability: 'Refuted if either treated arm ends with no more blood volume, or no
+  higher MAP, than the untreated arm, or if the controller never infuses.
+
+  '
+limitations:
+- One bleed, one patient and one controller tuning; the target and gain are not swept.
+- 10 minutes only; saline's dilution and blood's oxygen-carrying capacity are not read
+  out (no hematocrit or oxygen readouts), so the compounds can only be compared on volume
+  and pressure.

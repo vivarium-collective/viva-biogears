@@ -6,3 +6,11 @@ Processes
 .. autoclass:: viva_biogears.processes.BioGearsCircuitProcess
 
 .. autoclass:: viva_biogears.processes.MapFluidController
+
+.. autoclass:: viva_biogears.processes.TreatmentController
+
+Treatment protocols
+-------------------
+
+.. automodule:: viva_biogears.protocols
+   :members: TreatmentProtocol, PROTOCOLS

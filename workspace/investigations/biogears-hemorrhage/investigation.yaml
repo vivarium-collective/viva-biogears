@@ -1,0 +1,54 @@
+schema_version: 2
+name: biogears-hemorrhage
+title: Hemorrhage and resuscitation in the BioGears engine
+created: '2026-11-16'
+status: planned
+runtime:
+  default_emitter: sqlite
+studies: []
+expert_docs: []
+acceptance_criteria:
+- study: hemorrhage-severity-sweep
+  behavior: blood-loss-rises-with-rate
+- study: hemorrhage-severity-sweep
+  behavior: pressure-falls-with-rate
+- study: hemorrhage-severity-sweep
+  behavior: loss-is-sublinear-in-rate
+- study: fluid-resuscitation
+  behavior: treatment-preserves-volume-and-pressure
+- study: patient-cohort
+  behavior: every-patient-compensates
+- study: patient-cohort
+  behavior: smaller-patients-lose-larger-fraction
+- study: patient-cohort
+  behavior: loss-tracks-cardiac-output
+members:
+- hemorrhage-severity-sweep
+- fluid-resuscitation
+- patient-cohort
+question: 'How does the BioGears 8.2.0 engine respond to a hemorrhage: how does the response
+  scale with the bleed rate, does closed-loop fluid resuscitation change it, and does the
+  same bleed behave the same across BioGears'' 17 shipped patients? (viva-pulse''s
+  pulse-hemorrhage investigation, ported to BioGears.)
+
+  '
+hypothesis: 'Blood loss, the heart-rate rise and the MAP fall all grow with the bleed rate,
+  less than in proportion because BioGears lowers a bleed with the local pressure; a
+  MAP-targeted infusion preserves blood volume and pressure; every shipped patient compensates,
+  smaller patients and those with a higher resting cardiac output losing more.
+
+  '
+description: 'Three studies on the biogears_hemorrhage and biogears_resuscitation composites,
+  run through the workbench and recorded in each study''s runs.db. Their pass criteria are
+  pytest files in each study''s tests/ directory, written after a 2026-11-16 pilot of every
+  arm (the same composites and parameters, run directly) and fixed before the canonical
+  runs.
+
+  '
+differences_from_pulse: 'BioGears takes a bleed as an initial rate in mL/min, not Pulse''s
+  dimensionless severity, and lowers it as the compartment pressure falls; its baroreflex
+  does not hold MAP within 2 mmHg for any of these bleeds (Pulse did up to severity 0.4);
+  its blood-loss readout is NaN until a bleed starts; whole blood is BioGears'' Blood_ONegative
+  compound; and the cohort is BioGears'' 17 shipped states instead of Pulse''s 21 patients.
+
+  '

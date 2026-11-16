@@ -1,0 +1,24 @@
+rate-0 hemorrhage {"rate_mL_per_min": 0.0}
+rate-50 hemorrhage {"rate_mL_per_min": 50.0}
+rate-100 hemorrhage {"rate_mL_per_min": 100.0}
+rate-150 hemorrhage {"rate_mL_per_min": 150.0}
+rate-200 hemorrhage {"rate_mL_per_min": 200.0}
+rate-250 hemorrhage {"rate_mL_per_min": 250.0}
+saline resuscitation {"rate_mL_per_min": 200.0, "compound": "Saline"}
+blood resuscitation {"rate_mL_per_min": 200.0, "compound": "Blood_ONegative"}
+cohort-Female hemorrhage {"state_file": "Female@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Female_18_Normal hemorrhage {"state_file": "Female_18_Normal@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Female_30_Normal hemorrhage {"state_file": "Female_30_Normal@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Female_40_Overweight hemorrhage {"state_file": "Female_40_Overweight@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male hemorrhage {"state_file": "Male@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_22_Fit_Soldier hemorrhage {"state_file": "Male_22_Fit_Soldier@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_24_Normal_hidrosis2 hemorrhage {"state_file": "Male_24_Normal_hidrosis2@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_25_Normal hemorrhage {"state_file": "Male_25_Normal@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_28_Normal_hr109_rr18 hemorrhage {"state_file": "Male_28_Normal_hr109_rr18@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_32_Normal_hr93_rr14 hemorrhage {"state_file": "Male_32_Normal_hr93_rr14@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_44_Bradycardic hemorrhage {"state_file": "Male_44_Bradycardic@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_44_Normal_hr109_rr15 hemorrhage {"state_file": "Male_44_Normal_hr109_rr15@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_44_Normal_rr12 hemorrhage {"state_file": "Male_44_Normal_rr12@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_44_SleepDeprived hemorrhage {"state_file": "Male_44_SleepDeprived@0s.xml", "rate_mL_per_min": 200.0}
+cohort-Male_44_Tachycardic hemorrhage {"state_file": "Male_44_Tachycardic@0s.xml", "rate_mL_per_min": 200.0}
+cohort-StandardFemale hemorrhage {"state_file": "StandardFemale@0s.xml", "rate_mL_per_min": 200.0}

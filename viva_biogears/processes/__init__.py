@@ -3,6 +3,7 @@
 from ._bridge import HEMORRHAGE_COMPARTMENTS
 from .biogears import VITALS, BioGearsProcess
 from .circuit import BioGearsCircuitProcess
-from .controllers import MapFluidController
+from .controllers import MapFluidController, TreatmentController
 
-__all__ = ["HEMORRHAGE_COMPARTMENTS", "VITALS", "BioGearsCircuitProcess", "BioGearsProcess", "MapFluidController"]
+__all__ = ["HEMORRHAGE_COMPARTMENTS", "VITALS", "BioGearsCircuitProcess", "BioGearsProcess", "MapFluidController",
+           "TreatmentController"]

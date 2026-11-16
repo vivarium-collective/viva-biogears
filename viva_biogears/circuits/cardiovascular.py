@@ -177,6 +177,14 @@ def _build_hemorrhage(values, config):
 
 def _validate_infusion(values, config):
     check_nonnegative("iv_rate_mL_per_min", values["iv_rate_mL_per_min"])
+    if values["iv_rate_mL_per_min"] != 0.0 and config["iv_compound"] in _treatment_compounds(config):
+        raise ValueError(f"iv_rate_mL_per_min must stay 0: the treatment schedule infuses {config['iv_compound']!r} "
+                         "too, and BioGears keeps one infusion per compound (the setpoint would replace the bolus)")
+
+
+def _treatment_compounds(config) -> set[str]:
+    from .treatment import scheduled_compounds
+    return scheduled_compounds(config)
 
 
 def _build_infusion(values, config):
@@ -218,13 +226,17 @@ def loaded_hemorrhage(state, config):
 
 
 def loaded_infusion(state, config):
-    """The infusion of ``iv_compound`` the state carries (its rate)."""
+    """The infusion of ``iv_compound`` the state carries (its rate). Infusions of compounds
+    the treatment schedule gives belong to the ``treatment`` module, not to the setpoint."""
     values = dict(INFUSION_BASELINE)
     others = []
+    scheduled = _treatment_compounds(config)
     for kind, el in state.actions:
         if kind != "SubstanceCompoundInfusionData":
             continue
         compound = text(el, "SubstanceCompound")
+        if compound in scheduled:
+            continue
         if compound != config["iv_compound"]:
             others.append(compound)
             continue
