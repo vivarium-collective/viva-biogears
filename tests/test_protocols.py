@@ -103,3 +103,11 @@ def test_delayed_treatment_shifts_everything_12_h():
 def test_bad_protocols_raise(kw, match):
     with pytest.raises(ValueError, match=match):
         TreatmentProtocol(**{"protocol": "refresh_control", **kw})
+
+
+def test_events_are_due_when_the_clock_runs_microseconds_behind():
+    """The shipped 44 h state is at 158399.999994 s; the 44 h challenge must start on the
+    first update from it, not one update (60 s) late."""
+    p = TreatmentProtocol("fluid_challenge")
+    rate, _ = p.setpoints(158399.999994, 80.0, 60.0, 0.3)
+    assert rate == 50.0

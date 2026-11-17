@@ -174,3 +174,17 @@ def test_a_state_saved_after_the_challenge_raises():
     with pytest.raises(ValueError, match="after the protocol's challenge"):
         biogears_sepsis(None, treatment="fluid_challenge", state_file="StandardMale@equilibrated.xml",
                         challenge_h=1.0)
+
+
+def test_the_shipped_septic_state_starts_the_challenge_on_its_first_update(run_composite):
+    """The workbench treatment arms start from StandardMale@severe-infection-44h.xml (the
+    severe arm at 44 h, 158399.999994 s on BioGears' clock): the 44 h challenge starts at
+    once and the run carries the infection on."""
+    from viva_biogears.composites import biogears_sepsis
+    _, rows = run_composite(biogears_sepsis, 720.0, severity="severe", treatment="fluid_challenge",
+                            state_file="StandardMale@severe-infection-44h.xml")
+    iv = [r["interventions"]["cardiovascular"]["iv_rate_mL_per_min"] for r in rows]
+    assert iv[:10] == [50.0] * 10 and iv[-1] == 0.0
+    assert rows[-1]["protocol"]["branch_h"] == pytest.approx(44.0, abs=1e-6)
+    clinical = rows[0]["circuits"]["infection"]["clinical"]
+    assert clinical["lactate_mmol_per_L"] > 2.0 and clinical["systolic_pressure_mmHg"] < 100.0

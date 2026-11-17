@@ -47,6 +47,9 @@ PROTOCOL_CODES = {name: float(i) for i, name in enumerate(PROTOCOLS)}
 SBP_GOAL_mmHg = 90.0
 MAP_GOAL_mmHg = 65.0
 UO_GOAL_mL_per_min = 0.625            # 0.5 mL/kg/h for the standard BioGears patient (paper)
+#: An event time counts as reached within this much (s): BioGears' clock runs a few µs
+#: behind after hours (the shipped 44 h state is at 158399.999994 s).
+TIME_TOLERANCE_S = 1e-3
 ANTIBIOTIC = {"compound": "PiperacillinTazobactam", "bag_volume_mL": 20.0, "rate_mL_per_min": 0.667}
 
 
@@ -98,7 +101,7 @@ class TreatmentProtocol:
 
     # -- per update -------------------------------------------------------------------
     def _once(self, key: str, t: float, at: float) -> bool:
-        if key not in self.state["done"] and t >= at - 1e-6:
+        if key not in self.state["done"] and t >= at - TIME_TOLERANCE_S:
             self.state["done"].append(key)
             return True
         return False
@@ -123,7 +126,7 @@ class TreatmentProtocol:
                 st["vasopressor_ug_per_min"] = 0.18 * self.weight_kg
                 st["next_check_s"] = self.start_s + 3600.0
         if refresh and not st["stopped"] and st["next_check_s"] is not None \
-                and t >= st["next_check_s"] - 1e-6 and t <= self.end_s + 1e-6:
+                and t >= st["next_check_s"] - TIME_TOLERANCE_S and t <= self.end_s + TIME_TOLERANCE_S:
             goals = sbp > SBP_GOAL_mmHg and map_ > MAP_GOAL_mmHg
             if goals:
                 st["stopped"] = True
@@ -140,7 +143,7 @@ class TreatmentProtocol:
                 st["queue_mL"] += 250.0
             step = 1800.0 if self.protocol == "refresh_control" else 3600.0
             st["next_check_s"] += step
-            if st["next_check_s"] > self.end_s + 1e-6:
+            if st["next_check_s"] > self.end_s + TIME_TOLERANCE_S:
                 st["next_check_s"] = None
         bolus = min(self.bolus_rate, st["queue_mL"] / (self.interval_s / 60.0)) if st["queue_mL"] > 1e-9 else 0.0
         st["queue_mL"] = max(0.0, st["queue_mL"] - bolus * self.interval_s / 60.0)

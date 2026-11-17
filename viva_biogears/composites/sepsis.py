@@ -7,7 +7,7 @@ from ..circuits.sepsis import INFECTION, INFECTION_SCENARIO_SCHEDULE
 from ..circuits.state import state_time_s
 from ..circuits.treatment import TREATMENT
 from ..core import build_core
-from ..protocols import PROTOCOL_CODES, PROTOCOLS, TreatmentProtocol
+from ..protocols import PROTOCOL_CODES, PROTOCOLS, TIME_TOLERANCE_S, TreatmentProtocol
 from ..runtime import runtime_dir, state_path
 from .circuits import (
     _CIRCUIT_ADDITIONS,
@@ -97,7 +97,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
     # A run can start from a saved septic state (McDaniel et al. ran every treatment from
     # states saved during the untreated severe infection): the protocol keeps engine time.
     branch_s = 0.0 if patient_file else state_time_s(state_path(runtime_dir(), state_file))
-    if treatment != "none" and branch_s > protocol.challenge_s + 1e-6:
+    if treatment != "none" and branch_s > protocol.challenge_s + TIME_TOLERANCE_S:
         raise ValueError(f"state_file {state_file!r} was saved at {branch_s / 3600:.2f} h, after the protocol's "
                          f"challenge at {challenge_h:g} h; start from an earlier state or move challenge_h")
     doc = {
