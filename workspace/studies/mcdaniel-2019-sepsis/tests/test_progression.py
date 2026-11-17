@@ -5,8 +5,8 @@ the 2026-11-14 bg-scenario pilot."""
 import numpy as np
 import pytest
 
-INFL = "circuits.infection.inflammation."
-CLIN = "circuits.infection.clinical."
+INFL = "readings.infection.inflammation."
+CLIN = "readings.infection.clinical."
 ARMS = ["control", "mild", "moderate", "severe"]
 INFECTED = ARMS[1:]
 DURATION_H = 48.0

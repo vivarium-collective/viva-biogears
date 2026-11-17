@@ -1,6 +1,6 @@
 # Circuits probe (2026-11-03)
 
-**Question.** Which circuit readings and interventions can BioGears 8.2.0 serve, and how do its actions behave? This probe settled the data requests and actions behind `viva_biogears/circuits/`.
+**Question.** Which circuit readings and interventions can BioGears 8.2.0 serve, and how do its actions behave? This probe settled the data requests and actions behind `viva_biogears/modules/`.
 
 **Scripts** (run with `$BIOGEARS_RUNTIME` set, from this folder):
 - `probe.py`: connectivity of every physiology property BioGears defines (`physiology.json`).

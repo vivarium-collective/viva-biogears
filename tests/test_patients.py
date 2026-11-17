@@ -150,6 +150,6 @@ def test_composites_take_a_patient(cache, patient, run_composite):
     _, rows = run_composite(biogears_hemorrhage, 2.0, patient_file=str(patient))
     assert rows[0]["heart_rate_bpm"] == pytest.approx(64.0, abs=1.0)
     _, rows = run_composite(biogears_thermal, 2.0, patient_file=str(patient))
-    assert rows[0]["circuits"]["thermal"]["energy"]["core_temperature_C"] > 35
+    assert rows[0]["readings"]["thermal"]["energy"]["core_temperature_C"] > 35
     _, rows = run_composite(biogears_lymph, 2.0, conditions=ANEMIA)       # replaces the equilibrated default
-    assert rows[0]["circuits"]["vitals"]["mean_arterial_pressure_mmHg"] < 92
+    assert rows[0]["readings"]["vitals"]["mean_arterial_pressure_mmHg"] < 92

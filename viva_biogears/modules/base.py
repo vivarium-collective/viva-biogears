@@ -2,7 +2,7 @@
 
 A ``CircuitModule`` names the BioGears data requests that become its output ports
 and the BioGears actions that its setpoint input ports drive. It computes nothing:
-``BioGearsCircuitProcess`` turns the selected modules into ports, requests and
+``BioGearsModularProcess`` turns the selected modules into ports, requests and
 actions against one real BioGears engine. Circuit nodes and paths are read directly,
 so no module edits the state, and actions are BioGears scenario XML.
 """
@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-# Top-level port names of BioGearsCircuitProcess that a module name must not shadow.
+# Top-level port names of BioGearsModularProcess that a module name must not shadow.
 RESERVED_NAMES = frozenset({"setpoints", "irreversible_state"})
 
 #: pybiogears DataRequest categories (pybiogears ``BioGearsThunk::set_requests``).
@@ -72,7 +72,7 @@ class ActionBinding:
     BioGears action types (``xsi:type``) ``build`` sends.
 
     ``loaded(state, config)`` reads, from the parsed starting state
-    (``viva_biogears.circuits.state.StateInfo``), the values the group already has
+    (``viva_biogears.modules.state.StateInfo``), the values the group already has
     there: a state saved mid-run carries its bleed, infusion, ventilator, ... So a
     branch whose setpoints equal them sends nothing and continues the run exactly, and
     one that differs sends the change. It returns the values (the baselines when
@@ -129,7 +129,7 @@ def check_nonnegative(port: str, value: float) -> None:
 class CircuitModule:
     """One circuit family: its outputs, its setpoint bindings, its config params.
 
-    ``params`` are ``config_schema`` entries that ``BioGearsCircuitProcess`` exposes,
+    ``params`` are ``config_schema`` entries that ``BioGearsModularProcess`` exposes,
     and ``check_config`` validates them, raising ``ValueError``. ``check_loaded``
     receives the module's readings (nested like its outputs) once the engine is
     loaded, and raises ``ValueError`` if the loaded state contradicts the module's
@@ -144,7 +144,7 @@ class CircuitModule:
 
     A module whose outputs depend on the starting state or the config sets
     ``prepare`` instead of ``outputs``: ``prepare(config, state, modules)`` gets the
-    parsed state (``viva_biogears.circuits.state.StateInfo``) and the names of all
+    parsed state (``viva_biogears.modules.state.StateInfo``) and the names of all
     modules on the process, and returns the outputs. Nothing is edited.
     """
 

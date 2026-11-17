@@ -49,40 +49,40 @@ variants:
     n_steps: 360
 readouts:
 - name: blood-pathogen
-  store_path: circuits.infection.inflammation.blood_pathogen
+  store_path: readings.infection.inflammation.blood_pathogen
   units: arbitrary
 - name: tissue-integrity
-  store_path: circuits.infection.inflammation.tissue_integrity
+  store_path: readings.infection.inflammation.tissue_integrity
   units: fraction
 - name: heart-rate
-  store_path: circuits.infection.clinical.heart_rate_bpm
+  store_path: readings.infection.clinical.heart_rate_bpm
   units: 1/min
 - name: respiration-rate
-  store_path: circuits.infection.clinical.respiration_rate_bpm
+  store_path: readings.infection.clinical.respiration_rate_bpm
   units: 1/min
 - name: core-temperature
-  store_path: circuits.infection.clinical.core_temperature_C
+  store_path: readings.infection.clinical.core_temperature_C
   units: degC
 - name: systolic-pressure
-  store_path: circuits.infection.clinical.systolic_pressure_mmHg
+  store_path: readings.infection.clinical.systolic_pressure_mmHg
   units: mmHg
 - name: mean-arterial-pressure
-  store_path: circuits.infection.clinical.mean_arterial_pressure_mmHg
+  store_path: readings.infection.clinical.mean_arterial_pressure_mmHg
   units: mmHg
 - name: cardiac-output
-  store_path: circuits.infection.clinical.cardiac_output_L_per_min
+  store_path: readings.infection.clinical.cardiac_output_L_per_min
   units: L/min
 - name: blood-volume
-  store_path: circuits.infection.clinical.blood_volume_mL
+  store_path: readings.infection.clinical.blood_volume_mL
   units: mL
 - name: mean-urine-output
-  store_path: circuits.infection.clinical.mean_urine_output_mL_per_min
+  store_path: readings.infection.clinical.mean_urine_output_mL_per_min
   units: mL/min
 - name: lactate
-  store_path: circuits.infection.clinical.lactate_mmol_per_L
+  store_path: readings.infection.clinical.lactate_mmol_per_L
   units: mmol/L
 - name: irreversible-state
-  store_path: circuits.irreversible_state
+  store_path: readings.irreversible_state
   description: BioGears reported an irreversible state; the engine is no longer advanced.
 - name: time-step
   store_path: engine.time_step_s
@@ -99,17 +99,17 @@ units_and_time:
     0.1 s or more.
 expected_behavior:
 - name: inflammation-is-step-independent
-  observable: circuits.infection.inflammation (blood_pathogen, tissue_integrity)
+  observable: readings.infection.inflammation (blood_pathogen, tissue_integrity)
   condition: every sample within 0.2 % (pathogen) and 0.001 (tissue integrity) of the 0.02
     s run
   test: tests/test_timestep_sepsis.py::test_inflammation_is_step_independent
 - name: hemodynamics-stay-close
-  observable: circuits.infection.clinical (MAP, SBP, blood volume)
+  observable: readings.infection.clinical (MAP, SBP, blood volume)
   condition: every sample within 3 mmHg (MAP, SBP) and 25 mL (blood volume) of the 0.02 s
     run, the error larger at 0.08 than at 0.04 s
   test: tests/test_timestep_sepsis.py::test_hemodynamics_stay_close
 - name: lactate-breaks-above-0-02
-  observable: circuits.infection.clinical.lactate_mmol_per_L
+  observable: readings.infection.clinical.lactate_mmol_per_L
   condition: the 0.02 s run stays below 2 mM; 0.04 s ends above 5 mM and 0.08 s higher still
   test: tests/test_timestep_sepsis.py::test_lactate_breaks_above_0_02_s
 - name: larger-steps-run-faster
@@ -124,9 +124,9 @@ visualizations:
     inputs_map:
       time: global_time
       time_step: engine.time_step_s
-      mean_arterial_pressure: circuits.infection.clinical.mean_arterial_pressure_mmHg
-      lactate: circuits.infection.clinical.lactate_mmol_per_L
-      blood_volume: circuits.infection.clinical.blood_volume_mL
+      mean_arterial_pressure: readings.infection.clinical.mean_arterial_pressure_mmHg
+      lactate: readings.infection.clinical.lactate_mmol_per_L
+      blood_volume: readings.infection.clinical.blood_volume_mL
 controls:
 - name: dt-0.02
   kind: negative

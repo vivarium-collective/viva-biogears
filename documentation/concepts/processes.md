@@ -20,10 +20,11 @@ BioGears' hemorrhage is an initial rate in mL/min, which BioGears then lowers wi
 pressure. A rate above cardiac output is refused by BioGears on every step; the process
 raises instead.
 
-## `BioGearsCircuitProcess`
+## `BioGearsModularProcess`
 
-One BioGears engine exposing the circuit modules listed in `modules`
-({doc}`circuits`). Readings nest under each module's name; setpoints sit under one
+The whole BioGears engine (every system is simulated every step), with the readings
+and setpoints of the modules listed in `modules` as its ports
+({doc}`modules`). Readings nest under each module's name; setpoints sit under one
 `setpoints` input port (`setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). The
 input and output top-level names are disjoint on purpose: process-bigraph projects
 `initial_state()` through both, so a shared name would copy readings into setpoints.
@@ -47,7 +48,7 @@ Every process starts from one of:
   (`ChronicAnemia`, `Dehydration`, `ChronicObstructivePulmonaryDisease`, ...), applied while
   it stabilizes: a different patient, not a perturbation;
 - and, on top of either, `circuit_additions`: resistance paths added to the cardiovascular
-  circuit with their compartment links ({doc}`circuits`).
+  circuit with their compartment links ({doc}`modules`).
 
 ## Saved states and branches
 

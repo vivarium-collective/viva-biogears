@@ -2,10 +2,10 @@
 
 from process_bigraph.composite_generator import composite_generator
 
-from ..circuits.cardiovascular import CARDIOVASCULAR
-from ..circuits.sepsis import INFECTION, INFECTION_SCENARIO_SCHEDULE
-from ..circuits.state import state_time_s
-from ..circuits.treatment import TREATMENT
+from ..modules.cardiovascular import CARDIOVASCULAR
+from ..modules.sepsis import INFECTION, INFECTION_SCENARIO_SCHEDULE
+from ..modules.state import state_time_s
+from ..modules.treatment import TREATMENT
 from ..core import build_core
 from ..protocols import PROTOCOL_CODES, PROTOCOLS, TIME_TOLERANCE_S, TreatmentProtocol
 from ..runtime import runtime_dir, state_path
@@ -56,7 +56,7 @@ NUTRITION_SCHEDULES = {"infection_scenario": INFECTION_SCENARIO_SCHEDULE, "none"
                               "description": "Antibiotic and REFRESH start (58 for Fig 13's delayed arm)"},
         "treatment_duration_h": {"type": "float", "default": 6.0, "description": "REFRESH reassessment period"},
         "drug_readouts": {"type": "list", "default": None,
-                          "description": "Drugs whose concentrations are read (circuits/treatment/<drug>); default "
+                          "description": "Drugs whose concentrations are read (readings/treatment/<drug>); default "
                                          "Piperacillin and Norepinephrine when treated, none otherwise. Give an "
                                          "untreated arm the treated arms' list to record the same stores"},
         "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS,
@@ -106,12 +106,12 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
         "interventions": {"infection": {"infection_severity": SEVERITY_LEVELS[severity]},
                           "cardiovascular": cardiovascular,
                           "treatment": {"vasopressor_rate_ug_per_min": 0.0}},
-        "circuits": {},
+        "readings": {},
         "engine": {"time_step_s": float(time_step_s)},  # recorded so figures can tell runs apart
         "emitter": circuit_emitter(),
     }
     if treatment != "none":
-        clinical = ["circuits", "infection", "clinical"]
+        clinical = ["readings", "infection", "clinical"]
         doc["controller"] = {
             "_type": "step",
             "address": "local:TreatmentController",

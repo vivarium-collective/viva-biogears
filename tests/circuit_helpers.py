@@ -1,16 +1,16 @@
-"""Helpers shared by the BioGearsCircuitProcess tests."""
+"""Helpers shared by the BioGearsModularProcess tests."""
 import numpy as np
 
-from viva_biogears.circuits import MODULES
+from viva_biogears.modules import MODULES
 from viva_biogears.core import build_core
-from viva_biogears.processes import BioGearsCircuitProcess
+from viva_biogears.processes import BioGearsModularProcess
 from viva_biogears.runtime import import_pybiogears, runtime_dir, state_path
 
 CORE = build_core()
 
 
 def make(modules, **config):
-    return BioGearsCircuitProcess({"modules": list(modules), **config}, core=CORE)
+    return BioGearsModularProcess({"modules": list(modules), **config}, core=CORE)
 
 
 def baselines(proc):

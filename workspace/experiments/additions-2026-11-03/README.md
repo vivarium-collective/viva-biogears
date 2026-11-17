@@ -21,6 +21,6 @@ Each runs 5 min against an unedited control. `run.log` has the output.
 - BioGears loads an edited state and solves the added path.
 - It moves substances only over the compartment graph. A path without a link carries blood without its substances, which corrupts the concentrations: PaO2 drifts, and a large shunt is fatal at once.
 - With the link, the body responds as to an arteriovenous fistula: MAP falls, while HR and cardiac output rise. Mixed venous PO2 rises with the shunted arterial blood (39.4 → 43.4 mmHg at R = 2).
-- An added path has no stored flow, so it reads NaN until the first step. `viva_biogears.circuits.additions` writes a 0 flow.
+- An added path has no stored flow, so it reads NaN until the first step. `viva_biogears.modules.additions` writes a 0 flow.
 
-**Decision.** `viva_biogears.circuits.additions` adds each path with its link, under these rules: `FullCardiovascular` nodes in two different vascular compartments, with the names prefixed `VivaAdded`.
+**Decision.** `viva_biogears.modules.additions` adds each path with its link, under these rules: `FullCardiovascular` nodes in two different vascular compartments, with the names prefixed `VivaAdded`.

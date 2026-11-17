@@ -9,9 +9,9 @@ import os, sys
 from pathlib import Path
 import numpy as np
 import pybiogears as pb
-from viva_biogears.circuits.cardiovascular import hemorrhage_xml, infusion_xml
-from viva_biogears.circuits.respiratory import anesthesia_machine_xml, intubation_xml, VENTILATOR_BASELINE
-from viva_biogears.circuits.thermal import (thermal_application_xml, environment_xml, THERMAL_APPLICATION_BASELINE,
+from viva_biogears.modules.cardiovascular import hemorrhage_xml, infusion_xml
+from viva_biogears.modules.respiratory import anesthesia_machine_xml, intubation_xml, VENTILATOR_BASELINE
+from viva_biogears.modules.thermal import (thermal_application_xml, environment_xml, THERMAL_APPLICATION_BASELINE,
                                             ENVIRONMENT_BASELINE)
 RT = Path(os.environ["BIOGEARS_RUNTIME"]); OUT = Path(sys.argv[1]).resolve(); OUT.mkdir(parents=True, exist_ok=True)
 REQ = [pb.DataRequest("Physiology", p, u) for p, u in [("HeartRate", "1/min"), ("MeanArterialPressure", "mmHg"),

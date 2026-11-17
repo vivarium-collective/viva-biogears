@@ -7,14 +7,14 @@ Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits 
 ## Status
 
 - **Available:**
-  - processes: `BioGearsProcess`, `BioGearsCircuitProcess` and `MapFluidController`;
-  - circuit modules: `vitals`, `cardiovascular`, `respiratory`, `mechanical_ventilator`, `thermal`, `supplemental_oxygen`, `cardiovascular_points`, `respiratory_points`, `substances`, `tissues`, `lymph` and `tissue_fluid`;
-  - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body_circuits` and `biogears_lymph`.
+  - processes: `BioGearsProcess`, `BioGearsModularProcess` and `MapFluidController`;
+  - modules: `vitals`, `cardiovascular`, `respiratory`, `mechanical_ventilator`, `thermal`, `supplemental_oxygen`, `cardiovascular_points`, `respiratory_points`, `substances`, `tissues`, `lymph` and `tissue_fluid`;
+  - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body` and `biogears_lymph`.
 
   All are tested against the real engine.
   - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
   - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`);
-  - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.circuits.additions`);
+  - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.modules.additions`);
   - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`);
   - sepsis: the `infection`, `nutrition` and `treatment` modules, McDaniel et al. 2019's treatment protocols (`viva_biogears.protocols`, run by `TreatmentController`) and `biogears_sepsis`;
   - workbench studies (`workspace/`), each with pre-registered pytest criteria and figures (`viva_biogears/visualizations/`), authored and piloted but not yet run through the workbench:
@@ -58,7 +58,7 @@ Every process and composite starts from `state_file` (a stabilized state) or fro
 ```python
 BioGearsProcess({"patient_file": "Male_44_Normal.xml"})                     # a shipped patient file
 BioGearsProcess({"patient_file": "/path/to/MyPatient.xml"})                  # your own
-BioGearsCircuitProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {"ReductionFactor": 0.3}}})
+BioGearsModularProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {"ReductionFactor": 0.3}}})
 ```
 
 - **Stabilization.** A patient file describes a person (sex, age, weight, height, body fat, resting baselines). BioGears stabilizes it the first time it is used: it builds the body and runs it at rest until it settles. The result is cached in `~/.cache/viva-biogears/states` (`$VIVA_BIOGEARS_CACHE_DIR` overrides it), so later runs load it in about 0.2 s.
@@ -148,11 +148,11 @@ rows = gather_emitter_results(sim)[("emitter",)]
 | `biogears_mechanical_ventilation` | intubated, on the anesthesia-machine ventilator | the ventilator settings, `ventilator_connection` |
 | `biogears_thermal` | the temperature circuit under the environment and heating, cooling or an applied temperature | the environment and the thermal application |
 | `biogears_supplemental_oxygen` | a nasal cannula | `oxygen_connected`, `oxygen_flow_L_per_min` |
-| `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine | all of the above |
+| `biogears_whole_body` | every module with setpoints, plus lymph and tissue fluid, on one engine | all of the above |
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state | `state_file`, `iv_rate_mL_per_min`, `iv_compound` |
 | `biogears_sepsis` | an infection (BioGears' sepsis model) with meals, lymph, tissue fluid and hemodynamics, sampled each minute; optionally treated with one of McDaniel et al. 2019's protocols | `severity`, `infection_location`, `infection_mic_mg_per_L`, `nutrition`, `iv_rate_mL_per_min`; `treatment` (`fluid_challenge`, `antibiotic`, `refresh_control`, `refresh_experimental`), `challenge_h`, `treatment_start_h`, `treatment_duration_h`, `drug_readouts`; from a saved state (e.g. `StandardMale@severe-infection-44h.xml`) the protocol keeps engine time |
 
-Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites share one store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
+Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites share one store layout: setpoints in `interventions/<module>/`, readings in `readings/<module>/`, and an emitter of both subtrees.
 
 ### `BioGearsProcess`
 
@@ -179,9 +179,9 @@ Rules that come from BioGears:
 - A hemorrhage on an unknown compartment crashes BioGears; it is rejected at construction.
 - A saved state that already holds a hemorrhage or an infusion starts the setpoints at the state's values, so the setpoint ports always describe what is running.
 
-### `BioGearsCircuitProcess`
+### `BioGearsModularProcess`
 
-One BioGears engine shared by several circuit modules. `config.modules` lists modules from `viva_biogears.circuits.MODULES`.
+The whole BioGears engine (every system is simulated every step); `config.modules` chooses which readings and setpoints become ports. `BioGearsCircuitProcess` is a deprecated alias. `config.modules` lists modules from `viva_biogears.modules.MODULES`.
 
 - **Outputs.** Each module's readings nest under its name, as `overwrite[float]` (e.g. `cardiovascular/central/aorta/pressure_mmHg`).
 - **Inputs.** The module's setpoints sit under one `setpoints` input port (e.g. `setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). Each is sent to BioGears only when it changes.
@@ -209,7 +209,7 @@ One BioGears engine shared by several circuit modules. `config.modules` lists mo
 | `nutrition` | stomach contents, chyme absorption, body fluid, urine volume | none: meals and drinks come from `nutrition_schedule`, sent at their times |
 | `treatment` | antibiotic activity; plasma and blood concentration and AUC of each `treatment_readouts` drug | `vasopressor_rate_ug_per_min` (a substance infusion, norepinephrine by default); timed compound and substance infusions come from `treatment_schedule`. BioGears keeps one infusion per compound and per substance, so a setpoint can't drive what the schedule infuses (raises) |
 
-Each module's docstring in `viva_biogears/circuits/` gives the details.
+Each module's docstring in `viva_biogears/modules/` gives the details.
 
 **What BioGears 8.2.0 offers, and doesn't:**
 

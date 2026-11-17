@@ -10,7 +10,7 @@ freeze while time still reaches the end).
 
 The hemorrhage composites record the latch at
 ``vitals.irreversible_state``, the circuit composites (biogears_sepsis) at
-``circuits.irreversible_state``; whichever the run recorded is checked.
+``readings.irreversible_state``; whichever the run recorded is checked.
 """
 
 import json
@@ -21,7 +21,7 @@ import pytest
 import yaml
 from vivarium_workbench.testing import Run, RunNotAvailableError
 
-IRREVERSIBLE = ("vitals.irreversible_state", "circuits.irreversible_state")
+IRREVERSIBLE = ("vitals.irreversible_state", "readings.irreversible_state")
 
 
 def _study_dir(path: Path) -> Path:

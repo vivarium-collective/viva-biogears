@@ -8,10 +8,10 @@ its own clock."""
 import numpy as np
 import pytest
 
-CLIN = "circuits.infection.clinical."
+CLIN = "readings.infection.clinical."
 MAP = CLIN + "mean_arterial_pressure_mmHg"
 SBP = CLIN + "systolic_pressure_mmHg"
-PATHOGEN = "circuits.infection.inflammation.blood_pathogen"
+PATHOGEN = "readings.infection.inflammation.blood_pathogen"
 IV = "interventions.cardiovascular.iv_rate_mL_per_min"
 NOR = "interventions.treatment.vasopressor_rate_ug_per_min"
 GIVEN = "protocol.saline_given_mL"

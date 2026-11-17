@@ -11,9 +11,10 @@ setpoint
 reading
 : An output port holding a BioGears value, always equal to BioGears' own.
 
-circuit module
-: A named set of readings and setpoints for one BioGears circuit family (`cardiovascular`,
-  `lymph`, ...), selected in `BioGearsCircuitProcess`'s `modules`.
+module
+: A named set of readings and setpoints of one part of BioGears (`cardiovascular`, `lymph`,
+  `infection`, ...), selected in `BioGearsModularProcess`'s `modules`. The engine always
+  simulates every system; a module only chooses what becomes a port.
 
 compartment
 : A named group of circuit nodes that BioGears tracks volume, pressure and substances for

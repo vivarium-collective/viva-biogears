@@ -9,7 +9,7 @@ import re
 import pytest
 from circuit_helpers import CORE, make, run
 
-from viva_biogears.circuits.cardiovascular import hemorrhage_xml
+from viva_biogears.modules.cardiovascular import hemorrhage_xml
 from viva_biogears.processes import VITALS, BioGearsProcess
 from viva_biogears.processes._bridge import load_engine
 from viva_biogears.runtime import runtime_dir
@@ -88,7 +88,7 @@ def test_the_command_line_saves_a_sequence(tmp_path):
 @pytest.mark.parametrize("generator, params", [
     ("biogears_hemorrhage", {"rate_mL_per_min": 200.0}),
     ("biogears_cardiovascular", {"hemorrhage_rate_mL_per_min": 200.0}),
-], ids=["BioGearsProcess", "BioGearsCircuitProcess"])
+], ids=["BioGearsProcess", "BioGearsModularProcess"])
 def test_a_process_saves_at_update_boundaries_without_changing_the_run(tmp_path, generator, params):
     """Falsifies: saving off update boundaries (stepping the engine mid-update), saving a
     time twice or not at all, or saving changing what the composite emits."""
@@ -209,7 +209,7 @@ def test_thermal_and_environment_checkpoint_continue(tmp_path):
     params = dict(active_heating_W=300.0, ambient_temperature_C=10.0)
     full = _run(biogears_thermal, 20, {"save_state_times_s": [10], "save_state_dir": str(tmp_path)}, **params)
     branch = _run(biogears_thermal, 10, state_file=str(tmp_path / "state@10s.xml"), **params)
-    a, b = full[-1]["circuits"]["thermal"], branch[-1]["circuits"]["thermal"]
+    a, b = full[-1]["readings"]["thermal"], branch[-1]["readings"]["thermal"]
     for k in ("core_temperature_C", "skin_temperature_C"):
         assert b["energy"][k] == pytest.approx(a["energy"][k], rel=1e-9), k
     assert b["environment"]["ambient_temperature_C"] == 10.0

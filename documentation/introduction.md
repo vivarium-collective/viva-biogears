@@ -46,7 +46,7 @@ circuits: **pressure** pushes fluid like a voltage, **flow** moves like a curren
 The cardiovascular (with its renal, cerebral, tissue and lymph branches), respiratory and
 thermal systems are each such a circuit, solved together every 0.02 s of simulated time.
 Substances (gases, electrolytes, proteins, drugs) move between **compartments**, groups of
-circuit nodes, along **links**. {doc}`concepts/circuits` shows what can be read.
+circuit nodes, along **links**. {doc}`concepts/modules` shows what can be read.
 
 ## Where BioGears 8.2.0 needed help
 

@@ -1,11 +1,11 @@
-"""Engine handling shared by BioGearsProcess and BioGearsCircuitProcess."""
+"""Engine handling shared by BioGearsProcess and BioGearsModularProcess."""
 
 from __future__ import annotations
 
 import math
 
-from ..circuits.additions import added_state, check_additions
-from ..circuits.cardiovascular import (
+from ..modules.additions import added_state, check_additions
+from ..modules.cardiovascular import (
     HEMORRHAGE_COMPARTMENTS,  # noqa: F401  (re-exported)
     check_hemorrhage_config,
     hemorrhage_xml,
@@ -13,7 +13,7 @@ from ..circuits.cardiovascular import (
     loaded_hemorrhage,
     loaded_infusion,
 )
-from ..circuits.state import read_state
+from ..modules.state import read_state
 from ..patients import conditions_xml, stabilized_state
 from ..runtime import compound_names, import_pybiogears, runtime_dir, state_path
 from ..states import SAVE_CONFIG, saver_from_config
@@ -77,7 +77,7 @@ def resolve_state(config):
     """(runtime directory, absolute state path) for a process config: ``state_file``,
     or, when ``patient_file`` or ``conditions`` is set, that patient (default
     StandardMale.xml) stabilized with them, from the cache (``viva_biogears.patients``);
-    with ``circuit_additions``, that state with the paths added (``circuits.additions``)."""
+    with ``circuit_additions``, that state with the paths added (``modules.additions``)."""
     runtime = runtime_dir(config["runtime_dir"])
     if config.get("patient_file") or config.get("conditions"):
         path = stabilized_state(config["patient_file"] or "StandardMale.xml", runtime, dict(config["conditions"]))

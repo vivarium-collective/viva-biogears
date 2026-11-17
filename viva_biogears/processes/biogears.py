@@ -6,7 +6,7 @@ from typing import Any
 
 from process_bigraph import Process
 
-from ..circuits.vitals import VITALS  # noqa: E402  (re-exported)
+from ..modules.vitals import VITALS  # noqa: E402  (re-exported)
 from ._bridge import (  # noqa: F401
     HEMORRHAGE_COMPARTMENTS,
     INTERVENTION_CONFIG,

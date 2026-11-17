@@ -1,7 +1,7 @@
 """Sepsis treatment protocols of McDaniel et al. 2019 (Figs 9-13), as setpoint schedules.
 
 A ``TreatmentProtocol`` turns the paper's protocols into two setpoints of
-``BioGearsCircuitProcess``: the saline rate (``cardiovascular/iv_rate_mL_per_min``, a bag
+``BioGearsModularProcess``: the saline rate (``cardiovascular/iv_rate_mL_per_min``, a bag
 of ``iv_compound`` = Saline) and the vasopressor rate
 (``treatment/vasopressor_rate_ug_per_min``, norepinephrine), plus static ``treatment``
 schedule events (the antibiotic). It is evaluated once per update from the readings

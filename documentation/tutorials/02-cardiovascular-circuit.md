@@ -19,7 +19,7 @@ single circuit paths.
 
 ## Waveforms at the engine's timestep
 
-`biogears_cardiovascular` puts one `BioGearsCircuitProcess` with the `cardiovascular`
+`biogears_cardiovascular` puts one `BioGearsModularProcess` with the `cardiovascular`
 module on the standard store layout. With `point_reads=True` it also reads every node and
 path of `FullCardiovascular`.
 
@@ -38,9 +38,9 @@ def run(seconds, **params):
 
 
 beats = run(3.0, interval=0.02, point_reads=True)
-central = [r["circuits"]["cardiovascular"]["central"] for r in beats]
-nodes = [r["circuits"]["cardiovascular_points"]["nodes"] for r in beats]
-len(beats), len(nodes[0]), len(beats[0]["circuits"]["cardiovascular_points"]["paths"])
+central = [r["readings"]["cardiovascular"]["central"] for r in beats]
+nodes = [r["readings"]["cardiovascular_points"]["nodes"] for r in beats]
+len(beats), len(nodes[0]), len(beats[0]["readings"]["cardiovascular_points"]["paths"])
 ```
 
 ```{code-cell} python
@@ -62,7 +62,7 @@ sampling.
 
 ```{code-cell} python
 bleed = run(300, hemorrhage_rate_mL_per_min=300.0)
-first, last = bleed[0]["circuits"]["cardiovascular"], bleed[-1]["circuits"]["cardiovascular"]
+first, last = bleed[0]["readings"]["cardiovascular"], bleed[-1]["readings"]["cardiovascular"]
 print(f"{'region':16s}{'start (mL)':>12s}{'5 min (mL)':>12s}")
 for group in ("central", "peripheral"):
     for name in ("aorta", "vena_cava", "right_leg", "muscle", "splanchnic", "liver"):
@@ -79,6 +79,6 @@ blood as the body compensates.
 ## What to try next
 
 - Read only some points: `point_reads=True` with `cardiovascular_point_nodes=["Aorta1"]`
-  on a `BioGearsCircuitProcess`.
+  on a `BioGearsModularProcess`.
 - Add an arteriovenous shunt with `circuit_additions` and read its flow among the points
-  ({doc}`../concepts/circuits`).
+  ({doc}`../concepts/modules`).

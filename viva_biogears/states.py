@@ -1,7 +1,7 @@
 """Save BioGears engine states during a run, one state file per requested simulation time.
 
 A saved state is an ordinary BioGears state file: ``state_file`` loads it as the start
-of another run (``BioGearsProcess``, ``BioGearsCircuitProcess``), so a run can be
+of another run (``BioGearsProcess``, ``BioGearsModularProcess``), so a run can be
 checkpointed at ``t`` and branched under several interventions. BioGears records the
 whole engine in it, including the actions active at that time (a bleed, an infusion,
 intubation, the ventilator, a thermal application, a changed environment), which keep

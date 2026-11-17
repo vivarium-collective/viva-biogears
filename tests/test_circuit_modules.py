@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from circuit_helpers import direct, direct_values, flat, make, run
 
-from viva_biogears.circuits.respiratory import VENTILATOR_BASELINE
-from viva_biogears.circuits.state import read_state
-from viva_biogears.circuits.thermal import (
+from viva_biogears.modules.respiratory import VENTILATOR_BASELINE
+from viva_biogears.modules.state import read_state
+from viva_biogears.modules.thermal import (
     ENVIRONMENT_BASELINE,
     THERMAL_APPLICATION_BASELINE,
 )
@@ -62,8 +62,8 @@ def test_device_swap_needs_one_update_between():
 def test_unguarded_device_conflict_is_a_value_error():
     """Without the process's rule (two processes, or a direct engine), BioGears' own
     refusal surfaces as ValueError from advance, not a crash."""
-    from viva_biogears.circuits.respiratory import anesthesia_machine_xml
-    from viva_biogears.circuits.supplemental_oxygen import nasal_cannula_xml
+    from viva_biogears.modules.respiratory import anesthesia_machine_xml
+    from viva_biogears.modules.supplemental_oxygen import nasal_cannula_xml
     from viva_biogears.processes._bridge import advance
     p = make(["supplemental_oxygen"])
     e = direct(p)
@@ -139,7 +139,7 @@ def test_environment_change_is_read_back_and_cools():
 
 
 def test_a_changed_environment_is_read_from_the_state():
-    from viva_biogears.circuits.thermal import environment_xml
+    from viva_biogears.modules.thermal import environment_xml
     p = make(["thermal"])
     e = direct(p)
     e.process_actions(environment_xml({**ENVIRONMENT_BASELINE, "relative_humidity": 0.2}))
@@ -295,7 +295,7 @@ def test_bad_tissue_entries_are_refused(entry, match):
 
 def test_every_property_table_entry_connects():
     """Falsifies: a table entry BioGears 8.2.0 doesn't serve (it would fail the load or read NaN)."""
-    from viva_biogears.circuits.substances import (
+    from viva_biogears.modules.substances import (
         BODY_PROPERTIES,
         GAS_PROPERTIES,
         LIQUID_PROPERTIES,
@@ -321,7 +321,7 @@ def test_every_property_table_entry_connects():
 def test_every_substance_output_loads_without_nan():
     """Falsifies: an entry the checks pass but BioGears doesn't serve (a NaN or an
     unconnected request raises at load), e.g. Saturation of the urine-filled Ureters."""
-    from viva_biogears.circuits.substances import every_substance_output
+    from viva_biogears.modules.substances import every_substance_output
     entries = every_substance_output()
     assert len(entries) > 15000
     assert {"substance": "Oxygen", "compartment": "Aorta", "property": "Saturation"} in entries

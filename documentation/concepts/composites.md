@@ -12,7 +12,7 @@ A composite generator builds a ready-to-run document from a few parameters, with
 | `biogears_mechanical_ventilation` | intubated, on the anesthesia-machine ventilator |
 | `biogears_thermal` | the temperature circuit under the environment and a thermal application |
 | `biogears_supplemental_oxygen` | a nasal cannula |
-| `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine |
+| `biogears_whole_body` | every module with setpoints, plus lymph and tissue fluid, on one engine |
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state |
 | `biogears_sepsis` | an infection with BioGears' meal schedule, lymph, tissue fluid and hemodynamics, each minute; `treatment=` adds one of McDaniel et al. 2019's protocols |
 
@@ -25,7 +25,7 @@ the circuit ones also take `interval`, and some `point_reads`, `substance_output
 The circuit composites share one layout:
 
 - `interventions/<module>/`: the setpoints;
-- `circuits/<module>/`: the module's readings, and `circuits/irreversible_state`;
+- `readings/<module>/`: the module's readings, and `readings/irreversible_state`;
 - `emitter`: a `RAMEmitter` recording both subtrees and time every update.
 
 ```python
@@ -37,5 +37,5 @@ core = build_core()
 sim = Composite({"state": biogears_cardiovascular(core, hemorrhage_rate_mL_per_min=250.0)}, core=core)
 sim.run(60)
 rows = gather_emitter_results(sim)[("emitter",)]
-rows[-1]["circuits"]["cardiovascular"]["hemodynamics"]["mean_arterial_pressure_mmHg"]
+rows[-1]["readings"]["cardiovascular"]["hemodynamics"]["mean_arterial_pressure_mmHg"]
 ```

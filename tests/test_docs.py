@@ -39,7 +39,7 @@ def test_docs_build_without_warnings(tmp_path):
         pytest.skip("BioGears build not available")
     out = tmp_path / "html"
     _build(out)
-    for page in ("index", "tutorials/03-lymph-and-tissue-fluid", "concepts/circuits", "api/circuits"):
+    for page in ("index", "tutorials/03-lymph-and-tissue-fluid", "concepts/modules", "api/modules"):
         assert (out / f"{page}.html").is_file(), page
     assert "cell_output" in (out / "tutorials/01-hemorrhage-and-resuscitation.html").read_text()
     shutil.rmtree(out)

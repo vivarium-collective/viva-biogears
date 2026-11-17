@@ -28,5 +28,7 @@ for study in ("timestep-hemorrhage", "timestep-sepsis"):
                     entry["name"], json.dumps({"code_version": {"git_sha": "abc"}})))
         for i, row in enumerate(p["rows"]):
             row = {**row, "engine": {"time_step_s": params["time_step_s"]}}   # older pilot rows lack it
+            if "circuits" in row:                       # recorded before the store was renamed readings
+                row["readings"] = row.pop("circuits")
             db.execute("INSERT INTO history VALUES (?,?,?,?)", (f"r{k}", i, row["global_time"], json.dumps(row)))
     db.commit()

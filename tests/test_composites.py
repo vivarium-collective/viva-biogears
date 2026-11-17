@@ -55,7 +55,7 @@ def test_lethal_hemorrhage_reaches_irreversible_state_and_stops(run_composite):
 
 
 CIRCUIT_COMPOSITES = ["biogears_cardiovascular", "biogears_respiratory", "biogears_mechanical_ventilation",
-                      "biogears_thermal", "biogears_supplemental_oxygen", "biogears_whole_body_circuits",
+                      "biogears_thermal", "biogears_supplemental_oxygen", "biogears_whole_body",
                       "biogears_lymph"]
 
 
@@ -69,14 +69,14 @@ def _leaves(tree, prefix=()):
 
 @pytest.mark.parametrize("name", CIRCUIT_COMPOSITES)
 def test_circuit_composite_stores_track_the_engine(run_composite, name):
-    """Falsifies: the store layout (interventions/<module>, circuits/<module>) or the
+    """Falsifies: the store layout (interventions/<module>, readings/<module>) or the
     emitter drops or misplaces readings; every emitted leaf equals the process's reading."""
     import viva_biogears.composites as composites
     assert [eid for eid in _REGISTRY if eid.endswith(f".{name}")]
     sim, rows = run_composite(getattr(composites, name), 5.0)
     assert len(rows) == 6 and rows[0]["time"] == 0.0
     truth = sim.state["biogears"]["instance"].read()
-    emitted = dict(_leaves(rows[-1]["circuits"]))
+    emitted = dict(_leaves(rows[-1]["readings"]))
     for path, value in _leaves(truth):
         assert emitted[path] == value or (math.isnan(value) and math.isnan(emitted[path])), path
     assert set(rows[-1]["interventions"]) == {m.name for m in sim.state["biogears"]["instance"]._modules
@@ -86,17 +86,17 @@ def test_circuit_composite_stores_track_the_engine(run_composite, name):
 def test_lymph_composite_infuses_from_the_equilibrated_state(run_composite):
     from viva_biogears.composites import biogears_lymph
     sim, rows = run_composite(biogears_lymph, 30.0, iv_rate_mL_per_min=200.0)
-    first, last = rows[0]["circuits"], rows[-1]["circuits"]
+    first, last = rows[0]["readings"], rows[-1]["readings"]
     assert first["tissue_fluid"]["blood_volume_mL"] == pytest.approx(5880, abs=1)
     assert rows[-1]["interventions"]["cardiovascular"]["iv_rate_mL_per_min"] == 200.0
     assert last["lymph"]["central_venous_pressure_mmHg"] > first["lymph"]["central_venous_pressure_mmHg"]
 
 
 def test_composites_validate_parameters_when_built():
-    from viva_biogears.composites import biogears_thermal, biogears_whole_body_circuits
+    from viva_biogears.composites import biogears_thermal, biogears_whole_body
     with pytest.raises(ValueError):
         biogears_thermal(None, relative_humidity=2.0)
     with pytest.raises(TypeError, match="unexpected"):
         biogears_thermal(None, humidity=0.5)
     with pytest.raises(ValueError, match="one airway device"):
-        biogears_whole_body_circuits(None, connected=1.0, oxygen_connected=1.0)
+        biogears_whole_body(None, connected=1.0, oxygen_connected=1.0)

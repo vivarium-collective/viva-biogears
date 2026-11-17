@@ -25,7 +25,7 @@ glossary
 :caption: Concepts
 
 concepts/processes
-concepts/circuits
+concepts/modules
 concepts/composites
 ```
 

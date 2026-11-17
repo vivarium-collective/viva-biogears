@@ -25,20 +25,20 @@ objective: 'Run biogears_sepsis for 48 h at 60 s updates (StandardMale@0s, Skin 
 literature_anchors:
 - expectation: 'Fig 4-5: the inflammatory response (pathogen, TNF, IL-6, IL-10, NO) rises
     with infection severity'
-  model_observable: circuits.infection.inflammation.*, peak per arm
+  model_observable: readings.infection.inflammation.*, peak per arm
   cite: mcdaniel2019
   status_in_workspace: Available (readouts recorded)
 - expectation: 'Figs 6-7: severe infection, lactate > 2 mM after about 20 h'
-  model_observable: circuits.infection.clinical.lactate_mmol_per_L
+  model_observable: readings.infection.clinical.lactate_mmol_per_L
   cite: mcdaniel2019
   status_in_workspace: Available (readouts recorded)
 - expectation: 'Figs 6-7: SBP < 100 mmHg at about 26 h, sepsis at about 30 h, septic shock
     (MAP < 65, lactate > 2 mM) at about 45 h'
-  model_observable: circuits.infection.clinical (SBP, MAP, lactate, respiration rate)
+  model_observable: readings.infection.clinical (SBP, MAP, lactate, respiration rate)
   cite: mcdaniel2019
   status_in_workspace: Available (readouts recorded)
 - expectation: 'Fig 6: SVR falls toward 60 % of baseline'
-  model_observable: circuits.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL
+  model_observable: readings.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL
   cite: mcdaniel2019
   status_in_workspace: Available (readouts recorded)
 baseline:
@@ -76,29 +76,29 @@ runtime:
     real time). run.py in this folder runs the same arms outside the workbench, with
     4 h checkpoints and resume, and analyze.py draws the paper's figures from its output.
 readouts:
-- {name: blood-pathogen, store_path: circuits.infection.inflammation.blood_pathogen, units: arbitrary}
-- {name: local-pathogen, store_path: circuits.infection.inflammation.local_pathogen, units: arbitrary}
-- {name: tnf, store_path: circuits.infection.inflammation.tumor_necrosis_factor, units: arbitrary}
-- {name: il6, store_path: circuits.infection.inflammation.interleukin_6, units: arbitrary}
-- {name: il10, store_path: circuits.infection.inflammation.interleukin_10, units: arbitrary}
-- {name: nitric-oxide, store_path: circuits.infection.inflammation.nitric_oxide, units: arbitrary}
-- {name: tissue-integrity, store_path: circuits.infection.inflammation.tissue_integrity, units: fraction}
-- {name: heart-rate, store_path: circuits.infection.clinical.heart_rate_bpm, units: 1/min}
-- {name: respiration-rate, store_path: circuits.infection.clinical.respiration_rate_bpm, units: 1/min}
-- {name: core-temperature, store_path: circuits.infection.clinical.core_temperature_C, units: degC}
-- {name: white-blood-cells, store_path: circuits.infection.clinical.white_blood_cell_count_per_uL, units: ct/uL}
-- {name: systolic-pressure, store_path: circuits.infection.clinical.systolic_pressure_mmHg, units: mmHg}
-- {name: mean-arterial-pressure, store_path: circuits.infection.clinical.mean_arterial_pressure_mmHg, units: mmHg}
-- {name: systemic-vascular-resistance, store_path: circuits.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL,
+- {name: blood-pathogen, store_path: readings.infection.inflammation.blood_pathogen, units: arbitrary}
+- {name: local-pathogen, store_path: readings.infection.inflammation.local_pathogen, units: arbitrary}
+- {name: tnf, store_path: readings.infection.inflammation.tumor_necrosis_factor, units: arbitrary}
+- {name: il6, store_path: readings.infection.inflammation.interleukin_6, units: arbitrary}
+- {name: il10, store_path: readings.infection.inflammation.interleukin_10, units: arbitrary}
+- {name: nitric-oxide, store_path: readings.infection.inflammation.nitric_oxide, units: arbitrary}
+- {name: tissue-integrity, store_path: readings.infection.inflammation.tissue_integrity, units: fraction}
+- {name: heart-rate, store_path: readings.infection.clinical.heart_rate_bpm, units: 1/min}
+- {name: respiration-rate, store_path: readings.infection.clinical.respiration_rate_bpm, units: 1/min}
+- {name: core-temperature, store_path: readings.infection.clinical.core_temperature_C, units: degC}
+- {name: white-blood-cells, store_path: readings.infection.clinical.white_blood_cell_count_per_uL, units: ct/uL}
+- {name: systolic-pressure, store_path: readings.infection.clinical.systolic_pressure_mmHg, units: mmHg}
+- {name: mean-arterial-pressure, store_path: readings.infection.clinical.mean_arterial_pressure_mmHg, units: mmHg}
+- {name: systemic-vascular-resistance, store_path: readings.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL,
   units: mmHg s/mL}
-- {name: cardiac-output, store_path: circuits.infection.clinical.cardiac_output_L_per_min, units: L/min}
-- {name: blood-volume, store_path: circuits.infection.clinical.blood_volume_mL, units: mL}
-- {name: mean-urine-output, store_path: circuits.infection.clinical.mean_urine_output_mL_per_min, units: mL/min}
-- {name: lactate, store_path: circuits.infection.clinical.lactate_mmol_per_L, units: mmol/L}
-- {name: lymph-return, store_path: circuits.lymph.return_mL_per_min, units: mL/min}
-- {name: extravascular-fluid, store_path: circuits.tissue_fluid.extravascular_fluid_mL, units: mL}
+- {name: cardiac-output, store_path: readings.infection.clinical.cardiac_output_L_per_min, units: L/min}
+- {name: blood-volume, store_path: readings.infection.clinical.blood_volume_mL, units: mL}
+- {name: mean-urine-output, store_path: readings.infection.clinical.mean_urine_output_mL_per_min, units: mL/min}
+- {name: lactate, store_path: readings.infection.clinical.lactate_mmol_per_L, units: mmol/L}
+- {name: lymph-return, store_path: readings.lymph.return_mL_per_min, units: mL/min}
+- {name: extravascular-fluid, store_path: readings.tissue_fluid.extravascular_fluid_mL, units: mL}
 - name: irreversible-state
-  store_path: circuits.irreversible_state
+  store_path: readings.irreversible_state
   description: BioGears reported an irreversible state; the engine is no longer advanced.
 units_and_time:
 - quantity: time
@@ -110,19 +110,19 @@ units_and_time:
   note: BioGears' InflammatoryResponse state variables, as plotted in the paper.
 expected_behavior:
 - name: severity-orders-the-response
-  observable: circuits.infection.inflammation (blood_pathogen, tumor_necrosis_factor,
+  observable: readings.infection.inflammation (blood_pathogen, tumor_necrosis_factor,
     interleukin_6, tissue_integrity)
   condition: peak pathogen, TNF and IL-6 strictly increase, and the lowest tissue integrity
     strictly decreases, from mild to moderate to severe; the control has no pathogen
   test: tests/test_progression.py::test_severity_orders_the_inflammatory_response, test_lowest_tissue_integrity_falls_with_severity
 - name: only-severe-decompensates
-  observable: circuits.infection.clinical (lactate, SBP)
+  observable: readings.infection.clinical (lactate, SBP)
   condition: mild and moderate never sustain lactate > 2 mM or SBP < 100 mmHg; severe
     does, lactate first between 12 and 24 h and SBP between 22 and 32 h
   test: tests/test_progression.py::test_mild_and_moderate_stay_compensated, test_severe_lactate_onset,
     test_severe_hypotension_onset
 - name: severe-hypovolemia
-  observable: circuits.infection.clinical (blood_volume_mL, heart_rate_bpm)
+  observable: readings.infection.clinical (blood_volume_mL, heart_rate_bpm)
   condition: severe ends with at least 1000 mL less blood volume and a heart rate above
     100 /min
   test: tests/test_progression.py::test_severe_loses_volume_and_turns_tachycardic
@@ -132,12 +132,12 @@ visualizations:
   config:
     inputs_map:
       time: global_time
-      blood_pathogen: circuits.infection.inflammation.blood_pathogen
-      tissue_integrity: circuits.infection.inflammation.tissue_integrity
-      mean_arterial_pressure: circuits.infection.clinical.mean_arterial_pressure_mmHg
-      systolic_pressure: circuits.infection.clinical.systolic_pressure_mmHg
-      lactate: circuits.infection.clinical.lactate_mmol_per_L
-      blood_volume: circuits.infection.clinical.blood_volume_mL
+      blood_pathogen: readings.infection.inflammation.blood_pathogen
+      tissue_integrity: readings.infection.inflammation.tissue_integrity
+      mean_arterial_pressure: readings.infection.clinical.mean_arterial_pressure_mmHg
+      systolic_pressure: readings.infection.clinical.systolic_pressure_mmHg
+      lactate: readings.infection.clinical.lactate_mmol_per_L
+      blood_volume: readings.infection.clinical.blood_volume_mL
 controls:
 - name: control
   kind: negative

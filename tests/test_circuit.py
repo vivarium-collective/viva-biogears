@@ -1,4 +1,4 @@
-"""BioGearsCircuitProcess against the real engine: the bridge, and the lymph and tissue-fluid modules.
+"""BioGearsModularProcess against the real engine: the bridge, and the lymph and tissue-fluid modules.
 
 Oracles: a pybiogears engine driven directly with the same requests and actions
 (bridge equality), and conservation laws that hold on BioGears' own circuit
@@ -7,10 +7,10 @@ import numpy as np
 import pytest
 from circuit_helpers import direct, direct_values, flat, make, run
 
-from viva_biogears.circuits import MODULES, TISSUES
-from viva_biogears.circuits.cardiovascular import hemorrhage_xml, infusion_xml
-from viva_biogears.circuits.supplemental_oxygen import nasal_cannula_xml
-from viva_biogears.circuits.thermal import ENVIRONMENT_BASELINE, environment_xml
+from viva_biogears.modules import MODULES, TISSUES
+from viva_biogears.modules.cardiovascular import hemorrhage_xml, infusion_xml
+from viva_biogears.modules.supplemental_oxygen import nasal_cannula_xml
+from viva_biogears.modules.thermal import ENVIRONMENT_BASELINE, environment_xml
 from viva_biogears.processes import VITALS, BioGearsProcess
 
 
@@ -150,7 +150,7 @@ def test_send_on_change_does_not_restart_the_bleed():
 
 
 def test_circuit_process_time_step_reaches_the_engine():
-    """Falsifies: BioGearsCircuitProcess ignoring time_step_s."""
+    """Falsifies: BioGearsModularProcess ignoring time_step_s."""
     p = make(["vitals"], time_step_s=0.08)
     p.initial_state()
     run(p, 2.0)

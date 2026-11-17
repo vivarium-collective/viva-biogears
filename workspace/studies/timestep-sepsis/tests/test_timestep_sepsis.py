@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-CLIN = "circuits.infection.clinical."
-INFL = "circuits.infection.inflammation."
+CLIN = "readings.infection.clinical."
+INFL = "readings.infection.inflammation."
 STEPS = {"dt-0.02": 0.02, "dt-0.04": 0.04, "dt-0.08": 0.08}
 ROWS = 361                                   # 6 h at 60 s, plus the starting row
 DB = Path(__file__).parents[1] / "runs.db"

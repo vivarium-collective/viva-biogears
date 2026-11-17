@@ -11,7 +11,7 @@ kernelspec:
 ```{include} _hosted.md
 ```
 
-**What you will do:** drive one `BioGearsCircuitProcess` directly, update by update, with
+**What you will do:** drive one `BioGearsModularProcess` directly, update by update, with
 the cardiovascular, respiratory, ventilator, oxygen and thermal modules on one engine, and
 change setpoints mid-run: a bleed, then a nasal cannula, then a cold room. Each
 intervention shows up in circuits other than its own.
@@ -22,10 +22,10 @@ intervention shows up in circuits other than its own.
 
 ```{code-cell} python
 from viva_biogears.core import build_core
-from viva_biogears.processes import BioGearsCircuitProcess
+from viva_biogears.processes import BioGearsModularProcess
 
 modules = ["cardiovascular", "respiratory", "mechanical_ventilator", "supplemental_oxygen", "thermal"]
-p = BioGearsCircuitProcess({"modules": modules}, core=build_core())
+p = BioGearsModularProcess({"modules": modules}, core=build_core())
 state = p.initial_state()
 setpoints = {name: {port: spec["_default"] for port, spec in ports.items()}
              for name, ports in p.inputs()["setpoints"].items()}

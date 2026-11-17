@@ -11,6 +11,6 @@ Composites
 .. autofunction:: viva_biogears.composites.biogears_mechanical_ventilation
 .. autofunction:: viva_biogears.composites.biogears_thermal
 .. autofunction:: viva_biogears.composites.biogears_supplemental_oxygen
-.. autofunction:: viva_biogears.composites.biogears_whole_body_circuits
+.. autofunction:: viva_biogears.composites.biogears_whole_body
 .. autofunction:: viva_biogears.composites.biogears_lymph
 .. autofunction:: viva_biogears.composites.biogears_sepsis

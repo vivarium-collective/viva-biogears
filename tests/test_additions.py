@@ -6,8 +6,8 @@ and the body responds as to an arteriovenous shunt (MAP down, HR and cardiac out
 import pytest
 from circuit_helpers import CORE, make, run
 
-from viva_biogears.circuits.additions import added_state, check_additions
-from viva_biogears.circuits.state import read_state
+from viva_biogears.modules.additions import added_state, check_additions
+from viva_biogears.modules.state import read_state
 from viva_biogears.patients import CACHE_ENV_VAR
 from viva_biogears.processes import BioGearsProcess
 from viva_biogears.runtime import runtime_dir
@@ -71,7 +71,7 @@ def test_biogears_process_and_composites_take_additions(run_composite):
     assert out["mean_arterial_pressure_mmHg"] < 90
     from viva_biogears.composites import biogears_cardiovascular
     _, rows = run_composite(biogears_cardiovascular, 2.0, circuit_additions=SHUNT, point_reads=True)
-    assert rows[-1]["circuits"]["cardiovascular_points"]["paths"]["VivaAddedShunt"]["flow_mL_per_min"] > 1000
+    assert rows[-1]["readings"]["cardiovascular_points"]["paths"]["VivaAddedShunt"]["flow_mL_per_min"] > 1000
 
 
 @pytest.mark.parametrize("additions, message", [

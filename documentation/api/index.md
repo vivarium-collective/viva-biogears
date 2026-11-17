@@ -1,6 +1,6 @@
 # API reference
 
-Every public process, composite generator, circuit module and helper, generated from the
+Every public process, composite generator, module and helper, generated from the
 code's own docstrings.
 
 ```{toctree}
@@ -8,7 +8,7 @@ code's own docstrings.
 
 processes
 composites
-circuits
+modules
 patients
 states
 runtime

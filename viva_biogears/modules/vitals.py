@@ -1,4 +1,4 @@
-"""``vitals``: BioGearsProcess's vital signs, as a circuit module (read only)."""
+"""``vitals``: BioGearsProcess's vital signs, as a module (read only)."""
 
 from __future__ import annotations
 

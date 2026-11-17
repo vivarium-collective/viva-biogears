@@ -8,11 +8,11 @@ its own clock."""
 import numpy as np
 import pytest
 
-CLIN = "circuits.infection.clinical."
-PATHOGEN = "circuits.infection.inflammation.blood_pathogen"
+CLIN = "readings.infection.clinical."
+PATHOGEN = "readings.infection.inflammation.blood_pathogen"
 IV = "interventions.cardiovascular.iv_rate_mL_per_min"
 GIVEN = "protocol.saline_given_mL"
-PIP = "circuits.treatment.Piperacillin.plasma_concentration_ug_per_mL"
+PIP = "readings.treatment.Piperacillin.plasma_concentration_ug_per_mL"
 ARMS = ["untreated", "fluid-challenge", "antibiotic"]
 BRANCH_H, END_H = 44.0, 52.0
 MIC_ug_per_mL = 16.0                    # the paper's 16 mg/L

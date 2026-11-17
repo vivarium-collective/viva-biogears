@@ -36,7 +36,7 @@ class TreatmentController(Step):
     """McDaniel et al. 2019's sepsis treatment protocols (``viva_biogears.protocols``):
     reads systolic and mean arterial pressure and mean urine output once per update and
     writes the saline rate and the vasopressor rate setpoints of a
-    ``BioGearsCircuitProcess`` with the ``cardiovascular`` and ``treatment`` modules, plus
+    ``BioGearsModularProcess`` with the ``cardiovascular`` and ``treatment`` modules, plus
     the saline given so far, the protocol's code, the engine hour the run started at and
     the hour its treatment starts (so figures can tell runs apart and align them).
     The antibiotic is a static ``treatment_schedule`` event (``TreatmentProtocol.schedule``).

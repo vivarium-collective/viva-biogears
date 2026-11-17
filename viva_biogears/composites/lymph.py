@@ -2,7 +2,7 @@
 
 from process_bigraph.composite_generator import composite_generator
 
-from ..circuits.cardiovascular import CARDIOVASCULAR
+from ..modules.cardiovascular import CARDIOVASCULAR
 from ..core import build_core
 from ..runtime import EQUILIBRATED_STATE
 from .circuits import (
@@ -54,6 +54,6 @@ def biogears_lymph(core=None, *, state_file=EQUILIBRATED_STATE, patient_file="",
                                  patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions,
                                  interval=interval, **config),
         "interventions": {"cardiovascular": values},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }

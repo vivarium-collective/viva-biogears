@@ -1,4 +1,4 @@
-"""Run the McDaniel et al. 2019 replication arms on viva-biogears' BioGearsCircuitProcess.
+"""Run the McDaniel et al. 2019 replication arms on viva-biogears' BioGearsModularProcess.
 
     python run.py ARM [ARM ...] [--out DIR] [--hours H] [--jobs N]
       ARM: control | mild | moderate | severe | challenge | antibiotic | refresh_control
@@ -139,7 +139,7 @@ def _get(tree, path):
 def process(arm: str, out: Path, state_file: str, save_times, name: str):
     from viva_biogears.composites import biogears_sepsis
     from viva_biogears.core import build_core
-    from viva_biogears.processes import BioGearsCircuitProcess
+    from viva_biogears.processes import BioGearsModularProcess
 
     treated = arm in TREATED
     severity = "severe" if treated else {0.0: "none", 1.0: "mild", 2.0: "moderate", 3.0: "severe"}[ARMS[arm]]
@@ -150,7 +150,7 @@ def process(arm: str, out: Path, state_file: str, save_times, name: str):
     node = biogears_sepsis(None, severity=severity, state_file=state_file, **kw)["biogears"]
     config = {**node["config"], "save_state_times_s": list(save_times), "save_state_dir": str(out),
               "save_state_name": name}
-    proc = BioGearsCircuitProcess(config, core=build_core())
+    proc = BioGearsModularProcess(config, core=build_core())
     return proc, {"infection": {"infection_severity": 3.0 if treated else ARMS[arm]},
                   "cardiovascular": {"hemorrhage_rate_mL_per_min": 0.0, "iv_rate_mL_per_min": 0.0},
                   "treatment": {"vasopressor_rate_ug_per_min": 0.0}}

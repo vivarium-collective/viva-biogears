@@ -3,24 +3,24 @@
 Store layout:
 
 - ``interventions/<module>/``: setpoints;
-- ``circuits/<module>/``: the module's BioGears readings;
-- ``circuits/irreversible_state``;
+- ``readings/<module>/``: the module's BioGears readings;
+- ``readings/irreversible_state``;
 - a ``RAMEmitter`` step at ``emitter`` that emits both subtrees and time every update.
 """
 
 from process_bigraph.composite_generator import composite_generator
 
-from ..circuits import MODULES
-from ..circuits.cardiovascular import CARDIOVASCULAR, HEMORRHAGE_COMPARTMENTS
-from ..circuits.respiratory import (
+from ..modules import MODULES
+from ..modules.cardiovascular import CARDIOVASCULAR, HEMORRHAGE_COMPARTMENTS
+from ..modules.respiratory import (
     INTUBATION_TYPES,
     MECHANICAL_VENTILATOR,
     RESPIRATORY,
     VENTILATOR_BASELINE,
     VENTILATOR_CONNECTIONS,
 )
-from ..circuits.supplemental_oxygen import OXYGEN_BASELINE, SUPPLEMENTAL_OXYGEN
-from ..circuits.thermal import (
+from ..modules.supplemental_oxygen import OXYGEN_BASELINE, SUPPLEMENTAL_OXYGEN
+from ..modules.thermal import (
     ENVIRONMENT_BASELINE,
     THERMAL,
     THERMAL_APPLICATION_BASELINE,
@@ -30,27 +30,27 @@ from ..core import build_core
 
 def circuit_node(modules, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None,
                  circuit_additions=None, interval=1.0, **params):
-    """A ``BioGearsCircuitProcess`` node wired to the standard store layout."""
+    """A ``BioGearsModularProcess`` node wired to the standard store layout."""
     return {
         "_type": "process",
-        "address": "local:BioGearsCircuitProcess",
+        "address": "local:BioGearsModularProcess",
         "config": {"modules": list(modules), "state_file": state_file, "patient_file": patient_file,
                    "conditions": dict(conditions or {}),
                    "circuit_additions": dict(circuit_additions or {}), **params},
         "interval": interval,
         "inputs": {"setpoints": ["interventions"]},
-        "outputs": {**{name: ["circuits", name] for name in modules},
-                    "irreversible_state": ["circuits", "irreversible_state"]},
+        "outputs": {**{name: ["readings", name] for name in modules},
+                    "irreversible_state": ["readings", "irreversible_state"]},
     }
 
 
 def circuit_emitter():
-    """A ``RAMEmitter`` recording the ``circuits`` and ``interventions`` subtrees and time."""
+    """A ``RAMEmitter`` recording the ``readings`` and ``interventions`` subtrees and time."""
     return {
         "_type": "step",
         "address": "local:RAMEmitter",
-        "config": {"emit": {"circuits": "node", "interventions": "node", "time": "float"}},
-        "inputs": {"circuits": ["circuits"], "interventions": ["interventions"], "time": ["global_time"]},
+        "config": {"emit": {"readings": "node", "interventions": "node", "time": "float"}},
+        "inputs": {"readings": ["readings"], "interventions": ["interventions"], "time": ["global_time"]},
     }
 
 
@@ -91,18 +91,18 @@ _CIRCUIT_ADDITIONS = {"type": "map", "default": {},
                                      "added with its compartment link so substances follow. A perturbation: the "
                                      "body responds over time"}
 _POINT_READS = {"type": "boolean", "default": False,
-                "description": "Also read every node and path of the circuit, under circuits/<circuit>_points/"}
+                "description": "Also read every node and path of the circuit, under readings/<circuit>_points/"}
 _SUBSTANCE_OUTPUTS = {"type": "list", "default": [],
                       "description": "Substance quantities to read, each {substance, compartment (omit for "
                                      "whole-body values), property, unit}, e.g. {substance: Oxygen, compartment: "
                                      "Aorta, property: PartialPressure, unit: mmHg}; emitted under "
-                                     "circuits/substances/<substance>/<compartment or body>/. Checked against the "
+                                     "readings/substances/<substance>/<compartment or body>/. Checked against the "
                                      "state when the composite's process is built"}
 _TISSUE_OUTPUTS = {"type": "list", "default": [],
                    "description": "Tissue values to read, each {compartment, property, unit}: a tissue's "
                                   "composition (MuscleTissue: MatrixVolume, TotalMass, ...) or its fluid "
                                   "(MuscleTissueExtracellular: Volume, Pressure, WaterVolumeFraction); emitted "
-                                  "under circuits/tissues/<compartment>/"}
+                                  "under readings/tissues/<compartment>/"}
 
 
 def _reading_config(substance_outputs, tissue_outputs):
@@ -161,7 +161,7 @@ def biogears_cardiovascular(core=None, *, state_file="StandardMale@0s.xml", pati
         "biogears": circuit_node(modules, state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions, interval=interval, **config,
                                  **_reading_config(substance_outputs, tissue_outputs)),
         "interventions": {"cardiovascular": values},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
 
@@ -193,7 +193,7 @@ def biogears_respiratory(core=None, *, state_file="StandardMale@0s.xml", patient
         "biogears": circuit_node(with_points(["respiratory"], point_reads), state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions,
                                  interval=interval, **config),
         "interventions": {"respiratory": values},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
 
@@ -240,7 +240,7 @@ def biogears_mechanical_ventilation(core=None, *, state_file="StandardMale@0s.xm
         "biogears": circuit_node(with_points(["respiratory", "mechanical_ventilator"], point_reads),
                                  state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions, interval=interval, **config),
         "interventions": {"respiratory": respiratory, "mechanical_ventilator": ventilator},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
 
@@ -283,7 +283,7 @@ def biogears_thermal(core=None, *, state_file="StandardMale@0s.xml", patient_fil
     return {
         "biogears": circuit_node(["thermal"], state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions, interval=interval),
         "interventions": {"thermal": values},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
 
@@ -313,7 +313,7 @@ def biogears_supplemental_oxygen(core=None, *, state_file="StandardMale@0s.xml",
         "biogears": circuit_node(["respiratory", "supplemental_oxygen"], state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions,
                                  interval=interval, **config),
         "interventions": {"respiratory": setpoints(RESPIRATORY, {}, config), "supplemental_oxygen": oxygen},
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
 
@@ -322,8 +322,8 @@ WHOLE_BODY_MODULES = (CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMA
 
 
 @composite_generator(
-    name="biogears_whole_body_circuits",
-    description="Every circuit module with setpoints on one real BioGears engine (cardiovascular, respiratory, "
+    name="biogears_whole_body",
+    description="Every module with setpoints on one real BioGears engine (cardiovascular, respiratory, "
                 "mechanical ventilator, thermal, supplemental oxygen) plus lymph and tissue fluid, so effects "
                 "that cross circuits appear in one run. Setpoints start at their baselines; the ventilator and "
                 "cannula start disconnected, and only one of them can be connected at a time. Optional point, "
@@ -347,7 +347,7 @@ WHOLE_BODY_MODULES = (CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMA
     default_n_steps=600,
     fidelity="real-bridge",
 )
-def biogears_whole_body_circuits(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, circuit_additions=None, interval=1.0, point_reads=False,
+def biogears_whole_body(core=None, *, state_file="StandardMale@0s.xml", patient_file="", conditions=None, circuit_additions=None, interval=1.0, point_reads=False,
                                  substance_outputs=None, tissue_outputs=None, hemorrhage_compartment="RightLeg",
                                  iv_compound="Saline", iv_bag_volume_L=10.0, intubation_type="Tracheal",
                                  ventilator_connection="Tube", **overrides):
@@ -369,6 +369,10 @@ def biogears_whole_body_circuits(core=None, *, state_file="StandardMale@0s.xml",
         "biogears": circuit_node(modules, state_file=state_file, patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions, interval=interval, **config,
                                  **_reading_config(substance_outputs, tissue_outputs)),
         "interventions": interventions,
-        "circuits": {},
+        "readings": {},
         "emitter": circuit_emitter(),
     }
+
+
+#: Deprecated name of :func:`biogears_whole_body` (kept so older scripts still run).
+biogears_whole_body_circuits = biogears_whole_body

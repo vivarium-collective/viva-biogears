@@ -1,7 +1,8 @@
-# Circuits
+# Modules
 
-`BioGearsCircuitProcess` exposes BioGears' circuits through **circuit modules**
-(`viva_biogears.circuits`). A module computes nothing: it names the BioGears values that
+`BioGearsModularProcess` runs the whole BioGears engine and exposes it through
+**modules** (`viva_biogears.modules`): the cardiovascular, respiratory and thermal
+circuits, lymph and tissue fluid, substances, the infection, nutrition and treatment. A module computes nothing: it names the BioGears values that
 become its output ports and the actions its setpoints drive.
 
 | Module | Readings | Setpoints |
@@ -22,7 +23,7 @@ become its output ports and the actions its setpoints drive.
 | `nutrition` | stomach contents, chyme absorption, body fluid | none; meals come from `nutrition_schedule` at their times |
 | `treatment` | antibiotic activity; concentrations of the `treatment_readouts` drugs | `vasopressor_rate_ug_per_min`; timed infusions come from `treatment_schedule` |
 
-Each module's docstring (in the {doc}`../api/circuits` reference) gives the details.
+Each module's docstring (in the {doc}`../api/modules` reference) gives the details.
 
 ## Readings are instantaneous
 

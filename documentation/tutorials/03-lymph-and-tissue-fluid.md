@@ -34,7 +34,7 @@ def run(seconds, **params):
     core = build_core()
     sim = Composite({"state": biogears_lymph(core, **params)}, core=core)
     sim.run(seconds)
-    return [r["circuits"] | {"time": r["time"]} for r in gather_emitter_results(sim)[("emitter",)]]
+    return [r["readings"] | {"time": r["time"]} for r in gather_emitter_results(sim)[("emitter",)]]
 
 
 rest = run(600)

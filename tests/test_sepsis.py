@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from circuit_helpers import CORE, direct, direct_values, flat, make, run
 
-from viva_biogears.circuits.sepsis import (
+from viva_biogears.modules.sepsis import (
     INFECTION_SCENARIO_SCHEDULE,
     infection_xml,
     nutrition_xml,
@@ -91,9 +91,9 @@ def test_the_sepsis_composite_runs_an_arm(run_composite):
     assert [eid for eid in _REGISTRY if eid.endswith(".biogears_sepsis")]
     _, rows = run_composite(biogears_sepsis, 300.0, severity="moderate")
     assert len(rows) == 6
-    assert rows[-1]["circuits"]["infection"]["inflammation"]["local_pathogen"] > 0
+    assert rows[-1]["readings"]["infection"]["inflammation"]["local_pathogen"] > 0
     assert rows[-1]["interventions"]["infection"]["infection_severity"] == 2.0
-    assert {"lymph", "tissue_fluid", "nutrition", "cardiovascular"} <= set(rows[-1]["circuits"])
+    assert {"lymph", "tissue_fluid", "nutrition", "cardiovascular"} <= set(rows[-1]["readings"])
     with pytest.raises(ValueError, match="severity"):
         biogears_sepsis(CORE, severity="awful")
     assert len(INFECTION_SCENARIO_SCHEDULE) == 47

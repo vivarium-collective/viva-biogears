@@ -1,4 +1,4 @@
-"""Registry of BioGears circuit modules available to ``BioGearsCircuitProcess``.
+"""Registry of BioGears modules available to ``BioGearsModularProcess``.
 
 A module is declarative (``base.CircuitModule``): the BioGears data requests that
 become its output ports and the BioGears actions its setpoints drive. Modules
@@ -22,7 +22,7 @@ from .vitals import VITALS, VITALS_MODULE
 #: Tissues with a lymph drainage path, as port keys -> BioGears names.
 TISSUES = LYMPH_TISSUES
 
-#: Every circuit module, by name: the values ``BioGearsCircuitProcess`` accepts in ``config.modules``.
+#: Every module, by name: the values ``BioGearsModularProcess`` accepts in ``config.modules``.
 MODULES: dict[str, CircuitModule] = {
     m.name: m for m in (VITALS_MODULE, CARDIOVASCULAR, RESPIRATORY, MECHANICAL_VENTILATOR, THERMAL,
                         SUPPLEMENTAL_OXYGEN, CARDIOVASCULAR_POINTS, RESPIRATORY_POINTS, SUBSTANCES,

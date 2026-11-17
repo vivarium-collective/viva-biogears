@@ -1,4 +1,4 @@
-"""BioGearsCircuitProcess: one BioGears engine exposing the selected circuit modules."""
+"""BioGearsModularProcess: the whole BioGears engine, exposing the selected modules' readings and setpoints."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from typing import Any
 
 from process_bigraph import Process
 
-from ..circuits import MODULES
-from ..circuits.base import check_outputs
-from ..circuits.state import read_state
+from ..modules import MODULES
+from ..modules.base import check_outputs
+from ..modules.state import read_state
 from ..states import SAVE_CONFIG, saver_from_config
 from ._bridge import (
     START_CONFIG,
@@ -41,10 +41,11 @@ def _nest(leaves) -> dict[str, Any]:
     return tree
 
 
-class BioGearsCircuitProcess(Process):
-    """Bridge to one real BioGears 8.2.0 engine, exposing the selected circuit modules.
+class BioGearsModularProcess(Process):
+    """Bridge to one real BioGears 8.2.0 engine, exposing the selected modules (every BioGears
+    system is simulated every step; a module chooses only which readings and setpoints are ports).
 
-    ``config.modules`` names entries of ``viva_biogears.circuits.MODULES``. Each module
+    ``config.modules`` names entries of ``viva_biogears.modules.MODULES``. Each module
     contributes a port subtree named after it:
 
     - outputs: the module's BioGears data requests as ``overwrite[float]`` ports at the
@@ -262,3 +263,13 @@ class BioGearsCircuitProcess(Process):
         if self._saver:
             self._saver(self._engine)
         return self.read()
+
+
+class BioGearsCircuitProcess(BioGearsModularProcess):
+    """Deprecated name of :class:`BioGearsModularProcess` (it runs the whole engine, not
+    only its circuits); documents with ``address: local:BioGearsCircuitProcess`` still run."""
+
+    def __init__(self, config=None, core=None):
+        import warnings
+        warnings.warn("BioGearsCircuitProcess is now BioGearsModularProcess", DeprecationWarning, stacklevel=2)
+        super().__init__(config, core=core)

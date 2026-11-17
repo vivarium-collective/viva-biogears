@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 from circuit_helpers import direct, direct_values, flat, make, run
 
-from viva_biogears.circuits.treatment import (
+from viva_biogears.modules.treatment import (
     compound_infusion_xml,
     substance_infusion_xml,
 )
@@ -126,8 +126,8 @@ def test_the_treatment_controller_gives_the_challenge(run_composite):
     assert iv.count(50.0) == 10 and iv[iv.index(50.0):iv.index(50.0) + 10] == [50.0] * 10 and iv[-1] == 0.0
     assert rows[-1]["protocol"]["saline_given_mL"] == pytest.approx(500)
     assert rows[-1]["protocol"]["code"] == 1.0
-    lost = rows[0]["circuits"]["infection"]["clinical"]["blood_volume_mL"]
-    assert rows[-1]["circuits"]["infection"]["clinical"]["blood_volume_mL"] > lost + 200
+    lost = rows[0]["readings"]["infection"]["clinical"]["blood_volume_mL"]
+    assert rows[-1]["readings"]["infection"]["clinical"]["blood_volume_mL"] > lost + 200
 
 
 def test_every_sepsis_run_records_its_protocol():
@@ -186,5 +186,5 @@ def test_the_shipped_septic_state_starts_the_challenge_on_its_first_update(run_c
     iv = [r["interventions"]["cardiovascular"]["iv_rate_mL_per_min"] for r in rows]
     assert iv[:10] == [50.0] * 10 and iv[-1] == 0.0
     assert rows[-1]["protocol"]["branch_h"] == pytest.approx(44.0, abs=1e-6)
-    clinical = rows[0]["circuits"]["infection"]["clinical"]
+    clinical = rows[0]["readings"]["infection"]["clinical"]
     assert clinical["lactate_mmol_per_L"] > 2.0 and clinical["systolic_pressure_mmHg"] < 100.0

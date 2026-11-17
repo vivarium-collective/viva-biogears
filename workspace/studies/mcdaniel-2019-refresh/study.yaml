@@ -24,7 +24,7 @@ objective: 'Starting from the severe infection''s state saved at 44 h, run bioge
 literature_anchors:
 - expectation: 'Figs 11-12: both REFRESH protocols reach SBP > 90 and MAP > 65 mmHg; the experimental
     (norepinephrine) protocol with less fluid'
-  model_observable: circuits.infection.clinical (SBP, MAP); protocol.saline_given_mL
+  model_observable: readings.infection.clinical (SBP, MAP); protocol.saline_given_mL
   cite: mcdaniel2019
   status_in_workspace: Available (readouts recorded)
 - expectation: 'Fig 13: the control protocol delayed 12 h needs more fluid'
@@ -70,39 +70,39 @@ runtime:
     the workbench; analyze.py draws Figs 9-13.
 readouts:
 - name: blood-pathogen
-  store_path: circuits.infection.inflammation.blood_pathogen
+  store_path: readings.infection.inflammation.blood_pathogen
   units: arbitrary
 - name: tissue-integrity
-  store_path: circuits.infection.inflammation.tissue_integrity
+  store_path: readings.infection.inflammation.tissue_integrity
   units: fraction
 - name: heart-rate
-  store_path: circuits.infection.clinical.heart_rate_bpm
+  store_path: readings.infection.clinical.heart_rate_bpm
   units: 1/min
 - name: systolic-pressure
-  store_path: circuits.infection.clinical.systolic_pressure_mmHg
+  store_path: readings.infection.clinical.systolic_pressure_mmHg
   units: mmHg
 - name: mean-arterial-pressure
-  store_path: circuits.infection.clinical.mean_arterial_pressure_mmHg
+  store_path: readings.infection.clinical.mean_arterial_pressure_mmHg
   units: mmHg
 - name: blood-volume
-  store_path: circuits.infection.clinical.blood_volume_mL
+  store_path: readings.infection.clinical.blood_volume_mL
   units: mL
 - name: mean-urine-output
-  store_path: circuits.infection.clinical.mean_urine_output_mL_per_min
+  store_path: readings.infection.clinical.mean_urine_output_mL_per_min
   units: mL/min
 - name: lactate
-  store_path: circuits.infection.clinical.lactate_mmol_per_L
+  store_path: readings.infection.clinical.lactate_mmol_per_L
   units: mmol/L
 - name: antibiotic-activity
-  store_path: circuits.treatment.antibiotic_activity_per_hr
+  store_path: readings.treatment.antibiotic_activity_per_hr
   units: 1/h
   description: BioGears' AntibioticActivity (the pathogen kill rate the antibiotic adds)
 - name: piperacillin-plasma
-  store_path: circuits.treatment.Piperacillin.plasma_concentration_ug_per_mL
+  store_path: readings.treatment.Piperacillin.plasma_concentration_ug_per_mL
   units: ug/mL
   description: Recorded only in treated arms (asking BioGears for a drug activates it)
 - name: norepinephrine-blood
-  store_path: circuits.treatment.Norepinephrine.blood_concentration_ug_per_mL
+  store_path: readings.treatment.Norepinephrine.blood_concentration_ug_per_mL
   units: ug/mL
   description: Recorded only in treated arms
 - name: iv-rate
@@ -122,7 +122,7 @@ readouts:
   description: Index of the protocol in viva_biogears.protocols.PROTOCOLS (0 untreated, 1
     fluid_challenge, 2 antibiotic, 3 refresh_control, 4 refresh_experimental)
 - name: irreversible-state
-  store_path: circuits.irreversible_state
+  store_path: readings.irreversible_state
   description: BioGears reported an irreversible state; the engine is no longer advanced.
 - name: branch-hour
   store_path: protocol.branch_h
@@ -151,7 +151,7 @@ expected_behavior:
     at 0.18 ug/kg/min and maintenance at 1 mL/kg/h at 46 h
   test: tests/test_refresh.py::test_protocols_start_on_time
 - name: goals-met
-  observable: circuits.infection.clinical (SBP, MAP)
+  observable: readings.infection.clinical (SBP, MAP)
   condition: SBP > 90 and MAP > 65 mmHg at the end of each 6 h protocol
   test: tests/test_refresh.py::test_each_protocol_meets_the_goals
 - name: experimental-spares-fluid
@@ -170,10 +170,10 @@ visualizations:
     inputs_map:
       time: global_time
       protocol_code: protocol.code
-      mean_arterial_pressure: circuits.infection.clinical.mean_arterial_pressure_mmHg
-      systolic_pressure: circuits.infection.clinical.systolic_pressure_mmHg
-      mean_urine_output: circuits.infection.clinical.mean_urine_output_mL_per_min
-      blood_pathogen: circuits.infection.inflammation.blood_pathogen
+      mean_arterial_pressure: readings.infection.clinical.mean_arterial_pressure_mmHg
+      systolic_pressure: readings.infection.clinical.systolic_pressure_mmHg
+      mean_urine_output: readings.infection.clinical.mean_urine_output_mL_per_min
+      blood_pathogen: readings.infection.inflammation.blood_pathogen
       saline_given: protocol.saline_given_mL
       branch_h: protocol.branch_h
       treatment_start_h: protocol.treatment_start_h
