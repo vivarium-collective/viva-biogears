@@ -21,7 +21,7 @@ if _os.environ.get("PYTHONUTF8") != "1":
 #
 # _Investigation `biogears-hemorrhage` — coder reproduction notebook._
 #
-# **Question.** How does the BioGears 8.2.0 engine respond to a hemorrhage: how does the response scale with the bleed rate, does closed-loop fluid resuscitation change it, and does the same bleed behave the same across BioGears' 17 shipped patients? (viva-pulse's pulse-hemorrhage investigation, ported to BioGears.)
+# **Question.** How does the BioGears 8.2.0 engine respond to a hemorrhage: how does the response scale with the bleed rate, does closed-loop fluid resuscitation change it, and does the same bleed behave the same across BioGears' 17 shipped patients?
 #
 # ---
 #
@@ -244,11 +244,11 @@ def _render_one(address, config, runs_db, study_yaml, overrides=None):
 
 # ## Study: Hemorrhage severity sweep (BioGears) (`hemorrhage-severity-sweep`)
 #
-# **Question.** How do blood loss, heart rate and mean arterial pressure over 10 minutes depend on the initial rate of a right-leg hemorrhage in the BioGears StandardMale? (The viva-pulse study of the same name, ported to BioGears.)
+# **Question.** How do blood loss, heart rate and mean arterial pressure over 10 minutes depend on the initial rate of a right-leg hemorrhage in the BioGears StandardMale?
 #
 # **Objective.** Run biogears_hemorrhage for 600 s at initial rates 0, 50, 100, 150, 200 and 250 mL/min (RightLeg, StandardMale@0s) and compare the final vitals across the grid.
 #
-# **Hypothesis.** Blood lost and heart rate rise monotonically with the initial bleed rate and MAP falls monotonically with it. Unlike Pulse at its milder severities, BioGears' baroreflex does not hold MAP within 2 mmHg of its start for any of these bleeds. Loss grows much more slowly than the commanded rate, because BioGears lowers a bleed's rate as the local pressure falls.
+# **Hypothesis.** Blood lost and heart rate rise monotonically with the initial bleed rate and MAP falls monotonically with it. BioGears' baroreflex does not hold MAP within 2 mmHg of its start for any of these bleeds. Loss grows much more slowly than the commanded rate, because BioGears lowers a bleed's rate as the local pressure falls.
 
 # ### Parameters
 #
@@ -325,7 +325,7 @@ _save_viz('hemorrhage-severity-sweep', 'severity-response', _render_one('local:H
 
 # ## Study: Closed-loop fluid resuscitation (BioGears) (`fluid-resuscitation`)
 #
-# **Question.** Does a MAP-targeted IV infusion change the course of a right-leg hemorrhage in BioGears, and does it matter whether the fluid is saline or O-negative blood? (The viva-pulse study of the same name, ported to BioGears.)
+# **Question.** Does a MAP-targeted IV infusion change the course of a right-leg hemorrhage in BioGears, and does it matter whether the fluid is saline or O-negative blood?
 #
 # **Objective.** Run the untreated bleed (biogears_hemorrhage, RightLeg, 200 mL/min initial rate, StandardMale@0s, 600 s) against biogears_resuscitation with Saline and with Blood_ONegative (MapFluidController: target 90 mmHg, gain 25 mL/min per mmHg, cap 250 mL/min).
 #
@@ -398,11 +398,11 @@ _save_viz('fluid-resuscitation', 'resuscitation-response', _render_one('local:Fl
 
 # ## Study: Hemorrhage across BioGears' shipped patients (`patient-cohort`)
 #
-# **Question.** Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses? (The viva-pulse study of the same name, ported to BioGears.)
+# **Question.** Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
 #
 # **Objective.** Run biogears_hemorrhage (RightLeg, 200 mL/min initial rate, 600 s) from each shipped <name>@0s.xml state (the DefaultTemplate states excluded).
 #
-# **Hypothesis.** Every patient compensates the same way (blood volume and MAP fall, heart rate rises). Smaller patients lose a larger fraction of their blood, as in Pulse, but less cleanly: in BioGears the volume lost also rises with the patient's resting cardiac output, so the fast-heart-rate patients lose more.
+# **Hypothesis.** Every patient compensates the same way (blood volume and MAP fall, heart rate rises). Smaller patients lose a larger fraction of their blood, but not cleanly: the volume lost also rises with the patient's resting cardiac output, so the fast-heart-rate patients lose more.
 
 # ### Parameters
 #
