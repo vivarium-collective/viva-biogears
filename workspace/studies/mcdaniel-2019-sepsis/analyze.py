@@ -6,7 +6,8 @@ Ported from pybiogears studies/mcdaniel2019/analyze.py; run.py writes the same c
 
 Writes OUT/summary.md (event timings vs the paper, lymph and fluid numbers, the
 treatment arms) and OUT/fig4.png ... fig13.png, fig_lymph.png. Works on partial runs
-(whatever hours and arms exist).
+(whatever hours and arms exist). As in the paper, Fig 9 is in hours after infection and
+Figs 10-13 in hours since the treatment start (Fig 10: "0 h post-antibiotics" = 46 h).
 """
 import sys
 from pathlib import Path
@@ -237,11 +238,13 @@ REFS = {"SBP": 90.0, "MAP": 65.0, "MeanUrineOutput": 0.625, "Piperacillin": 16.0
 arm_fig("fig9", ["SBP", "MAP", "MeanUrineOutput", "HR", "BloodVolume"], ["untreated", "challenge"],
         "Fig 9 analogue: 2 x 500 mL saline challenge at 44 and 44.5 h", LAB, REFS, xlim=(43.5, 46.0))
 arm_fig("fig10", ["Piperacillin", "AntibioticActivity", "BloodPathogen", "MAP"], ["challenge", "antibiotic"],
-        "Fig 10 analogue: piperacillin/tazobactam 4.5 g over 30 min at 46 h (MIC 16 mg/L)", LAB, REFS, xlim=(44.0, 52.0))
+        "Fig 10 analogue: piperacillin/tazobactam 4.5 g over 30 min at 46 h (MIC 16 mg/L)", LAB, REFS,
+        shift={"challenge": 46.0, "antibiotic": 46.0}, xlabel="time since antibiotic start (h)", xlim=(-2.0, 6.0))
 arm_fig("fig11", ["SBP", "MAP", "MeanUrineOutput", "Lactate", "SalineGiven", "VasopressorRate", "BloodVolume",
                   "BloodPathogen"], ["untreated", "refresh_control", "refresh_experimental"],
         "Figs 11-12 analogue: REFRESH control (liberal fluid) vs experimental (norepinephrine, restricted fluid)",
-        LAB, REFS, xlim=(44.0, 52.0))
+        LAB, REFS, shift={"untreated": 46.0, "refresh_control": 46.0, "refresh_experimental": 46.0},
+        xlabel="time since protocol start (h)", xlim=(-2.0, 6.0))
 arm_fig("fig13", ["SBP", "MAP", "MeanUrineOutput", "SalineGiven"], ["refresh_control", "refresh_control_delayed"],
         "Fig 13 analogue: the REFRESH control protocol on time (46 h) and delayed 12 h (58 h)", LAB, REFS,
         shift={"refresh_control": 46.0, "refresh_control_delayed": 58.0}, xlabel="time since protocol start (h)",

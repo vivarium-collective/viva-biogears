@@ -1,5 +1,9 @@
 """Pre-registered criteria for the REFRESH protocols (McDaniel et al. 2019, Figs 11-13;
-see study.yaml). The goals and doses are the paper's; comparisons are directions."""
+see study.yaml). The goals and doses are the paper's; comparisons are directions.
+
+Every arm starts from the severe infection's state saved at 44 h, as in the paper; times
+here are engine hours (hours since the infection): the run's ``protocol.branch_h`` plus
+its own clock."""
 
 import numpy as np
 import pytest
@@ -12,7 +16,8 @@ IV = "interventions.cardiovascular.iv_rate_mL_per_min"
 NOR = "interventions.treatment.vasopressor_rate_ug_per_min"
 GIVEN = "protocol.saline_given_mL"
 WEIGHT_kg = 75.8                        # StandardMale
-#: arm -> (run length h, protocol start h)
+BRANCH_H = 44.0
+#: arm -> (engine hour the run ends, protocol start h)
 ARMS = {"refresh-control": (52.0, 46.0), "refresh-experimental": (52.0, 46.0),
         "refresh-control-delayed": (64.0, 58.0)}
 
@@ -21,14 +26,16 @@ ARMS = {"refresh-control": (52.0, 46.0), "refresh-experimental": (52.0, 46.0),
 def arms(latest):
     missing = [arm for arm in ARMS if arm not in latest]
     assert not missing, f"no completed run for arms {missing}"
-    for arm, (duration_h, _) in ARMS.items():
-        assert len(latest[arm].time) >= duration_h * 60, f"{arm} recorded {len(latest[arm].time)} rows"
+    for arm, (end_h, _) in ARMS.items():
+        run = latest[arm]
+        assert run.initial("protocol.branch_h") == pytest.approx(BRANCH_H), f"{arm} did not start at {BRANCH_H} h"
+        assert hours(run, arm)[-1] == pytest.approx(end_h), f"{arm} ran to {hours(run, arm)[-1]:.2f} h"
     return latest
 
 
-def hours(run, arm):
-    t = run.time
-    return (t - t[0]) / (t[-1] - t[0]) * ARMS[arm][0]
+def hours(run, arm=None):
+    """Engine hours of each recorded row (``Run.time`` is the composite's own clock, s)."""
+    return run.initial("protocol.branch_h") + (run.time - run.time[0]) / 3600.0
 
 
 def at(runs, arm, observable, h):
@@ -44,7 +51,10 @@ def window(runs, arm, observable, a_h, b_h):
 
 @pytest.mark.parametrize("arm, until_h", [("refresh-experimental", 46.0), ("refresh-control-delayed", 44.0)])
 def test_arms_agree_before_treatment(arms, arm, until_h):
-    a, b = window(arms, arm, MAP, 0, until_h), window(arms, "refresh-control", MAP, 0, until_h)
+    """Determinism: the arms match until the first difference in what they're given (for
+    the delayed arm, the shared starting state)."""
+    a = window(arms, arm, MAP, 0, until_h + 0.01)
+    b = window(arms, "refresh-control", MAP, 0, until_h + 0.01)
     np.testing.assert_allclose(a, b, rtol=1e-6)
 
 

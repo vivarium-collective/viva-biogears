@@ -135,7 +135,8 @@ def test_every_sepsis_run_records_its_protocol():
     can tell the arms apart (the workbench gives a Visualization no run names)."""
     from viva_biogears.composites import biogears_sepsis
     untreated = biogears_sepsis(None, severity="severe")
-    assert untreated["protocol"] == {"code": 0.0, "saline_given_mL": 0.0} and "controller" not in untreated
+    assert untreated["protocol"] == {"code": 0.0, "saline_given_mL": 0.0, "branch_h": 0.0,
+                                     "treatment_start_h": 46.0} and "controller" not in untreated
     assert untreated["emitter"]["inputs"]["protocol"] == ["protocol"]
     treated = biogears_sepsis(None, severity="severe", treatment="refresh_experimental")
     assert treated["protocol"]["code"] == 4.0 and "controller" in treated
@@ -151,3 +152,25 @@ def test_drug_readouts_default_to_treated_runs_and_can_be_set():
     assert readouts(drug_readouts=["Piperacillin"]) == ["Piperacillin"]
     with pytest.raises(ValueError, match="not a BioGears substance"):
         biogears_sepsis(None, drug_readouts=["Caffeine"])
+
+
+def test_a_protocol_from_a_saved_state_keeps_engine_time(run_composite):
+    """McDaniel et al. started every treatment from a saved septic state. From a state saved
+    at 5 h (StandardMale@equilibrated), a challenge at 5 h starts on the first update;
+    on the composite's own clock (0) it would wait 5 h. Falsifies a missing time offset."""
+    from viva_biogears.composites import biogears_sepsis
+    _, rows = run_composite(biogears_sepsis, 720.0, severity="severe", treatment="fluid_challenge",
+                            state_file="StandardMale@equilibrated.xml", challenge_h=5.0)
+    iv = [r["interventions"]["cardiovascular"]["iv_rate_mL_per_min"] for r in rows]
+    assert iv[:10] == [50.0] * 10 and iv[-1] == 0.0
+    assert rows[-1]["protocol"]["saline_given_mL"] == pytest.approx(500)
+    assert rows[-1]["protocol"]["branch_h"] == pytest.approx(5.0)
+    assert rows[-1]["protocol"]["treatment_start_h"] == 5.0
+
+
+def test_a_state_saved_after_the_challenge_raises():
+    """A protocol whose challenge is before the starting state would start late, silently."""
+    from viva_biogears.composites import biogears_sepsis
+    with pytest.raises(ValueError, match="after the protocol's challenge"):
+        biogears_sepsis(None, treatment="fluid_challenge", state_file="StandardMale@equilibrated.xml",
+                        challenge_h=1.0)

@@ -10,10 +10,12 @@ driven update by update at 60 s:
 
 - control, mild, moderate, severe: StandardMale@0s, infection severity 0/1/2/3 at t = 0
   (Skin, MIC 16 mg/L), 48 h (paper Figs 4-7);
-- the treatment arms branch from severe's 44 h checkpoint and follow a
+- the treatment arms branch from severe's 44 h checkpoint (or, without one, the same state
+  shipped as viva_biogears/states/StandardMale@severe-infection-44h.xml) and follow a
   viva_biogears.protocols.TreatmentProtocol, the same one the biogears_sepsis composite's
   TreatmentController runs (the workbench studies mcdaniel-2019-treatment and
-  mcdaniel-2019-refresh run these arms from t = 0 instead):
+  mcdaniel-2019-refresh start from that shipped state too, as the paper started every
+  treatment from a saved septic patient state):
   - challenge: two 500 mL saline boluses at 50 mL/min at 44 and 44.5 h, to 46 h (Fig 9);
   - antibiotic: the challenge, then piperacillin/tazobactam at 46 h, to 52 h (Fig 10);
   - refresh_control, refresh_experimental: the challenge, the antibiotic and the REFRESH
@@ -53,6 +55,9 @@ TREATED = {"challenge": ("fluid_challenge", 0.0, 2.0), "antibiotic": ("antibioti
            "untreated": ("none", 0.0, 2.0)}
 BRANCH_H = 44.0
 UNTREATED_END_H = 64.0
+#: The severe arm's 44 h state, shipped in viva_biogears/states/; the treatment arms start
+#: from it when OUT/severe has no 44 h checkpoint of its own.
+SEPTIC_STATE = "StandardMale@severe-infection-44h.xml"
 
 
 def set_test_timing(checkpoint_h: float | None, challenge_at_h: float | None) -> None:
@@ -174,9 +179,13 @@ def run_arm(arm: str, root: Path, hours: float) -> None:
     elif arm in TREATED:
         branch = BRANCH_H * 3600.0
         source = [p for p in checkpoints(root / "severe") if abs(_seconds(p) - branch) < 1]
-        if not source:
+        if source:
+            start_file = str(source[0])
+        elif BRANCH_H == 44.0:           # the same state, shipped with the package
+            start_file = SEPTIC_STATE
+        else:
             raise SystemExit(f"{arm} needs severe's {BRANCH_H:g} h checkpoint: run severe first")
-        start_file, start = str(source[0]), branch
+        start = branch
     else:
         start_file, start = "StandardMale@0s.xml", 0.0
     if start >= end - 1:

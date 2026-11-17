@@ -4,9 +4,11 @@ from process_bigraph.composite_generator import composite_generator
 
 from ..circuits.cardiovascular import CARDIOVASCULAR
 from ..circuits.sepsis import INFECTION, INFECTION_SCENARIO_SCHEDULE
+from ..circuits.state import state_time_s
 from ..circuits.treatment import TREATMENT
 from ..core import build_core
 from ..protocols import PROTOCOL_CODES, PROTOCOLS, TreatmentProtocol
+from ..runtime import runtime_dir, state_path
 from .circuits import (
     _CIRCUIT_ADDITIONS,
     _CONDITIONS,
@@ -89,6 +91,12 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
     if treatment != "none" and cardiovascular["iv_rate_mL_per_min"] != 0.0:
         raise ValueError("iv_rate_mL_per_min is set by the treatment protocol; leave it at 0")
     reject_unknown(overrides)
+    # A run can start from a saved septic state (McDaniel et al. ran every treatment from
+    # states saved during the untreated severe infection): the protocol keeps engine time.
+    branch_s = 0.0 if patient_file else state_time_s(state_path(runtime_dir(), state_file))
+    if treatment != "none" and branch_s > protocol.challenge_s + 1e-6:
+        raise ValueError(f"state_file {state_file!r} was saved at {branch_s / 3600:.2f} h, after the protocol's "
+                         f"challenge at {challenge_h:g} h; start from an earlier state or move challenge_h")
     doc = {
         "biogears": circuit_node(MODULES, state_file=state_file, patient_file=patient_file, conditions=conditions,
                                  circuit_additions=circuit_additions, interval=interval, **config),
@@ -104,7 +112,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
             "_type": "step",
             "address": "local:TreatmentController",
             "config": {"protocol": treatment, "challenge_h": challenge_h, "start_h": treatment_start_h,
-                       "duration_h": treatment_duration_h, "interval_s": interval},
+                       "duration_h": treatment_duration_h, "interval_s": interval, "time_offset_s": branch_s},
             "inputs": {"time": ["global_time"],
                        "systolic_pressure_mmHg": [*clinical, "systolic_pressure_mmHg"],
                        "mean_arterial_pressure_mmHg": [*clinical, "mean_arterial_pressure_mmHg"],
@@ -112,11 +120,15 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
             "outputs": {"iv_rate_mL_per_min": ["interventions", "cardiovascular", "iv_rate_mL_per_min"],
                         "vasopressor_rate_ug_per_min": ["interventions", "treatment", "vasopressor_rate_ug_per_min"],
                         "saline_given_mL": ["protocol", "saline_given_mL"],
-                        "protocol_code": ["protocol", "code"]},
+                        "protocol_code": ["protocol", "code"],
+                        "branch_h": ["protocol", "branch_h"],
+                        "treatment_start_h": ["protocol", "treatment_start_h"]},
         }
-    # Every run records its protocol (code 0 and no saline when untreated), so figures
-    # and tests can tell the arms apart from the run alone.
-    doc["protocol"] = {"code": PROTOCOL_CODES[treatment], "saline_given_mL": 0.0}
+    # Every run records its protocol (code 0 and no saline when untreated), the engine hour
+    # it started at and the hour its treatment starts (the challenge for fluid_challenge),
+    # so figures and tests can tell the arms apart and put them on one clock.
+    doc["protocol"] = {"code": PROTOCOL_CODES[treatment], "saline_given_mL": 0.0, "branch_h": branch_s / 3600.0,
+                       "treatment_start_h": float(challenge_h if treatment == "fluid_challenge" else treatment_start_h)}
     emitter = doc["emitter"]
     emitter["config"]["emit"]["protocol"] = "node"
     emitter["inputs"]["protocol"] = ["protocol"]

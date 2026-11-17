@@ -46,10 +46,11 @@ hypothesis: 'The progression follows the paper up to hypotension, but on 8.2.0 t
 
   '
 description: 'Three studies on the biogears_sepsis composite. Its treatment parameter
-  runs the paper''s protocols (viva_biogears.protocols, TreatmentController). Each arm is
-  a 48-64 h run (8-11 h of wall time) from t = 0; mcdaniel-2019-sepsis/run.py runs the
-  same arms faster outside the workbench, branching the treatments from the severe arm''s
-  44 h checkpoint, and analyze.py draws the paper''s figures. Fig 8 (inflammation parameter
+  runs the paper''s protocols (viva_biogears.protocols, TreatmentController). The progression
+  arms run 48 h from t = 0; as in the paper, every treatment arm starts from the severe
+  infection''s state saved at 44 h (viva_biogears/states/StandardMale@severe-infection-44h.xml)
+  and runs 8-20 h. mcdaniel-2019-sepsis/run.py runs the same arms outside the workbench,
+  and analyze.py draws the paper''s figures. Fig 8 (inflammation parameter
   changes) needs changes inside BioGears and is out of scope.
 
   '

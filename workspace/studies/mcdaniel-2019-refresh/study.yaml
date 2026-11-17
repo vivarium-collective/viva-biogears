@@ -15,9 +15,10 @@ hypothesis: 'Both protocols raise SBP above 90 and MAP above 65 mmHg by the end 
   protocol started 12 h later meets a more hypotensive patient and gives more saline.
 
   '
-objective: 'Run biogears_sepsis (severe, 60 s updates) with treatment refresh_control and
-  refresh_experimental (challenge at 44 h, antibiotic and protocol from 46 to 52 h), and refresh_control
-  delayed by 12 h (challenge at 56 h, protocol from 58 to 64 h).
+objective: 'Starting from the severe infection''s state saved at 44 h, run biogears_sepsis
+  (60 s updates) with treatment refresh_control and refresh_experimental (challenge at 44
+  h, antibiotic and protocol from 46 to 52 h), and refresh_control delayed by 12 h (challenge
+  at 56 h, protocol from 58 to 64 h).
 
   '
 literature_anchors:
@@ -38,7 +39,8 @@ baseline:
     nutrition: infection_scenario
     interval: 60.0
     treatment: refresh_control
-    n_steps: 3120
+    state_file: StandardMale@severe-infection-44h.xml
+    n_steps: 480
 variants:
 - name: refresh-experimental
   composite: viva_biogears.composites.sepsis.biogears_sepsis
@@ -47,7 +49,8 @@ variants:
     nutrition: infection_scenario
     interval: 60.0
     treatment: refresh_experimental
-    n_steps: 3120
+    state_file: StandardMale@severe-infection-44h.xml
+    n_steps: 480
 - name: refresh-control-delayed
   composite: viva_biogears.composites.sepsis.biogears_sepsis
   parameter_overrides:
@@ -57,12 +60,14 @@ variants:
     treatment: refresh_control
     challenge_h: 56.0
     treatment_start_h: 58.0
-    n_steps: 3840
+    state_file: StandardMale@severe-infection-44h.xml
+    n_steps: 1200
 runtime:
-  note: Each arm runs from t = 0 (StandardMale@0s, severe infection), about 9-11 h of wall
-    time. mcdaniel-2019-sepsis/run.py runs the same protocols faster by branching from the
-    severe arm's 44 h checkpoint (outside the workbench); analyze.py draws Figs 9-13 from
-    its output.
+  note: Every arm starts from the severe infection's state saved at 44 h (viva_biogears/states/StandardMale@severe-infection-44h.xml),
+    as McDaniel et al. started each treatment from a saved septic patient state; the protocol
+    keeps engine time (hours since the infection), recorded as protocol.branch_h. An 8 h arm
+    takes about 1.5 h of wall time. mcdaniel-2019-sepsis/run.py runs the same arms outside
+    the workbench; analyze.py draws Figs 9-13.
 readouts:
 - name: blood-pathogen
   store_path: circuits.infection.inflammation.blood_pathogen
@@ -119,10 +124,19 @@ readouts:
 - name: irreversible-state
   store_path: circuits.irreversible_state
   description: BioGears reported an irreversible state; the engine is no longer advanced.
+- name: branch-hour
+  store_path: protocol.branch_h
+  units: h
+  description: 'Engine hour the run started at (44: the saved septic state)'
+- name: treatment-start-hour
+  store_path: protocol.treatment_start_h
+  units: h
+  description: Engine hour the arm's treatment starts (the figures' time origin)
 units_and_time:
 - quantity: time
   unit: s
-  scale: one recorded row per 60 s update
+  scale: one recorded row per 60 s update; global_time counts from the saved state (engine
+    time = protocol.branch_h + global_time)
   note: BioGears' own clock; its internal solver step is 0.02 s.
 - quantity: fluid
   unit: mL, mL/min
@@ -161,6 +175,8 @@ visualizations:
       mean_urine_output: circuits.infection.clinical.mean_urine_output_mL_per_min
       blood_pathogen: circuits.infection.inflammation.blood_pathogen
       saline_given: protocol.saline_given_mL
+      branch_h: protocol.branch_h
+      treatment_start_h: protocol.treatment_start_h
 controls:
 - name: refresh-control
   kind: positive
@@ -199,5 +215,5 @@ limitations:
   BioGears' InfectionSevere.xml (50 mL/min, 14 ug/mL).
 - On 8.2.0 the untreated patient never reaches septic shock by 48 h, so the protocols start
   from a less hypotensive patient than the paper's; the goals may be met at the first reassessment.
-- Each delayed arm repeats the first 56 h of the severe infection; run.py branches from a
-  checkpoint instead.
+- The saved 44 h state comes from the severe arm of mcdaniel-2019-sepsis (run.py, 60 s updates);
+  BioGears is deterministic, so the arms continue that run exactly.

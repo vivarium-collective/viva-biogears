@@ -10,7 +10,9 @@
 
 Fig 8 (changing inflammation parameters) needs changes inside BioGears and is out of scope.
 
-**Two ways to run it.** The workbench studies of the `mcdaniel-2019` investigation run each arm of `biogears_sepsis` from t = 0: this folder's `study.yaml` (Figs 4–7), `../mcdaniel-2019-treatment` (Figs 9–10) and `../mcdaniel-2019-refresh` (Figs 11–13). Their criteria are the pytest files in each `tests/`. `run.py` and `analyze.py` here run the same arms outside the workbench, faster: the treatment arms branch from the severe arm's 44 h checkpoint instead of repeating its first 44 h.
+**Two ways to run it.** The workbench studies of the `mcdaniel-2019` investigation run `biogears_sepsis`: this folder's `study.yaml` (Figs 4–7, 48 h from t = 0), `../mcdaniel-2019-treatment` (Figs 9–10) and `../mcdaniel-2019-refresh` (Figs 11–13). Their criteria are the pytest files in each `tests/`. `run.py` and `analyze.py` here run the same arms outside the workbench.
+
+**Treatment arms start from a saved septic state, as in the paper** ("All treatment scenarios were conducted using virtual patient states generated from the nominal BioGears severe infection action"). The state is the severe arm at 44 h, shipped as `viva_biogears/states/StandardMale@severe-infection-44h.xml` (see that folder's README). Each treatment arm runs from it to 52 h (64 h for the delayed arm), keeping engine time: the protocol's 44 h challenge is the run's first update. `run.py` uses its own severe arm's 44 h checkpoint when it has one, and the shipped state otherwise. As in the paper, Fig 9 is plotted in hours after infection and Figs 10–13 in hours since the treatment start.
 
 Lymph and tissue fluid are recorded throughout, because the paper's endothelial-leak / oncotic-pressure / lymph model is what turns inflammation into hypovolemia. This study runs on viva-biogears' `biogears_sepsis` composite and `BioGearsCircuitProcess` (modules `infection`, `nutrition`, `lymph`, `tissue_fluid`, `cardiovascular`). It replaces the standalone scripts in pybiogears `studies/mcdaniel2019`, whose protocol and analysis it keeps.
 

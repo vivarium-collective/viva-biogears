@@ -1,5 +1,9 @@
 """Pre-registered criteria for the fluid challenge and antibiotic (McDaniel et al. 2019,
-Figs 9-10; see study.yaml). Directions and the paper's MIC; no fitted numbers."""
+Figs 9-10; see study.yaml). Directions and the paper's MIC; no fitted numbers.
+
+Every arm starts from the severe infection's state saved at 44 h, as in the paper; times
+here are engine hours (hours since the infection): the run's ``protocol.branch_h`` plus
+its own clock."""
 
 import numpy as np
 import pytest
@@ -10,7 +14,7 @@ IV = "interventions.cardiovascular.iv_rate_mL_per_min"
 GIVEN = "protocol.saline_given_mL"
 PIP = "circuits.treatment.Piperacillin.plasma_concentration_ug_per_mL"
 ARMS = ["untreated", "fluid-challenge", "antibiotic"]
-DURATION_H = 52.0
+BRANCH_H, END_H = 44.0, 52.0
 MIC_ug_per_mL = 16.0                    # the paper's 16 mg/L
 
 
@@ -19,13 +23,15 @@ def arms(latest):
     missing = [arm for arm in ARMS if arm not in latest]
     assert not missing, f"no completed run for arms {missing}"
     for arm in ARMS:
-        assert len(latest[arm].time) >= DURATION_H * 60, f"{arm} recorded {len(latest[arm].time)} rows"
+        run = latest[arm]
+        assert run.initial("protocol.branch_h") == pytest.approx(BRANCH_H), f"{arm} did not start at {BRANCH_H} h"
+        assert hours(run)[-1] == pytest.approx(END_H), f"{arm} ran to {hours(run)[-1]:.2f} h"
     return latest
 
 
 def hours(run):
-    t = run.time
-    return (t - t[0]) / (t[-1] - t[0]) * DURATION_H
+    """Engine hours of each recorded row (``Run.time`` is the composite's own clock, s)."""
+    return run.initial("protocol.branch_h") + (run.time - run.time[0]) / 3600.0
 
 
 def at(run, observable, h):
@@ -35,9 +41,10 @@ def at(run, observable, h):
 
 @pytest.mark.parametrize("arm, until_h", [("fluid-challenge", 44.0), ("antibiotic", 46.0)])
 def test_arms_agree_before_treatment(arms, arm, until_h):
-    """Determinism: an arm matches its comparator until its first action."""
+    """Determinism: an arm matches its comparator until its first action (for the
+    challenge, the shared starting state)."""
     comparator = arms["untreated" if arm == "fluid-challenge" else "fluid-challenge"]
-    before = hours(arms[arm]) < until_h - 1e-6
+    before = hours(arms[arm]) <= until_h + 1e-6
     for observable in (CLIN + "mean_arterial_pressure_mmHg", CLIN + "blood_volume_mL", PATHOGEN):
         np.testing.assert_allclose(arms[arm].observable(observable)[before],
                                    comparator.observable(observable)[before], rtol=1e-6)

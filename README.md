@@ -19,7 +19,7 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - sepsis: the `infection`, `nutrition` and `treatment` modules, McDaniel et al. 2019's treatment protocols (`viva_biogears.protocols`, run by `TreatmentController`) and `biogears_sepsis`;
   - workbench studies (`workspace/`), each with pre-registered pytest criteria and figures (`viva_biogears/visualizations/`), authored and piloted but not yet run through the workbench:
     - investigation `biogears-hemorrhage`, viva-pulse's three hemorrhage studies ported to BioGears: `hemorrhage-severity-sweep`, `fluid-resuscitation`, `patient-cohort` (10 min runs);
-    - investigation `mcdaniel-2019`, replicating McDaniel et al. 2019: `mcdaniel-2019-sepsis` (Figs 4–7), `mcdaniel-2019-treatment` (Figs 9–10), `mcdaniel-2019-refresh` (Figs 11–13). Each arm is a 48–64 h run, about 8–11 h of wall time; `mcdaniel-2019-sepsis/run.py` runs them faster outside the workbench (see its README).
+    - investigation `mcdaniel-2019`, replicating McDaniel et al. 2019: `mcdaniel-2019-sepsis` (Figs 4–7), `mcdaniel-2019-treatment` (Figs 9–10), `mcdaniel-2019-refresh` (Figs 11–13). The progression arms are 48 h runs (about 8 h of wall time each); the treatment arms start, as in the paper, from the severe infection's state saved at 44 h (`viva_biogears/states/StandardMale@severe-infection-44h.xml`) and run 8–20 h. `mcdaniel-2019-sepsis/run.py` runs all of them outside the workbench (see its README).
 
 ## Requirements
 
@@ -149,7 +149,7 @@ rows = gather_emitter_results(sim)[("emitter",)]
 | `biogears_supplemental_oxygen` | a nasal cannula | `oxygen_connected`, `oxygen_flow_L_per_min` |
 | `biogears_whole_body_circuits` | every module with setpoints, plus lymph and tissue fluid, on one engine | all of the above |
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state | `state_file`, `iv_rate_mL_per_min`, `iv_compound` |
-| `biogears_sepsis` | an infection (BioGears' sepsis model) with meals, lymph, tissue fluid and hemodynamics, sampled each minute; optionally treated with one of McDaniel et al. 2019's protocols | `severity`, `infection_location`, `infection_mic_mg_per_L`, `nutrition`, `iv_rate_mL_per_min`; `treatment` (`fluid_challenge`, `antibiotic`, `refresh_control`, `refresh_experimental`), `challenge_h`, `treatment_start_h`, `treatment_duration_h`, `drug_readouts` |
+| `biogears_sepsis` | an infection (BioGears' sepsis model) with meals, lymph, tissue fluid and hemodynamics, sampled each minute; optionally treated with one of McDaniel et al. 2019's protocols | `severity`, `infection_location`, `infection_mic_mg_per_L`, `nutrition`, `iv_rate_mL_per_min`; `treatment` (`fluid_challenge`, `antibiotic`, `refresh_control`, `refresh_experimental`), `challenge_h`, `treatment_start_h`, `treatment_duration_h`, `drug_readouts`; from a saved state (e.g. `StandardMale@severe-infection-44h.xml`) the protocol keeps engine time |
 
 Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites use viva-pulse's store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
 

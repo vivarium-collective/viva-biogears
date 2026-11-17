@@ -82,7 +82,10 @@ setpoint. `viva_biogears.protocols.TreatmentProtocol` turns the paper's fluid ch
 and REFRESH protocols into the saline and norepinephrine setpoints, reassessed from the
 pressures and urine output each update; `biogears_sepsis(treatment=...)` runs it as a
 `TreatmentController` step. BioGears keeps one infusion per compound and per substance, so
-a setpoint can't drive what the schedule also infuses.
+a setpoint can't drive what the schedule also infuses. As in the paper, a treatment can
+start from a saved septic state (`state_file="StandardMale@severe-infection-44h.xml"`, the
+untreated severe infection at 44 h); the protocol then keeps engine time, so its 44 h
+challenge is the run's first update.
 
 ## Rules that come from BioGears
 

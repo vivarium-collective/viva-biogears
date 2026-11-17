@@ -9,6 +9,7 @@ reads NaN for others).
 from __future__ import annotations
 
 import math
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -156,3 +157,14 @@ def child(el, tag):
 
 def text(el, tag, default=""):
     return _text(el, tag, default) if el is not None else default
+
+
+def state_time_s(path) -> float:
+    """The engine time (s) a BioGears state was saved at: its ``SimulationTime``, the first
+    element of the file (0 for a state saved at load)."""
+    with open(path, encoding="utf-8", errors="ignore") as f:
+        head = f.read(4096)
+    m = re.search(r'<SimulationTime[^>]*value="([^"]+)"', head)
+    if not m:
+        raise ValueError(f"{path}: no SimulationTime in the state's header")
+    return float(m.group(1))
