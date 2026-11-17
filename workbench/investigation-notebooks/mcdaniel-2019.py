@@ -277,7 +277,7 @@ ov_viva_biogears_composites_sepsis_biogears_sepsis = {
     'challenge_h'           : 44.0,   # Saline challenge (2 x 500 mL) at
     'treatment_start_h'     : 46.0,   # Antibiotic and REFRESH start (58 for Fig 13's delayed arm)
     'treatment_duration_h'  : 6.0,   # REFRESH reassessment period
-    'drug_readouts'         : None,   # Drugs whose concentrations are read (circuits/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
+    'drug_readouts'         : None,   # Drugs whose concentrations are read (readings/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
     'state_file'            : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states or the package's states/ (or an absolute path)
     'patient_file'          : '',   # Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and then cached; replaces state_file
     'conditions'            : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. A different patient, not a perturbation
@@ -331,16 +331,16 @@ def _save_viz(study, slug, html):
 
 
 # sepsis-progression
-_save_viz('mcdaniel-2019-sepsis', 'sepsis-progression', _render_one('local:SepsisProgression', {'inputs_map': {'time': 'global_time', 'blood_pathogen': 'circuits.infection.inflammation.blood_pathogen', 'tissue_integrity': 'circuits.infection.inflammation.tissue_integrity', 'mean_arterial_pressure': 'circuits.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'circuits.infection.clinical.systolic_pressure_mmHg', 'lactate': 'circuits.infection.clinical.lactate_mmol_per_L', 'blood_volume': 'circuits.infection.clinical.blood_volume_mL'}}, RUNS_DB, STUDY_YAML))
+_save_viz('mcdaniel-2019-sepsis', 'sepsis-progression', _render_one('local:SepsisProgression', {'inputs_map': {'time': 'global_time', 'blood_pathogen': 'readings.infection.inflammation.blood_pathogen', 'tissue_integrity': 'readings.infection.inflammation.tissue_integrity', 'mean_arterial_pressure': 'readings.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'readings.infection.clinical.systolic_pressure_mmHg', 'lactate': 'readings.infection.clinical.lactate_mmol_per_L', 'blood_volume': 'readings.infection.clinical.blood_volume_mL'}}, RUNS_DB, STUDY_YAML))
 
 # ### Literature anchors
 #
 # | expectation | model observable | source | status |
 # | --- | --- | --- | --- |
-# | Fig 4-5: the inflammatory response (pathogen, TNF, IL-6, IL-10, NO) rises with infection severity | circuits.infection.inflammation.*, peak per arm |  | Available (readouts recorded) |
-# | Figs 6-7: severe infection, lactate > 2 mM after about 20 h | circuits.infection.clinical.lactate_mmol_per_L |  | Available (readouts recorded) |
-# | Figs 6-7: SBP < 100 mmHg at about 26 h, sepsis at about 30 h, septic shock (MAP < 65, lactate > 2 mM) at about 45 h | circuits.infection.clinical (SBP, MAP, lactate, respiration rate) |  | Available (readouts recorded) |
-# | Fig 6: SVR falls toward 60 % of baseline | circuits.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL |  | Available (readouts recorded) |
+# | Fig 4-5: the inflammatory response (pathogen, TNF, IL-6, IL-10, NO) rises with infection severity | readings.infection.inflammation.*, peak per arm |  | Available (readouts recorded) |
+# | Figs 6-7: severe infection, lactate > 2 mM after about 20 h | readings.infection.clinical.lactate_mmol_per_L |  | Available (readouts recorded) |
+# | Figs 6-7: SBP < 100 mmHg at about 26 h, sepsis at about 30 h, septic shock (MAP < 65, lactate > 2 mM) at about 45 h | readings.infection.clinical (SBP, MAP, lactate, respiration rate) |  | Available (readouts recorded) |
+# | Fig 6: SVR falls toward 60 % of baseline | readings.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL |  | Available (readouts recorded) |
 
 # ## Study: Fluid challenge and antibiotic in severe sepsis (McDaniel et al. 2019, Figs 9-10) (`mcdaniel-2019-treatment`)
 #
@@ -377,7 +377,7 @@ ov_viva_biogears_composites_sepsis_biogears_sepsis = {
     'challenge_h'           : 44.0,   # Saline challenge (2 x 500 mL) at
     'treatment_start_h'     : 46.0,   # Antibiotic and REFRESH start (58 for Fig 13's delayed arm)
     'treatment_duration_h'  : 6.0,   # REFRESH reassessment period
-    'drug_readouts'         : None,   # Drugs whose concentrations are read (circuits/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
+    'drug_readouts'         : None,   # Drugs whose concentrations are read (readings/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
     'state_file'            : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states or the package's states/ (or an absolute path)
     'patient_file'          : '',   # Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and then cached; replaces state_file
     'conditions'            : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. A different patient, not a perturbation
@@ -423,14 +423,14 @@ else:
 # **treatment-response**
 
 # treatment-response
-_save_viz('mcdaniel-2019-treatment', 'treatment-response', _render_one('local:SepsisTreatmentResponse', {'inputs_map': {'time': 'global_time', 'protocol_code': 'protocol.code', 'mean_arterial_pressure': 'circuits.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'circuits.infection.clinical.systolic_pressure_mmHg', 'mean_urine_output': 'circuits.infection.clinical.mean_urine_output_mL_per_min', 'blood_pathogen': 'circuits.infection.inflammation.blood_pathogen', 'saline_given': 'protocol.saline_given_mL', 'branch_h': 'protocol.branch_h', 'treatment_start_h': 'protocol.treatment_start_h'}}, RUNS_DB, STUDY_YAML))
+_save_viz('mcdaniel-2019-treatment', 'treatment-response', _render_one('local:SepsisTreatmentResponse', {'inputs_map': {'time': 'global_time', 'protocol_code': 'protocol.code', 'mean_arterial_pressure': 'readings.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'readings.infection.clinical.systolic_pressure_mmHg', 'mean_urine_output': 'readings.infection.clinical.mean_urine_output_mL_per_min', 'blood_pathogen': 'readings.infection.inflammation.blood_pathogen', 'saline_given': 'protocol.saline_given_mL', 'branch_h': 'protocol.branch_h', 'treatment_start_h': 'protocol.treatment_start_h'}}, RUNS_DB, STUDY_YAML))
 
 # ### Literature anchors
 #
 # | expectation | model observable | source | status |
 # | --- | --- | --- | --- |
-# | Fig 9: the 1000 mL saline challenge transiently raises SBP and urine output | circuits.infection.clinical.systolic_pressure_mmHg, mean_urine_output_mL_per_min, 44-46 h |  | Available (readouts recorded) |
-# | Fig 10: piperacillin rises above the MIC (16 mg/L) during the 30 min infusion and the pathogen declines | circuits.treatment.Piperacillin.plasma_concentration_ug_per_mL; circuits.infection.inflammation.blood_pathogen |  | Available (readouts recorded) |
+# | Fig 9: the 1000 mL saline challenge transiently raises SBP and urine output | readings.infection.clinical.systolic_pressure_mmHg, mean_urine_output_mL_per_min, 44-46 h |  | Available (readouts recorded) |
+# | Fig 10: piperacillin rises above the MIC (16 mg/L) during the 30 min infusion and the pathogen declines | readings.treatment.Piperacillin.plasma_concentration_ug_per_mL; readings.infection.inflammation.blood_pathogen |  | Available (readouts recorded) |
 
 # ## Study: REFRESH resuscitation protocols in severe sepsis (McDaniel et al. 2019, Figs 11-13) (`mcdaniel-2019-refresh`)
 #
@@ -467,7 +467,7 @@ ov_viva_biogears_composites_sepsis_biogears_sepsis = {
     'challenge_h'           : 44.0,   # Saline challenge (2 x 500 mL) at
     'treatment_start_h'     : 46.0,   # Antibiotic and REFRESH start (58 for Fig 13's delayed arm)
     'treatment_duration_h'  : 6.0,   # REFRESH reassessment period
-    'drug_readouts'         : None,   # Drugs whose concentrations are read (circuits/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
+    'drug_readouts'         : None,   # Drugs whose concentrations are read (readings/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
     'state_file'            : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states or the package's states/ (or an absolute path)
     'patient_file'          : '',   # Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and then cached; replaces state_file
     'conditions'            : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. A different patient, not a perturbation
@@ -513,11 +513,11 @@ else:
 # **treatment-response**
 
 # treatment-response
-_save_viz('mcdaniel-2019-refresh', 'treatment-response', _render_one('local:SepsisTreatmentResponse', {'inputs_map': {'time': 'global_time', 'protocol_code': 'protocol.code', 'mean_arterial_pressure': 'circuits.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'circuits.infection.clinical.systolic_pressure_mmHg', 'mean_urine_output': 'circuits.infection.clinical.mean_urine_output_mL_per_min', 'blood_pathogen': 'circuits.infection.inflammation.blood_pathogen', 'saline_given': 'protocol.saline_given_mL', 'branch_h': 'protocol.branch_h', 'treatment_start_h': 'protocol.treatment_start_h'}}, RUNS_DB, STUDY_YAML))
+_save_viz('mcdaniel-2019-refresh', 'treatment-response', _render_one('local:SepsisTreatmentResponse', {'inputs_map': {'time': 'global_time', 'protocol_code': 'protocol.code', 'mean_arterial_pressure': 'readings.infection.clinical.mean_arterial_pressure_mmHg', 'systolic_pressure': 'readings.infection.clinical.systolic_pressure_mmHg', 'mean_urine_output': 'readings.infection.clinical.mean_urine_output_mL_per_min', 'blood_pathogen': 'readings.infection.inflammation.blood_pathogen', 'saline_given': 'protocol.saline_given_mL', 'branch_h': 'protocol.branch_h', 'treatment_start_h': 'protocol.treatment_start_h'}}, RUNS_DB, STUDY_YAML))
 
 # ### Literature anchors
 #
 # | expectation | model observable | source | status |
 # | --- | --- | --- | --- |
-# | Figs 11-12: both REFRESH protocols reach SBP > 90 and MAP > 65 mmHg; the experimental (norepinephrine) protocol with less fluid | circuits.infection.clinical (SBP, MAP); protocol.saline_given_mL |  | Available (readouts recorded) |
+# | Figs 11-12: both REFRESH protocols reach SBP > 90 and MAP > 65 mmHg; the experimental (norepinephrine) protocol with less fluid | readings.infection.clinical (SBP, MAP); protocol.saline_given_mL |  | Available (readouts recorded) |
 # | Fig 13: the control protocol delayed 12 h needs more fluid | protocol.saline_given_mL, refresh-control-delayed vs refresh-control |  | Available (readouts recorded) |

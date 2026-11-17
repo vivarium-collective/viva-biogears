@@ -358,7 +358,7 @@ ov_viva_biogears_composites_sepsis_biogears_sepsis = {
     'challenge_h'           : 44.0,   # Saline challenge (2 x 500 mL) at
     'treatment_start_h'     : 46.0,   # Antibiotic and REFRESH start (58 for Fig 13's delayed arm)
     'treatment_duration_h'  : 6.0,   # REFRESH reassessment period
-    'drug_readouts'         : None,   # Drugs whose concentrations are read (circuits/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
+    'drug_readouts'         : None,   # Drugs whose concentrations are read (readings/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
     'state_file'            : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states or the package's states/ (or an absolute path)
     'patient_file'          : '',   # Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and then cached; replaces state_file
     'conditions'            : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. A different patient, not a perturbation
@@ -404,4 +404,4 @@ else:
 # **timestep-sepsis**
 
 # timestep-sepsis
-_save_viz('timestep-sepsis', 'timestep-sepsis', _render_one('local:TimestepSepsis', {'inputs_map': {'time': 'global_time', 'time_step': 'engine.time_step_s', 'mean_arterial_pressure': 'circuits.infection.clinical.mean_arterial_pressure_mmHg', 'lactate': 'circuits.infection.clinical.lactate_mmol_per_L', 'blood_volume': 'circuits.infection.clinical.blood_volume_mL'}}, RUNS_DB, STUDY_YAML))
+_save_viz('timestep-sepsis', 'timestep-sepsis', _render_one('local:TimestepSepsis', {'inputs_map': {'time': 'global_time', 'time_step': 'engine.time_step_s', 'mean_arterial_pressure': 'readings.infection.clinical.mean_arterial_pressure_mmHg', 'lactate': 'readings.infection.clinical.lactate_mmol_per_L', 'blood_volume': 'readings.infection.clinical.blood_volume_mL'}}, RUNS_DB, STUDY_YAML))

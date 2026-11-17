@@ -497,25 +497,80 @@
   // Generic modal helpers
   // -------------------------------------------------------------------------
 
+  // Accessibility (issue #1618): remember what had focus before a dialog opened
+  // so it can be restored on close, and move focus into the dialog on open.
+  var _modalReturnFocus = null;
+
+  function _focusFirstInModal(el) {
+    // Prefer the first real text field (so you can type immediately — the
+    // audit's "focus stays on the page body" finding); fall back to any
+    // focusable control, then the dialog box itself.
+    var field = el.querySelector(
+      "input:not([type=hidden]):not([disabled]),textarea:not([disabled]),select:not([disabled])"
+    );
+    var target = field
+      || el.querySelector("button:not([disabled]),[href],[tabindex]:not([tabindex='-1'])")
+      || el.querySelector(".modal-box")
+      || el;
+    if (target) { try { target.focus(); } catch (e) { /* ignore */ } }
+  }
+
   function openModal(id) {
     var el = document.getElementById(id);
-    if (el) el.style.display = "flex";
+    if (!el) return;
+    _modalReturnFocus = document.activeElement;
+    el.style.display = "flex";
+    // Mark the dialog box for assistive tech and label it from its heading.
+    var box = el.querySelector(".modal-box") || el;
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "true");
+    var heading = el.querySelector("h1,h2,h3,h4");
+    if (heading) {
+      if (!heading.id) heading.id = id + "-title";
+      box.setAttribute("aria-labelledby", heading.id);
+    }
+    _focusFirstInModal(el);
+  }
+
+  function _dismissModalEl(el) {
+    if (!el) return;
+    el.style.display = "none";
+    // Clear inline errors.
+    var errEl = el.querySelector(".form-error");
+    if (errEl) errEl.textContent = "";
+    // Restore focus to whatever held it before the dialog opened.
+    if (_modalReturnFocus && typeof _modalReturnFocus.focus === "function") {
+      try { _modalReturnFocus.focus(); } catch (e) { /* ignore */ }
+    }
+    _modalReturnFocus = null;
   }
 
   function closeModal(id) {
-    var el = document.getElementById(id);
-    if (el) {
-      el.style.display = "none";
-      // Clear inline errors.
-      var errEl = el.querySelector(".form-error");
-      if (errEl) errEl.textContent = "";
-    }
+    _dismissModalEl(document.getElementById(id));
   }
+
+  // Esc closes the top-most open dialog (audit: "Escape doesn't close them").
+  // No-op when no modal overlay is visible, so it never fights native controls
+  // or the inline-edit editor's own Esc-to-cancel.
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" && e.keyCode !== 27) return;
+    var overlays = document.querySelectorAll(".modal-overlay");
+    for (var i = overlays.length - 1; i >= 0; i--) {
+      var o = overlays[i];
+      try {
+        if (getComputedStyle(o).display !== "none") {
+          _dismissModalEl(o);
+          e.preventDefault();
+          break;
+        }
+      } catch (err) { /* ignore */ }
+    }
+  });
 
   // Close modals when clicking the overlay background.
   document.addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("modal-overlay")) {
-      e.target.style.display = "none";
+      _dismissModalEl(e.target);
     }
   });
 
@@ -7367,7 +7422,7 @@
   window._installFromMarketplace = _installFromMarketplace;
 
   function _proceedWithCatalogInstall(name, opts) {
-    if (!confirm("Install '" + name + "' on the active investigation branch?\n\nThis adds a submodule, pip installs the package, and appends it to pyproject.toml. Requires an active investigation branch.")) return;
+    if (!confirm("Install '" + name + "'?\n\nThis adds a submodule, pip installs the package, and appends it to pyproject.toml. If a workstream is active the change is committed to its branch.")) return;
     var body = {name: name};
     if (opts && opts.skip_system_deps_check) body.skip_system_deps_check = true;
     if (opts && opts.full_repo) body.full_repo = true;
@@ -10854,8 +10909,11 @@
   window._openAuditReport = _openAuditReport;
 
   // mode: 'investigation' | 'study' (explicit from the header cluster); falls
-  // back to the active browse tab when omitted.
-  function _openBrowseCreate(mode) {
+  // back to the active browse tab when omitted. presetInv (study mode only):
+  // slug of the investigation to pre-select in the dropdown, so "+ Add a study"
+  // from an investigation's own empty state lands on that investigation instead
+  // of defaulting to the first in the list (issue #1618, §1).
+  function _openBrowseCreate(mode, presetInv) {
     var isStudy = mode ? (mode === 'study') : (window._isetBrowseTab === 'studies');
     window._browseCreateMode = isStudy ? 'study' : 'investigation';
     document.getElementById('browse-create-title').textContent = isStudy ? 'New study' : 'New investigation';
@@ -10864,14 +10922,17 @@
       ? 'Describe the study — the question you want to answer'
       : 'Describe the investigation — the question you want to answer';
     document.getElementById('browse-create-inv-row').style.display = isStudy ? '' : 'none';
+    var sel = document.getElementById('browse-create-inv');
     if (isStudy) {
-      var sel = document.getElementById('browse-create-inv');
       sel.innerHTML = (window._isetIndex || []).map(function (i) {
         return '<option value="' + _esc(i.name) + '">' + _esc(i.title || i.name) + '</option>';
       }).join('');
     }
     var form = document.getElementById('form-browse-create');
     form.reset();
+    // Apply the preset AFTER form.reset() (reset would otherwise snap the
+    // select back to its first option).
+    if (isStudy && presetInv && sel) sel.value = presetInv;
     var nameInput = form.querySelector('[name=name]');
     if (nameInput) nameInput._touched = false;
     form.querySelector('.form-error').textContent = '';
@@ -10905,6 +10966,10 @@
           closeModal('modal-browse-create');
           window._investigationsLoaded = false;
           if (typeof _loadInvestigations === 'function') _loadInvestigations();
+          // Also refresh the iset index (bug 2): _loadInvestigations only
+          // reloads the flat study list, leaving the Studies panel / rail /
+          // dropdown showing stale data until a full reload.
+          if (typeof _loadInvestigationSets === 'function') _loadInvestigationSets();
           if (typeof _vivOpenInvestigationFromRail === 'function') _vivOpenInvestigationFromRail(name);
         });
     } else {
@@ -10913,14 +10978,18 @@
         .then(function (p) {
           if (!p[0]) { errEl.textContent = p[1].error || 'Create failed.'; return; }
           var created = (p[1] && p[1].name) || name;
-          // Seed the question on the scaffolded study (best-effort).
-          apiFetch('PATCH', '/api/study/' + encodeURIComponent(created), { narrative: { path: 'purpose.question', value: prompt } })
-            .catch(function () {}).then(function () {
-              closeModal('modal-browse-create');
-              window._investigationsLoaded = false;
-              if (typeof _loadInvestigations === 'function') _loadInvestigations();
-              _openStudyEmbeddedNewTab(created);
-            });
+          // The question is now persisted server-side by study-create (issue
+          // #1618, bug 1) — it writes a live top-level `question:` on the
+          // scaffold. The old best-effort PATCH to `purpose.question` wrote the
+          // wrong (non-canonical, non-allowlisted) path and silently failed.
+          closeModal('modal-browse-create');
+          window._investigationsLoaded = false;
+          if (typeof _loadInvestigations === 'function') _loadInvestigations();
+          // Refresh the iset index too so the parent investigation's study
+          // count + Studies panel reflect the new study immediately, instead of
+          // "0 · No studies" until reload (issue #1618, bug 2).
+          if (typeof _loadInvestigationSets === 'function') _loadInvestigationSets();
+          _openStudyEmbeddedNewTab(created);
         });
     }
   }
@@ -13261,7 +13330,19 @@
     edgesSvg.innerHTML  = '';
 
     if (!studies.length) {
-      nodesHost.innerHTML = '<p class="empty-state" style="padding:24px">No studies in this investigation.</p>';
+      // Offer the next step from the empty state instead of making the user
+      // hunt for "+ Study" (issue #1618, §1 — "Offer the next step in every
+      // empty state"). Pre-select THIS investigation in the dialog.
+      var _emptyInv = window._currentInvestigation || '';
+      nodesHost.innerHTML =
+        '<div class="empty-state" style="padding:24px;text-align:center">' +
+          '<p style="margin:0 0 10px">No studies in this investigation yet.</p>' +
+          '<button type="button" class="action-btn" id="iset-empty-add-study">+ Add a study</button>' +
+        '</div>';
+      var _emptyAddBtn = document.getElementById('iset-empty-add-study');
+      if (_emptyAddBtn) _emptyAddBtn.addEventListener('click', function () {
+        _openBrowseCreate('study', _emptyInv);
+      });
       return;
     }
 
@@ -18832,7 +18913,7 @@
   window._runInvestigation = _runInvestigation;
 
   function _deleteInvestigation(name) {
-    if (!confirm('Delete investigation "' + name + '"? This removes its runs.db, visualizations, and spec.yaml.')) return;
+    if (!confirm('Delete investigation "' + name + '"? This removes the investigations/' + name + '/ folder (its investigation.yaml and any member studies stored under it). A same-named top-level study is not affected.')) return;
     apiFetch('POST', '/api/investigation-delete', {name: name}).then(function(r) { return r.json(); }).then(function(j) {
       if (!j.ok) { alert('Delete failed: ' + (j.error || 'unknown')); return; }
       var detail = document.getElementById('investigation-detail');
@@ -20685,6 +20766,12 @@
       // the existing Open-PR button. Otherwise fall back to inline append
       // for layouts that still embed everything inside #viv-git-status.
       var actions = [];
+      // Start workstream — the primary CTA when no investigation branch is
+      // active yet (blocker C / #1618: _startWork existed but nothing called it,
+      // so a new user could not begin an investigation branch from the GUI).
+      if (!s.has_active_workstream) {
+        actions.push('<button class="ws-btn ws-primary" onclick="_startWork()" title="Create an investigation branch off ' + _esc(s.base) + ' to group your authoring work">Start workstream</button>');
+      }
       if (!s.upstream_repo) {
         actions.push(s.gh_available
           ? '<button class="ws-btn ws-primary" onclick="_linkBranch()">Link branch to upstream</button>'
