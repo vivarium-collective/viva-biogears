@@ -5,3 +5,8 @@ runs:
   date: '2026-11-16'
   purpose: Pilot of every arm of the biogears-hemorrhage studies before their criteria were written.
   engine: BioGears 8.2.0 (Linux, cloud)
+- id: pilot-2026-11-16-timestep
+  path: workspace/experiments/timestep-pilot-2026-11-16
+  date: '2026-11-16'
+  purpose: Pilot of every arm of the biogears-timestep studies; found BioGears' crash at 0.08 s during a hemorrhage.
+  engine: BioGears 8.2.0 (Linux, cloud)

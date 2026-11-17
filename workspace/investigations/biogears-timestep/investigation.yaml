@@ -1,0 +1,45 @@
+schema_version: 2
+name: biogears-timestep
+title: BioGears' solver time step - accuracy and speed
+created: '2026-11-16'
+status: planned
+runtime:
+  default_emitter: sqlite
+studies: []
+expert_docs: []
+acceptance_criteria:
+- study: timestep-hemorrhage
+  behavior: volumes-stay-accurate
+- study: timestep-hemorrhage
+  behavior: vitals-agree-at-5-min
+- study: timestep-hemorrhage
+  behavior: larger-steps-run-faster
+- study: timestep-sepsis
+  behavior: inflammation-is-step-independent
+- study: timestep-sepsis
+  behavior: hemodynamics-stay-close
+- study: timestep-sepsis
+  behavior: lactate-breaks-above-0-02
+- study: timestep-sepsis
+  behavior: larger-steps-run-faster
+members:
+- timestep-hemorrhage
+- timestep-sepsis
+question: 'How much accuracy and speed do BioGears'' solver steps of 0.04 and 0.08 s trade against
+  its validated 0.02 s, in a fast process (a 5 min hemorrhage) and a slow one (the first 6 h of
+  a severe infection)?
+
+  '
+hypothesis: 'Volumes, hemodynamics and the inflammatory response stay close to the 0.02 s runs,
+  and the larger steps run two to three times faster; but lactate breaks above 0.02 s, and at
+  0.08 s BioGears crashes about 6.5 min into a 200 mL/min bleed, so 0.02 s remains the step to
+  use for anything but quick, short exploration.
+
+  '
+description: 'Both studies run the same composite at time_step_s 0.02, 0.04 and 0.08 (the new
+  time_step_s parameter of every viva-biogears process, passed to BioGears through
+  pybiogears'' configuration override) and compare each run with the 0.02 s run. Their
+  criteria were written after a pilot of every arm
+  (workspace/experiments/timestep-pilot-2026-11-16).
+
+  '

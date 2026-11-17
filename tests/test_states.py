@@ -227,3 +227,19 @@ def test_an_engine_checkpoint_keeps_blood_lost(tmp_path):
     f.load_state(path)
     lost = float(f.pull()[1])
     assert lost > 5 and not math.isnan(lost)
+
+
+def test_a_saver_counts_a_time_reached_when_the_clock_runs_microseconds_behind(tmp_path):
+    """BioGears' clock read 43199.999999 s at "12 h" in a 48 h run, and a saver comparing at
+    1 µs saved a whole update (60 s) late. Falsifies the strict comparison."""
+    from viva_biogears.states import StateSaver
+
+    class Clock:
+        sim_time_s = 43199.999999
+
+        def save_state(self, path):
+            path.write_text("<state/>")
+
+    saver = StateSaver([43200.0], tmp_path, "ckpt")
+    saver(Clock())
+    assert [p.name for p in saver.saved] == ["ckpt@43199.999999s.xml"] and saver.pending == []

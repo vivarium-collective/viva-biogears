@@ -161,7 +161,7 @@ class BioGearsCircuitProcess(Process):
                 raise ValueError(f"the loaded state's airway is held by {state.airway_mode}, which this process "
                                  "doesn't control; BioGears allows one airway device, so connecting "
                                  f"{[m.name for m in self._modules if m.airway_device]} would fail every step")
-        engine = load_engine(runtime, path, [r.key() for r in self._requests])
+        engine = load_engine(runtime, path, [r.key() for r in self._requests], self.config["time_step_s"])
         self._engine = engine
         # A run from a saved state skips the timed actions that came before its time.
         start = round(engine.sim_time_s, 6)

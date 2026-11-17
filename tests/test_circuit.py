@@ -147,3 +147,14 @@ def test_send_on_change_does_not_restart_the_bleed():
     for _ in range(30):
         e.advance(1.0)
     np.testing.assert_allclose(flat(p, out), direct_values(p, e), rtol=1e-12, equal_nan=True)
+
+
+def test_circuit_process_time_step_reaches_the_engine():
+    """Falsifies: BioGearsCircuitProcess ignoring time_step_s."""
+    p = make(["vitals"], time_step_s=0.08)
+    p.initial_state()
+    run(p, 2.0)
+    assert p._engine.time_step_s == 0.08
+    assert p._engine.sim_time_s == pytest.approx(2.0, abs=0.08)
+    with pytest.raises(ValueError, match="time_step_s"):
+        make(["vitals"], time_step_s=0.1)

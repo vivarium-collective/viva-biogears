@@ -30,7 +30,13 @@ START_CONFIG = {
     "conditions": {"_type": "map", "_default": {}},
     "circuit_additions": {"_type": "map", "_default": {}},
     "runtime_dir": {"_type": "string", "_default": ""},
+    # BioGears' solver step. BioGears is validated at 0.02 s and fails at 0.1 s or more;
+    # larger steps run faster and less accurately (study timestep-accuracy).
+    "time_step_s": {"_type": "float", "_default": 0.02},
 }
+
+DEFAULT_TIME_STEP_S = 0.02
+MAX_TIME_STEP_S = 0.1
 
 
 def check_intervention_config(config) -> None:
@@ -61,6 +67,10 @@ def check_start(config) -> None:
         if config["conditions"]:
             conditions_xml(config["conditions"])  # validates names and values
     check_additions(config["circuit_additions"])
+    ts = config.get("time_step_s", DEFAULT_TIME_STEP_S)
+    if not (isinstance(ts, (int, float)) and math.isfinite(ts) and 0 < ts < MAX_TIME_STEP_S):
+        raise ValueError(f"time_step_s must be > 0 and < {MAX_TIME_STEP_S} s (BioGears fails at 0.1 s and above), "
+                         f"got {ts!r}")
 
 
 def resolve_state(config):
@@ -84,13 +94,18 @@ def check_compound(runtime, compound: str) -> None:
                          f"available: {compound_names(runtime)}")
 
 
-def load_engine(runtime, path, requests):
+def load_engine(runtime, path, requests, time_step_s: float = DEFAULT_TIME_STEP_S):
     """A pybiogears engine with ``requests`` ((category, property, unit, compartment,
-    substance) tuples), loaded from ``path``; raises if BioGears connects any request."""
+    substance) tuples), loaded from ``path``; raises if BioGears connects any request.
+    A ``time_step_s`` other than the state's own is merged into the state's configuration
+    (pybiogears' ``load_state(configuration=...)``)."""
     pb = import_pybiogears()
     engine = pb.BioGearsEngine(runtime)
     engine.set_requests([pb.DataRequest(c, p, u, compartment=cm, substance=s) for c, p, u, cm, s in requests])
-    engine.load_state(path)
+    if time_step_s != DEFAULT_TIME_STEP_S:
+        engine.load_state(path, configuration=pb.configuration(runtime, TimeStep=(float(time_step_s), "s")))
+    else:
+        engine.load_state(path)
     if engine.unconnected:
         raise RuntimeError("BioGears did not connect "
                            f"{[(r.category, r.compartment, r.substance, r.property, r.unit) for r in engine.unconnected]}")
@@ -143,7 +158,7 @@ class EngineBridge:
         infusion = loaded_infusion(state, self.config)
         self.applied = {**(bleed or {"hemorrhage_rate_mL_per_min": None}),
                         **(infusion or {"iv_rate_mL_per_min": None})}
-        self.engine = load_engine(runtime, path, self.requests)
+        self.engine = load_engine(runtime, path, self.requests, self.config.get("time_step_s", DEFAULT_TIME_STEP_S))
         if self.saver:
             self.saver(self.engine)
         return self.engine

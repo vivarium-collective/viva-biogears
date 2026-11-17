@@ -1,0 +1,19 @@
+[22:16] HemDt008 <WARNING> Multiple Renal Clearances specified, but not the same. RenalDynamics will override Systemic.
+Reading Scenarios/HemDt008.xml
+free(): invalid next size (fast)
+[22:16] HemDt008 <WARNING> Multiple Renal Clearances specified, but not the same. RenalDynamics will override Systemic.
+[22:16] HemDt008 <INFO> Biogears has sucesfully loaded StandardMale.
+[22:16] HemDt008 <INFO> Executing Scenario
+[22:16] HemDt008 <INFO> [Action] 0(s), Patient Action : Hemorrhage
+	Initial Bleeding Rate:  200(mL/min)
+	Compartment: RightLeg
+	Injury Code: 44000
+[22:16] HemDt008 <INFO> Current Time is 60.08s, it took 3.002s to simulate the past 60s
+[22:16] HemDt008 <INFO> Current Time is 120.16s, it took 3.204s to simulate the past 60s
+[22:16] HemDt008 <INFO> [Event] 166.24(s),  Patient has Hypoglycemia
+[22:16] HemDt008 <INFO> Current Time is 180.24s, it took 2.917s to simulate the past 60s
+[22:17] HemDt008 <INFO> Current Time is 240.32s, it took 3.081s to simulate the past 60s
+[22:17] HemDt008 <INFO> Current Time is 300.4s, it took 2.537s to simulate the past 60s
+[22:17] HemDt008 <INFO> Current Time is 360.48s, it took 2.796s to simulate the past 60s
+User Requested Termination 6
+exit 6

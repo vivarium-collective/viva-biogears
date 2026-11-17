@@ -167,3 +167,32 @@ def test_bad_env_runtime_dir_raises(tmp_path, monkeypatch):
 def test_map_fluid_controller(map_mmHg, expected):
     c = make({}, MapFluidController)
     assert c.update({"mean_arterial_pressure_mmHg": map_mmHg})["iv_rate_mL_per_min"] == pytest.approx(expected)
+
+
+def test_time_step_reaches_the_engine():
+    """Falsifies: time_step_s ignored (the engine would keep the state's 0.02 s step).
+    Oracle: an engine loaded directly with pybiogears' TimeStep override."""
+    import pybiogears as pb
+
+    from viva_biogears.runtime import runtime_dir
+    p = make({"time_step_s": 0.04})
+    p.initial_state()
+    out = _run(p, 10, hemorrhage_rate_mL_per_min=200.0)
+    assert p._bridge.engine.time_step_s == 0.04
+    rt = runtime_dir()
+    e = pb.BioGearsEngine(rt)
+    e.set_requests([pb.DataRequest("Physiology", prop, unit) for prop, unit in VITALS.values()])
+    e.load_state(rt / "states" / "StandardMale@0s.xml", configuration=pb.configuration(rt, TimeStep=(0.04, "s")))
+    e.process_actions(pb.actions.hemorrhage("RightLeg", 200.0))
+    for _ in range(10):
+        e.advance(1.0)
+    np.testing.assert_allclose(_vec(out), e.pull()[1:], rtol=1e-12)
+    default = make({})
+    default.initial_state()
+    assert not np.allclose(_vec(_run(default, 10, hemorrhage_rate_mL_per_min=200.0)), _vec(out), rtol=1e-9)
+
+
+@pytest.mark.parametrize("value", [0.0, -0.02, 0.1, 0.5, float("nan")])
+def test_rejects_bad_time_step(value):
+    with pytest.raises(ValueError, match="time_step_s"):
+        make({"time_step_s": value})

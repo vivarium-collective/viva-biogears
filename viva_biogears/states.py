@@ -41,6 +41,10 @@ from typing import Sequence
 
 #: Saved-state names use the engine's time rounded to this many decimals (1 µs).
 TIME_DECIMALS = 6
+#: A time counts as reached within this much (s): BioGears' clock sums its 0.02 s steps
+#: in floating point and runs about 1 µs behind after hours (43199.999999 s at "12 h"), far
+#: less than one step.
+TIME_TOLERANCE_S = 1e-5
 
 
 def _seconds(t: float) -> str:
@@ -85,9 +89,9 @@ class StateSaver:
         self.saved: list[Path] = []
 
     def __call__(self, engine) -> None:
-        now = round(engine.sim_time_s, TIME_DECIMALS)
-        if self.pending and round(self.pending[0], TIME_DECIMALS) <= now:
-            while self.pending and round(self.pending[0], TIME_DECIMALS) <= now:
+        now = engine.sim_time_s + TIME_TOLERANCE_S
+        if self.pending and self.pending[0] <= now:
+            while self.pending and self.pending[0] <= now:
                 self.pending.pop(0)
             self.saved += save_states(engine, self.out_dir, [engine.sim_time_s], self.name)
 
@@ -111,7 +115,7 @@ def save_states(engine, out_dir: str | Path, times_s: Sequence[float], name: str
     out.mkdir(parents=True, exist_ok=True)
     paths: list[Path] = []
     for t in times:
-        while round(now, TIME_DECIMALS) < round(t, TIME_DECIMALS):
+        while now + TIME_TOLERANCE_S < t:
             engine.advance_steps(1)
             now = engine.sim_time_s
         path = out / f"{name}@{_seconds(now)}s.xml"

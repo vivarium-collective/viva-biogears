@@ -19,6 +19,7 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - sepsis: the `infection`, `nutrition` and `treatment` modules, McDaniel et al. 2019's treatment protocols (`viva_biogears.protocols`, run by `TreatmentController`) and `biogears_sepsis`;
   - workbench studies (`workspace/`), each with pre-registered pytest criteria and figures (`viva_biogears/visualizations/`), authored and piloted but not yet run through the workbench:
     - investigation `biogears-hemorrhage`, viva-pulse's three hemorrhage studies ported to BioGears: `hemorrhage-severity-sweep`, `fluid-resuscitation`, `patient-cohort` (10 min runs);
+    - investigation `biogears-timestep`: `timestep-hemorrhage` and `timestep-sepsis` compare BioGears' 0.02, 0.04 and 0.08 s steps for accuracy and speed (piloted; `workspace/experiments/timestep-pilot-2026-11-16`);
     - investigation `mcdaniel-2019`, replicating McDaniel et al. 2019: `mcdaniel-2019-sepsis` (Figs 4–7), `mcdaniel-2019-treatment` (Figs 9–10), `mcdaniel-2019-refresh` (Figs 11–13). The progression arms are 48 h runs (about 8 h of wall time each); the treatment arms start, as in the paper, from the severe infection's state saved at 44 h (`viva_biogears/states/StandardMale@severe-infection-44h.xml`) and run 8–20 h. `mcdaniel-2019-sepsis/run.py` runs all of them outside the workbench (see its README).
 
 ## Requirements
@@ -160,6 +161,7 @@ The contract is viva-pulse's `PulseProcess`:
 - **Config.**
   - `state_file`: a name in `<runtime>/states`, or an absolute path.
   - `runtime_dir`.
+  - `time_step_s`: BioGears' solver step (default 0.02 s, the step BioGears is validated at; must be under 0.1 s). Every process and the hemorrhage and sepsis composites take it. Larger steps run faster but drift (lactate breaks at 0.04 s and above), and at 0.08 s BioGears itself crashes about 6.5 minutes into a 200 mL/min bleed: see the `biogears-timestep` studies.
   - `hemorrhage_compartment`: one of the 18 with a BioGears bleed path, e.g. `RightLeg` or `Aorta`.
   - `iv_compound`: a BioGears compound, e.g. `Saline`, `Blood_ONegative` or `RingersLactate`.
   - `iv_bag_volume_L`.

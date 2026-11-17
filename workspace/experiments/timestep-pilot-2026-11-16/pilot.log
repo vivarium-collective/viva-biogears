@@ -1,0 +1,12 @@
+free(): invalid pointer
+Aborted
+dt-0.04 38 s
+dt-0.02 79 s
+dt-0.08 866 s
+dt-0.04 1313 s
+dt-0.02 2459 s
+ALLDONE
+dt-0.08 10 s
+dt-0.04 17 s
+dt-0.02 36 s
+HEMDONE

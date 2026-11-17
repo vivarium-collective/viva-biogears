@@ -62,6 +62,8 @@ NUTRITION_SCHEDULES = {"infection_scenario": INFECTION_SCENARIO_SCHEDULE, "none"
         "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS,
         "circuit_additions": _CIRCUIT_ADDITIONS,
         "interval": {"type": "float", "default": 60.0, "description": "Seconds per update"},
+        "time_step_s": {"type": "float", "default": 0.02,
+                        "description": "BioGears' solver step (validated at 0.02 s; must be < 0.1 s)"},
     },
     core_extensions=[build_core],
     default_n_steps=2880,
@@ -71,7 +73,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
                     nutrition="infection_scenario", iv_compound="Saline", state_file="StandardMale@0s.xml",
                     patient_file="", conditions=None, circuit_additions=None, interval=60.0, treatment="none",
                     challenge_h=44.0, treatment_start_h=46.0, treatment_duration_h=6.0, drug_readouts=None,
-                    **overrides):
+                    time_step_s=0.02, **overrides):
     if severity not in SEVERITY_LEVELS:
         raise ValueError(f"severity must be one of {list(SEVERITY_LEVELS)}, got {severity!r}")
     if nutrition not in NUTRITION_SCHEDULES:
@@ -84,7 +86,8 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
               "treatment_schedule": protocol.schedule(),
               "treatment_readouts": list(drug_readouts if drug_readouts is not None
                                          else TREATMENT_READOUTS if treatment != "none" else []),
-              "vasopressor_substance": "Norepinephrine", "vasopressor_concentration_ug_per_mL": 14.0}
+              "vasopressor_substance": "Norepinephrine", "vasopressor_concentration_ug_per_mL": 14.0,
+              "time_step_s": float(time_step_s)}
     INFECTION.check_config(config)
     TREATMENT.check_config(config)
     cardiovascular = setpoints(CARDIOVASCULAR, overrides, config)
@@ -104,6 +107,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
                           "cardiovascular": cardiovascular,
                           "treatment": {"vasopressor_rate_ug_per_min": 0.0}},
         "circuits": {},
+        "engine": {"time_step_s": float(time_step_s)},  # recorded so figures can tell runs apart
         "emitter": circuit_emitter(),
     }
     if treatment != "none":

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scenario xmlns="uri:/mil/tatrc/physiology/datamodel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" contentVersion="BioGears_8.2.0">
+  <Name>HemDt008</Name>
+  <Description>RightLeg 200 mL/min at a 0.08 s time step</Description>
+  <EngineStateFile>./states/StandardMale@0s_dt008.xml</EngineStateFile>
+  <DataRequests SamplesPerSecond="1">
+    <DataRequest xsi:type="PhysiologyDataRequestData" Name="MeanArterialPressure" Unit="mmHg" Precision="2"/>
+    <DataRequest xsi:type="PhysiologyDataRequestData" Name="BloodVolume" Unit="mL" Precision="1"/>
+  </DataRequests>
+  <Actions>
+  <Action xsi:type="HemorrhageData" Compartment="RightLeg"><InitialRate value="200.0" unit="mL/min"/></Action>
+  <Action xsi:type="AdvanceTimeData"><Time value="900" unit="s"/></Action>
+  </Actions>
+</Scenario>

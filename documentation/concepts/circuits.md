@@ -94,3 +94,8 @@ challenge is the run's first update.
   mechanics, so viva-pulse's resistance and compliance multipliers aren't offered.
 - **Ventilator**: BioGears' is its anesthesia machine (pressure control, `Tube` or `Mask`).
 - **Thermal application**: works only with pybiogears' workaround for two BioGears bugs.
+- **Time step**: `time_step_s` (default 0.02 s, BioGears' validated step; under 0.1 s).
+  Volumes and hemodynamics barely change at 0.04 or 0.08 s, but lactate drifts (about 10
+  and 26 mM after 6 h of infection, against 1.5 mM at 0.02 s), and during a hemorrhage
+  BioGears aborts with heap corruption at large steps (0.08 s: about 6.5 minutes into a
+  200 mL/min bleed). The `biogears-timestep` studies measure this.
