@@ -58,7 +58,7 @@ def test_pressure_falls_with_rate(grid):
 
 
 def test_every_bleed_leaves_the_band(grid):
-    """Unlike Pulse at severity 0.2-0.4, no BioGears bleed here keeps MAP within 2 mmHg."""
+    """No bleed here keeps MAP within 2 mmHg: the baroreflex does not hold pressure flat."""
     deviations = [_largest_deviation(run, MAP) for run in grid[1:]]
     assert min(deviations) > 2.0, deviations
 

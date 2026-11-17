@@ -29,7 +29,7 @@ compartments, ``Pericardium`` on its own (in no transport graph, so its quantiti
 stay at their loaded values) and the liquid copy of the airway (``LeftAlveoli`` as a
 liquid holds no substances). ``Saturation`` is offered only where every leaf holds
 hemoglobin (the ureters, bladder and other urine compartments hold none). A wrong unit is caught when the engine loads (BioGears does
-not connect the request). Unlike Pulse 4.4.0, BioGears' ``Lymph`` carries fluid and
+not connect the request). BioGears' ``Lymph`` carries fluid and
 substances, so it can be read.
 
 The modules edit nothing, so the simulation is the same with or without them.

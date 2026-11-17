@@ -8,7 +8,7 @@ height, body fat and resting baselines. BioGears can't simulate from it directly
 well under a second. BioGears ships stabilized states for most of its own patients,
 but not for a patient file you write or for any patient with conditions.
 ``stabilized_state`` stabilizes once and keeps the result in a cache directory, so
-every later run loads it directly. (viva-pulse's ``viva_pulse.patients`` is the model.)
+every later run loads it directly.
 
 **Conditions** are BioGears' chronic conditions, applied during stabilization so
 the patient starts with them in place: a map from condition name to its fields,
@@ -19,8 +19,8 @@ the patient starts with them in place: a map from condition name to its fields,
 A field's value is a number (unitless) or a ``"<value> <unit>"`` string. The names
 are BioGears' ``<Name>Data`` condition types (``CONDITIONS``); their fields are
 those of ``share/xsd/cdm/PatientConditions.xsd``. BioGears rejects a wrong field,
-which raises. They play the role of viva-pulse's ``circuit_modifiers``: the result
-is a different patient, not a perturbation.
+which raises. The result is a different patient, not a perturbation of a running
+one.
 
 The cache key covers everything the stabilized state depends on: the patient
 file's bytes, the conditions, and the BioGears install (``install_identity``: the

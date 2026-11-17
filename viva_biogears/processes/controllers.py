@@ -10,8 +10,7 @@ class MapFluidController(Step):
 
     Sets the IV infusion rate in proportion to how far MAP is below
     ``target_map_mmHg``, clipped to ``[0, max_rate_mL_per_min]``. It writes a
-    setpoint, so its output port is ``overwrite[float]``. Same contract as
-    viva-pulse's ``MapFluidController``.
+    setpoint, so its output port is ``overwrite[float]``.
     """
 
     config_schema = {

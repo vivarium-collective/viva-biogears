@@ -1,8 +1,7 @@
 """HemorrhageSeverityResponse: final vitals against the initial bleed rate, plus MAP over time.
 
-Ported from viva-pulse's figure for the hemorrhage-severity-sweep study. BioGears takes
-a bleed as an initial rate (mL/min, falling with local pressure) instead of Pulse's
-dimensionless severity, so the x axis is that rate.
+For the hemorrhage-severity-sweep study. BioGears takes a bleed as an initial rate
+(mL/min, falling with local pressure), so the x axis is that rate.
 """
 
 import math

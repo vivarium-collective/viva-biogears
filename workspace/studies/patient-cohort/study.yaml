@@ -5,13 +5,12 @@ investigation: biogears-hemorrhage
 created: '2026-11-16'
 status: planned
 question: 'Does the same right-leg bleed behave the same in each of the 17 patient states
-  shipped with BioGears 8.2.0, and what sets how much blood each loses? (The viva-pulse study
-  of the same name, ported to BioGears.)
+  shipped with BioGears 8.2.0, and what sets how much blood each loses?
 
   '
 hypothesis: 'Every patient compensates the same way (blood volume and MAP fall, heart rate
-  rises). Smaller patients lose a larger fraction of their blood, as in Pulse, but less cleanly:
-  in BioGears the volume lost also rises with the patient''s resting cardiac output, so the
+  rises). Smaller patients lose a larger fraction of their blood, but not cleanly:
+  the volume lost also rises with the patient''s resting cardiac output, so the
   fast-heart-rate patients lose more.
 
   '

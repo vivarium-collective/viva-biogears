@@ -2,7 +2,7 @@
 
 A [process-bigraph](https://github.com/vivarium-collective/process-bigraph) wrapper that drives the **real** [BioGears](https://github.com/BioGearsEngine/core) physiology engine (8.2.0). BioGears runs as a time-stepped `Process`: interventions are input ports, vital signs are output ports, and simulations are ordinary `process_bigraph.Composite` documents. Nothing is reimplemented or mocked: every number comes from BioGears' C++ engine through [pybiogears](https://github.com/) (`~/projects/biogears/pybiogears`).
 
-It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason to exist is BioGears' tissue-fluid model (endothelial leak, oncotic pressure, albumin, lymph), which Pulse 4.4.0 doesn't simulate.
+Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits and its tissue-fluid model (endothelial leak, oncotic pressure, albumin and an active lymph system).
 
 ## Status
 
@@ -18,7 +18,7 @@ It follows [viva-pulse](../viva-pulse)'s architecture and contracts. Its reason 
   - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`);
   - sepsis: the `infection`, `nutrition` and `treatment` modules, McDaniel et al. 2019's treatment protocols (`viva_biogears.protocols`, run by `TreatmentController`) and `biogears_sepsis`;
   - workbench studies (`workspace/`), each with pre-registered pytest criteria and figures (`viva_biogears/visualizations/`), authored and piloted but not yet run through the workbench:
-    - investigation `biogears-hemorrhage`, viva-pulse's three hemorrhage studies ported to BioGears: `hemorrhage-severity-sweep`, `fluid-resuscitation`, `patient-cohort` (10 min runs);
+    - investigation `biogears-hemorrhage`, three hemorrhage studies: `hemorrhage-severity-sweep`, `fluid-resuscitation`, `patient-cohort` (10 min runs);
     - investigation `biogears-timestep`: `timestep-hemorrhage` and `timestep-sepsis` compare BioGears' 0.02, 0.04 and 0.08 s steps for accuracy and speed (piloted; `workspace/experiments/timestep-pilot-2026-11-16`);
     - investigation `mcdaniel-2019`, replicating McDaniel et al. 2019: `mcdaniel-2019-sepsis` (Figs 4–7), `mcdaniel-2019-treatment` (Figs 9–10), `mcdaniel-2019-refresh` (Figs 11–13). The progression arms are 48 h runs (about 8 h of wall time each); the treatment arms start, as in the paper, from the severe infection's state saved at 44 h (`viva_biogears/states/StandardMale@severe-infection-44h.xml`) and run 8–20 h. `mcdaniel-2019-sepsis/run.py` runs all of them outside the workbench (see its README).
 
@@ -67,7 +67,7 @@ BioGearsCircuitProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {
 - **Conditions** are BioGears' chronic conditions, applied during stabilization: `ChronicAnemia`, `ChronicHeartFailure`, `ChronicVentricularSystolicDysfunction`, `ChronicObstructivePulmonaryDisease`, `ChronicPericardialEffusion`, `ChronicRenalStenosis`, `Dehydration`, `ImpairedAlveolarExchange`, `LobarPneumonia`, `Starvation`.
   - Fields follow `PatientConditions.xsd`. A value is a number or `"<value> <unit>"` (`{"Starvation": {"TimeSinceMeal": "72 hr"}}`).
   - Conditions without `patient_file` apply to `StandardMale.xml`.
-  - They play the role of viva-pulse's `circuit_modifiers`: the result is a different patient, not a perturbation.
+  - The result is a different patient, not a perturbation of a running one.
   - Chronic anemia removes hemoglobin but leaves hematocrit unchanged in BioGears 8.2.0.
 - **Rules.** Setting `state_file` and `patient_file` (or `conditions`) together raises. `biogears_lymph` drops its equilibrated default when a patient is given; that patient is not equilibrated.
 
@@ -152,11 +152,11 @@ rows = gather_emitter_results(sim)[("emitter",)]
 | `biogears_lymph` | lymph and tissue fluid at rest or under an infusion, from the equilibrated state | `state_file`, `iv_rate_mL_per_min`, `iv_compound` |
 | `biogears_sepsis` | an infection (BioGears' sepsis model) with meals, lymph, tissue fluid and hemodynamics, sampled each minute; optionally treated with one of McDaniel et al. 2019's protocols | `severity`, `infection_location`, `infection_mic_mg_per_L`, `nutrition`, `iv_rate_mL_per_min`; `treatment` (`fluid_challenge`, `antibiotic`, `refresh_control`, `refresh_experimental`), `challenge_h`, `treatment_start_h`, `treatment_duration_h`, `drug_readouts`; from a saved state (e.g. `StandardMale@severe-infection-44h.xml`) the protocol keeps engine time |
 
-Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites use viva-pulse's store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
+Every composite also takes `state_file`, and the circuit composites take `interval` (0.02 s resolves waveforms). The circuit composites share one store layout: setpoints in `interventions/<module>/`, readings in `circuits/<module>/`, and an emitter of both subtrees.
 
 ### `BioGearsProcess`
 
-The contract is viva-pulse's `PulseProcess`:
+A time-stepped bridge to one BioGears engine:
 
 - **Config.**
   - `state_file`: a name in `<runtime>/states`, or an absolute path.
@@ -172,18 +172,16 @@ The contract is viva-pulse's `PulseProcess`:
   - Vitals as `overwrite[float]`, seeded with the loaded state's readings, so the store always equals BioGears' own value: HR, MAP, SBP, DBP, SpO2, RR, CO, CVP, blood volume, and total blood volume lost (NaN until the first bleed).
   - The `irreversible_state` latch: BioGears declares it at 50 % blood loss, and the engine is not advanced after that.
 
-How it differs from Pulse:
+Rules that come from BioGears:
 
-| | Pulse | BioGears |
-|---|---|---|
-| hemorrhage setpoint | a severity in [0, 1] | an initial rate in mL/min, which BioGears then lowers with the local pressure |
-| a rate above cardiac output | — | BioGears refuses it on every step without stopping; `BioGearsProcess` raises `ValueError` |
-| a hemorrhage on an unknown compartment | — | crashes BioGears; it is rejected at construction |
-| starting state | — | a state that already holds a hemorrhage or an infusion is refused at load, so the setpoint ports always describe what is running |
+- A hemorrhage is an initial rate in mL/min, which BioGears then lowers with the local pressure.
+- BioGears refuses a rate above cardiac output on every step without stopping; `BioGearsProcess` raises `ValueError` instead.
+- A hemorrhage on an unknown compartment crashes BioGears; it is rejected at construction.
+- A saved state that already holds a hemorrhage or an infusion starts the setpoints at the state's values, so the setpoint ports always describe what is running.
 
 ### `BioGearsCircuitProcess`
 
-The pattern is viva-pulse's `PulseCircuitProcess`. `config.modules` lists modules from `viva_biogears.circuits.MODULES`.
+One BioGears engine shared by several circuit modules. `config.modules` lists modules from `viva_biogears.circuits.MODULES`.
 
 - **Outputs.** Each module's readings nest under its name, as `overwrite[float]` (e.g. `cardiovascular/central/aorta/pressure_mmHg`).
 - **Inputs.** The module's setpoints sit under one `setpoints` input port (e.g. `setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). Each is sent to BioGears only when it changes.
@@ -213,17 +211,15 @@ The pattern is viva-pulse's `PulseCircuitProcess`. `config.modules` lists module
 
 Each module's docstring in `viva_biogears/circuits/` gives the details.
 
-**How the modules differ from viva-pulse's:**
+**What BioGears 8.2.0 offers, and doesn't:**
 
-| | Pulse 4.4.0 | BioGears 8.2.0 |
-|---|---|---|
-| circuit resistance/compliance multipliers | yes | no equivalent action; not offered |
-| lymph | a stub that carries no flow | active; the `lymph` and `tissue_fluid` modules |
-| ventilator | a pressure-control ventilator | the anesthesia machine (pressure control, Tube or Mask) |
-| supplemental oxygen | nasal cannula, simple mask, non-rebreather | nasal cannula; masks are the anesthesia machine with `Mask` |
-| extubation | refused (Pulse's Python API drops it) | works |
-| point reads | the process edits the state to add compartments and links | read directly from the circuit; nothing is edited |
-| thermal application | works | needs pybiogears' workaround for two BioGears bugs (omitted parts become NaN; an Off applied temperature still applies) |
+- No action changes circuit resistance or compliance, so there are no circuit multipliers.
+- Lymph is active (the `lymph` and `tissue_fluid` modules).
+- The ventilator is BioGears' anesthesia machine (pressure control, `Tube` or `Mask`).
+- Supplemental oxygen is a nasal cannula; a mask is the anesthesia machine with `Mask`.
+- Extubation works.
+- Point reads come straight from the circuit; the state is not edited.
+- Thermal applications need pybiogears' workaround for two BioGears bugs (omitted parts become NaN; an Off applied temperature still applies).
 
 **Lymph.** BioGears 8.2.0 has no compartment links for lymph, so lymph is read from circuit nodes and paths (pybiogears `FluidPath`/`FluidNode`). The one transformation in any module is a sign: BioGears stores plasma oncotic pressure as a negative pressure source, and it is reported positive.
 

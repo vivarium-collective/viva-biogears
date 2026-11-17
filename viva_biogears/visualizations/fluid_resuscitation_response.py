@@ -8,7 +8,7 @@ the treated arms (saline and O-negative blood), which the pilot found indistingu
 over ten minutes, so they are drawn in one colour and overlap on purpose. A
 marker on the infusion panel shows where the closed loop first engages.
 
-Ported from viva-pulse for the fluid-resuscitation study.
+For the fluid-resuscitation study.
 """
 
 from process_bigraph.visualization import Visualization

@@ -2,8 +2,7 @@
 
 viva-biogears runs [BioGears](https://github.com/BioGearsEngine/core), a whole-body model of
 adult human physiology, inside [process-bigraph](https://github.com/vivarium-collective/process-bigraph)
-simulations. Its architecture and contracts are those of
-[viva-pulse](https://github.com/vivarium-collective/viva-pulse), which does the same for Pulse.
+simulations.
 
 BioGears runs as an ordinary process-bigraph `Process`:
 
@@ -21,8 +20,7 @@ Nothing is reimplemented or mocked. Every number comes from BioGears' C++ engine
 
 BioGears models fluid exchange between blood and tissue: endothelial leak, oncotic
 pressures, albumin, and an active **lymphatic system** that returns filtered fluid to the
-veins. Pulse 4.4.0, BioGears' descendant, keeps the lymph nodes and paths of the circuit but
-never moves fluid through them. Studies of fluid overload, sepsis and resuscitation need
+veins. Studies of fluid overload, sepsis and resuscitation need
 that exchange ({doc}`tutorials/03-lymph-and-tissue-fluid`).
 
 ## What you can do with it

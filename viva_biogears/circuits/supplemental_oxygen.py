@@ -3,8 +3,7 @@
 BioGears models the cannula as a small oxygen-tank circuit combined with the
 respiratory circuit (``RespiratoryNasalCannula``, airway mode ``NasalCannula``).
 Masks are BioGears' anesthesia machine with a ``Mask`` connection (the
-``mechanical_ventilator`` module), so this module has one device, unlike Pulse's
-(nasal cannula, simple mask, non-rebreather).
+``mechanical_ventilator`` module), so this module has one device.
 
 Readings (``oxygenation``): inspired-air proxies and the arterial blood gases,
 which is what supplemental oxygen changes.

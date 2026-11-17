@@ -1,6 +1,6 @@
 """CohortBloodLoss: fraction of blood lost against starting blood volume, one dot per patient.
 
-Ported from viva-pulse for the patient-cohort study. Patient names do not reach a
+For the patient-cohort study. Patient names do not reach a
 Visualization through the workbench (it builds per-run parameter strings under
 ``_run_labels`` but wires only declared ports), so the per-patient MAP traces are a
 labelled comparative visualization instead.

@@ -15,11 +15,10 @@ whichever airway device is connected (``BioGearsCircuits::GetActiveRespiratoryCi
 
 ``respiratory`` setpoint: ``intubated`` (0/1), with the tube placement from config
 ``intubation_type`` (``Tracheal``, ``Esophageal``, ``LeftMainstem``, ``RightMainstem``).
-BioGears accepts extubation (type ``Off``), so 1 -> 0 works, unlike in Pulse.
+BioGears accepts extubation (type ``Off``), so 1 -> 0 works.
 
-viva-pulse's respiratory module also has resistance and compliance multipliers;
-BioGears 8.2.0 has no action that changes its respiratory mechanics directly, so
-there are none here.
+There are no resistance or compliance multipliers: BioGears 8.2.0 has no action that
+changes its respiratory mechanics directly.
 
 ``mechanical_ventilator``: BioGears' ventilator is its anesthesia machine, a
 pressure-controlled ventilator with a gas source (``AnesthesiaMachineConfiguration``).

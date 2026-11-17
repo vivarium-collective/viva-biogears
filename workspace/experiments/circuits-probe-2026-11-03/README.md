@@ -1,6 +1,6 @@
 # Circuits probe (2026-11-03)
 
-**Question.** Which of viva-pulse's circuit features can BioGears 8.2.0 serve, and how do its actions behave? This probe settled the data requests and actions behind `viva_biogears/circuits/`.
+**Question.** Which circuit readings and interventions can BioGears 8.2.0 serve, and how do its actions behave? This probe settled the data requests and actions behind `viva_biogears/circuits/`.
 
 **Scripts** (run with `$BIOGEARS_RUNTIME` set, from this folder):
 - `probe.py`: connectivity of every physiology property BioGears defines (`physiology.json`).
@@ -23,7 +23,7 @@
 - The environment (`Conditions-<name>`) and the anesthesia-machine settings (`Equipment`) connect. They read BioGears' `Standard` environment and the machine's stored settings.
 
 **Actions.**
-- **Intubation** works, and so does extubation (type `Off`), unlike Pulse's Python API.
+- **Intubation** works, and so does extubation (type `Off`).
 - **Anesthesia machine.**
   - With `Tube` or `Mask`, it ventilates. 15/5 cmH2O at FiO2 0.5 raises PaO2 from 97 to 205 mmHg.
   - `Off` disconnects it.
@@ -36,4 +36,4 @@
 
   Workaround, in pybiogears (`BioGearsThunk::prune_thermal_application`, commit de52065): after BioGears stores the action, remove the heating or cooling without positive power and the applied temperature that isn't On. With it, a 500 W heater raises skin temperature from 35.3 to 40.5 °C in 5 min (the control is 35.3 at 10 min), and 300 W of cooling lowers it.
 
-**Not available in BioGears 8.2.0.** viva-pulse's circuit resistance and compliance multipliers (Pulse's `CardiovascularMechanicsModification` and `RespiratoryMechanicsModification`) have no BioGears equivalent. BioGears' overrides set outputs, not the circuit.
+**Not available in BioGears 8.2.0.** Circuit resistance and compliance multipliers: BioGears has no action that changes its cardiovascular or respiratory mechanics. BioGears' overrides set outputs, not the circuit.

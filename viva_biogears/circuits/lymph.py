@@ -1,4 +1,4 @@
-"""Lymph and tissue-fluid modules: BioGears' active lymph model (absent from Pulse 4.4.0).
+"""Lymph and tissue-fluid modules: BioGears' active lymph model.
 
 ``lymph``: lymph formation through the 13 tissue valves, the lymph pool and its
 passive return to the vena cava. BioGears 8.2.0 has no compartment links for lymph,

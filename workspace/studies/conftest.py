@@ -8,7 +8,7 @@ study declares for that label, every run comes from one commit, and no run hit
 an irreversible state (after which BioGears is no longer advanced and the vitals
 freeze while time still reaches the end).
 
-Ported from viva-pulse. The hemorrhage composites record the latch at
+The hemorrhage composites record the latch at
 ``vitals.irreversible_state``, the circuit composites (biogears_sepsis) at
 ``circuits.irreversible_state``; whichever the run recorded is checked.
 """

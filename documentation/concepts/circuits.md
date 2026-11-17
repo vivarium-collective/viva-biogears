@@ -91,7 +91,7 @@ challenge is the run's first update.
 
 - **One airway device at a time**: a second makes every step fail.
 - **No circuit multipliers**: BioGears 8.2.0 has no action that changes its circuit
-  mechanics, so viva-pulse's resistance and compliance multipliers aren't offered.
+  mechanics, so there are no resistance or compliance multipliers.
 - **Ventilator**: BioGears' is its anesthesia machine (pressure control, `Tube` or `Mask`).
 - **Thermal application**: works only with pybiogears' workaround for two BioGears bugs.
 - **Time step**: `time_step_s` (default 0.02 s, BioGears' validated step; under 0.1 s).

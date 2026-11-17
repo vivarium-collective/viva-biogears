@@ -24,7 +24,7 @@ def pytest_runtest_makereport(item, call):
 
     BioGears has no PyPI release, so CI without a build raises BioGearsNotFoundError
     in engine-driving tests; convert that to a skip. With a build present, nothing is
-    converted and every engine test runs for real. (Same scheme as viva-pulse.)
+    converted and every engine test runs for real.
     """
     outcome = yield
     if BIOGEARS_AVAILABLE:

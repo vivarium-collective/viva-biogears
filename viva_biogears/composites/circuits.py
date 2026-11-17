@@ -1,4 +1,4 @@
-"""Per-circuit composites driving the real BioGears engine (viva-pulse's ``pulse_*`` circuit composites).
+"""Per-circuit composites driving the real BioGears engine.
 
 Store layout:
 

@@ -3,9 +3,8 @@
 A ``CircuitModule`` names the BioGears data requests that become its output ports
 and the BioGears actions that its setpoint input ports drive. It computes nothing:
 ``BioGearsCircuitProcess`` turns the selected modules into ports, requests and
-actions against one real BioGears engine. (viva-pulse's ``viva_pulse.circuits.base``
-is the model; the differences are that BioGears reads circuit nodes and paths
-directly, so no module edits the state, and that actions are BioGears scenario XML.)
+actions against one real BioGears engine. Circuit nodes and paths are read directly,
+so no module edits the state, and actions are BioGears scenario XML.
 """
 
 from __future__ import annotations

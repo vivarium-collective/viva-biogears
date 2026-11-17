@@ -4,8 +4,7 @@ viva-biogears has two processes that drive BioGears, and a controller step.
 
 ## `BioGearsProcess`
 
-Vital signs plus a hemorrhage and an IV infusion: the simplest bridge, with viva-pulse's
-`PulseProcess` contract.
+Vital signs plus a hemorrhage and an IV infusion: the simplest bridge.
 
 - **Inputs** `hemorrhage_rate_mL_per_min` and `iv_rate_mL_per_min`, setpoints sent to
   BioGears only when they change: resending a hemorrhage restarts BioGears' bleed. 0 stops

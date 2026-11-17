@@ -1,4 +1,4 @@
-"""Paths added to the cardiovascular circuit of a state before it loads (viva-pulse's ``circuit_additions``).
+"""Paths added to the cardiovascular circuit of a state before it loads.
 
 An added path is a perturbation of the loaded patient: the body responds to it over
 time (an aorta-to-vena-cava shunt lowers MAP and raises HR and cardiac output) and

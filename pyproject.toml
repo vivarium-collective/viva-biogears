@@ -11,7 +11,7 @@ requires-python = ">=3.12"
 # README.md). Engine tests skip when no build is found.
 dependencies = [
     # 1.10.1: initial_state() is kept on overwrite[float] and boolean output ports
-    # (process-bigraph #268); the vitals ports rely on it (viva-pulse found this).
+    # (process-bigraph #268); the vitals ports rely on it.
     "process-bigraph>=1.10.1",
     "bigraph-schema>=1.8.3",
     "numpy",

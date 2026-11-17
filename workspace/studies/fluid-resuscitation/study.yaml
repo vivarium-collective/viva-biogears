@@ -6,7 +6,6 @@ created: '2026-11-16'
 status: planned
 question: 'Does a MAP-targeted IV infusion change the course of a right-leg hemorrhage
   in BioGears, and does it matter whether the fluid is saline or O-negative blood?
-  (The viva-pulse study of the same name, ported to BioGears.)
 
   '
 hypothesis: 'A closed loop that infuses once MAP falls below 90 mmHg ends the run with

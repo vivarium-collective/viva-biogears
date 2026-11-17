@@ -1,4 +1,4 @@
-"""Probe BioGears 8.2.0 for viva-pulse's circuit features: which data requests connect,
+"""Probe BioGears 8.2.0's circuits: which data requests connect,
 and how airway devices, intubation, environment and thermal actions behave."""
 import json, math, os, sys
 from pathlib import Path

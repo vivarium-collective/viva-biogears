@@ -2,7 +2,7 @@
 
 A module is declarative (``base.CircuitModule``): the BioGears data requests that
 become its output ports and the BioGears actions its setpoints drive. Modules
-compute nothing. viva-pulse's ``viva_pulse.circuits`` is the model.
+compute nothing.
 """
 
 from .base import ActionBinding, CircuitModule, Request

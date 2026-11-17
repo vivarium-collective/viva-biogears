@@ -28,8 +28,7 @@ members:
 - patient-cohort
 question: 'How does the BioGears 8.2.0 engine respond to a hemorrhage: how does the response
   scale with the bleed rate, does closed-loop fluid resuscitation change it, and does the
-  same bleed behave the same across BioGears'' 17 shipped patients? (viva-pulse''s
-  pulse-hemorrhage investigation, ported to BioGears.)
+  same bleed behave the same across BioGears'' 17 shipped patients?
 
   '
 hypothesis: 'Blood loss, the heart-rate rise and the MAP fall all grow with the bleed rate,
@@ -45,10 +44,9 @@ description: 'Three studies on the biogears_hemorrhage and biogears_resuscitatio
   runs.
 
   '
-differences_from_pulse: 'BioGears takes a bleed as an initial rate in mL/min, not Pulse''s
-  dimensionless severity, and lowers it as the compartment pressure falls; its baroreflex
-  does not hold MAP within 2 mmHg for any of these bleeds (Pulse did up to severity 0.4);
-  its blood-loss readout is NaN until a bleed starts; whole blood is BioGears'' Blood_ONegative
-  compound; and the cohort is BioGears'' 17 shipped states instead of Pulse''s 21 patients.
+engine_notes: 'BioGears takes a bleed as an initial rate in mL/min and lowers it as the
+  compartment pressure falls; its baroreflex does not hold MAP within 2 mmHg for any of
+  these bleeds; its blood-loss readout is NaN until a bleed starts; whole blood is BioGears''
+  Blood_ONegative compound; and the cohort is BioGears'' 17 shipped patient states.
 
   '

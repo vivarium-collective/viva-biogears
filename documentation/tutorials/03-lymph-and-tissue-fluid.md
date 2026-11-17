@@ -13,7 +13,7 @@ kernelspec:
 
 **What you will do:** infuse saline into the equilibrated StandardMale and follow what
 BioGears does with the fluid: capillary filtration into the tissues, lymph formation, the
-lymph pool, and its return to the veins. This is the part of BioGears Pulse doesn't model.
+lymph pool, and its return to the veins.
 
 **What you need:** {doc}`../installation`. About three minutes of BioGears time.
 

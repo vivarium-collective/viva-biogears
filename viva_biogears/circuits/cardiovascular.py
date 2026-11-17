@@ -27,9 +27,8 @@ Setpoints:
 - ``iv_rate_mL_per_min`` of config ``iv_compound`` (``SubstanceCompoundInfusion``
   from a bag of ``iv_bag_volume_L``); 0 stops it.
 
-viva-pulse's cardiovascular module also has resistance and compliance multipliers.
-BioGears 8.2.0 has no action that modifies its circuit mechanics (its overrides set
-outputs, not the circuit), so there are none here.
+There are no resistance or compliance multipliers: BioGears 8.2.0 has no action that
+modifies its circuit mechanics (its overrides set outputs, not the circuit).
 """
 
 from __future__ import annotations

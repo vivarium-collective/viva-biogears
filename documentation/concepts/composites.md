@@ -22,7 +22,7 @@ the circuit ones also take `interval`, and some `point_reads`, `substance_output
 
 ## Store layout
 
-The circuit composites use viva-pulse's layout:
+The circuit composites share one layout:
 
 - `interventions/<module>/`: the setpoints;
 - `circuits/<module>/`: the module's readings, and `circuits/irreversible_state`;

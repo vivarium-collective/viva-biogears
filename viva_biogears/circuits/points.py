@@ -1,8 +1,8 @@
 """Point reads: single circuit nodes and paths of BioGears' circuits.
 
 BioGears' circuits are reachable by name (pybiogears ``FluidNode``/``FluidPath``
-requests read ``BioGearsCircuits::GetFluidNode``/``GetFluidPath``), so unlike
-viva-pulse nothing is added to the state: the modules list the circuit's nodes and
+requests read ``BioGearsCircuits::GetFluidNode``/``GetFluidPath``), so nothing is
+added to the state: the modules list the circuit's nodes and
 paths from the starting state and read them directly.
 
 - ``cardiovascular_points``: BioGears' ``FullCardiovascular`` circuit (with the renal,

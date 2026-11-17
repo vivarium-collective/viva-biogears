@@ -6,11 +6,10 @@ created: '2026-11-16'
 status: planned
 question: 'How do blood loss, heart rate and mean arterial pressure over 10 minutes
   depend on the initial rate of a right-leg hemorrhage in the BioGears StandardMale?
-  (The viva-pulse study of the same name, ported to BioGears.)
 
   '
 hypothesis: 'Blood lost and heart rate rise monotonically with the initial bleed rate
-  and MAP falls monotonically with it. Unlike Pulse at its milder severities, BioGears''
+  and MAP falls monotonically with it. BioGears''
   baroreflex does not hold MAP within 2 mmHg of its start for any of these bleeds. Loss
   grows much more slowly than the commanded rate, because BioGears lowers a bleed''s
   rate as the local pressure falls.
@@ -184,10 +183,8 @@ preregistered:
     this study with the same composite and parameters; the canonical runs repeat it
     through the workbench.
   pilot: 'The pilot ran all six arms, so these criteria are regression checks on BioGears''
-    behaviour, not blind predictions (as in the viva-pulse study, whose pilot covered
-    two of its six arms). They differ from viva-pulse''s because BioGears differs: no
-    bleed here keeps MAP within 2 mmHg, so the "pressure held for mild bleeds" criterion
-    is replaced by "every bleed leaves the band", and the loss saturates with rate.'
+    behaviour, not blind predictions. No bleed here keeps MAP within 2 mmHg, so the
+    criterion is that every bleed leaves the band; and the loss saturates with rate.'
 falsifiability: 'Refuted if blood loss, heart rate or the MAP fall fails to increase
   with the initial rate, if any bleeding arm keeps MAP within 2 mmHg of its start,
   if MAP at 250 mL/min is not at least 7 mmHg below its start, or if loss scales in
