@@ -40,11 +40,12 @@ Clone viva-biogears next to pybiogears:
 git clone https://github.com/vivarium-collective/viva-biogears.git
 cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
-uv pip install -e '.[dev]'
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ../pybiogears
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install -e '.[dev,engine]'   # engine: pybiogears at the pinned commit
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
-python -m pytest -q        # ~5 min, real engine
+python -m pytest -q        # ~15 min, real engine
 ```
+
+`dev` includes the `workbench` extra (the web dashboard). To use viva-biogears from another project, depend on `viva-biogears`, plus `viva-biogears[engine]` for the real engine: the workbench isn't a core dependency, so that project keeps its own workbench version.
 
 ### Finding BioGears
 

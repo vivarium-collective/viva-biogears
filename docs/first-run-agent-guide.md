@@ -65,11 +65,12 @@ cd biogears
 ## 2. Install (uv, into a workspace venv)
 
 This workspace pins its dependencies with [`uv`](https://docs.astral.sh/uv/)
-(`uv.lock`), and its `pyproject.toml` sources vivarium-workbench so the
-`vivarium-workbench` CLI is available after sync.
+(`uv.lock`). vivarium-workbench is in the `workbench` extra (not a core
+dependency, so projects that use viva-biogears as a library keep their own), so
+sync with that extra to get the `vivarium-workbench` CLI.
 
 ```bash
-uv sync                      # creates .venv/ and installs locked deps
+uv sync --extra workbench    # creates .venv/ and installs locked deps, with the workbench
 uv pip install -e .          # editable install of this workspace's package
 ```
 
