@@ -14,7 +14,7 @@ BioGears runs as an ordinary process-bigraph `Process`:
   with `Composite.run`.
 
 Nothing is reimplemented or mocked. Every number comes from BioGears' C++ engine through
-[pybiogears](https://github.com/), a thin binding built against an unmodified BioGears 8.2.0.
+[pybiogears](https://github.com/vivarium-collective/pybiogears), a thin binding built against an unmodified BioGears 8.2.0.
 
 ## Why BioGears
 

@@ -1,6 +1,6 @@
 # viva-biogears
 
-A [process-bigraph](https://github.com/vivarium-collective/process-bigraph) wrapper that drives the **real** [BioGears](https://github.com/BioGearsEngine/core) physiology engine (8.2.0). BioGears runs as a time-stepped `Process`: interventions are input ports, vital signs are output ports, and simulations are ordinary `process_bigraph.Composite` documents. Nothing is reimplemented or mocked: every number comes from BioGears' C++ engine through [pybiogears](https://github.com/) (`~/projects/biogears/pybiogears`).
+A [process-bigraph](https://github.com/vivarium-collective/process-bigraph) wrapper that drives the **real** [BioGears](https://github.com/BioGearsEngine/core) physiology engine (8.2.0). BioGears runs as a time-stepped `Process`: interventions are input ports, vital signs are output ports, and simulations are ordinary `process_bigraph.Composite` documents. Nothing is reimplemented or mocked: every number comes from BioGears' C++ engine through [pybiogears](https://github.com/vivarium-collective/pybiogears).
 
 Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits and its tissue-fluid model (endothelial leak, oncotic pressure, albumin and an active lymph system).
 
@@ -27,17 +27,21 @@ Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits 
 BioGears and pybiogears are not on PyPI; build them from source with pybiogears' one-command installer:
 
 ```bash
-cd ~/projects/biogears/pybiogears
+git clone https://github.com/vivarium-collective/pybiogears.git
+cd pybiogears
 scripts/install_biogears.sh          # BioGears 8.2.0 -> ~/biogears-8.2.0-install (unmodified; see its README)
 ```
 
 ## Setup
 
+Clone viva-biogears next to pybiogears:
+
 ```bash
-cd ~/projects/viva-biogears
+git clone https://github.com/vivarium-collective/viva-biogears.git
+cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
 uv pip install -e '.[dev]'
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ~/projects/biogears/pybiogears
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ../pybiogears
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q        # ~5 min, real engine
 ```

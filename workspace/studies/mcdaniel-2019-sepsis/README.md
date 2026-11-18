@@ -43,7 +43,7 @@ The protocols are `viva_biogears.protocols.TreatmentProtocol`, reassessed every 
 Each 48 h arm takes about 8 h of wall time (BioGears runs ~6× real time), so run the arms in parallel on a machine with enough cores, kept awake:
 
 ```sh
-cd ~/projects/viva-biogears && source .venv/bin/activate
+cd viva-biogears && source .venv/bin/activate      # your clone
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 caffeinate -i python workspace/studies/mcdaniel-2019-sepsis/run.py all --jobs 4
 python workspace/studies/mcdaniel-2019-sepsis/analyze.py      # any time, on partial results too

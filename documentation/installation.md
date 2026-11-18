@@ -6,17 +6,21 @@ pybiogears.
 ## Build BioGears and pybiogears
 
 ```bash
-cd ~/projects/biogears/pybiogears
+git clone https://github.com/vivarium-collective/pybiogears.git
+cd pybiogears
 scripts/install_biogears.sh        # BioGears 8.2.0 -> ~/biogears-8.2.0-install (about 20 min)
 ```
 
 ## Install viva-biogears
 
+Clone viva-biogears next to pybiogears:
+
 ```bash
-cd ~/projects/viva-biogears
+git clone https://github.com/vivarium-collective/viva-biogears.git
+cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
 uv pip install -e '.[dev]'
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ~/projects/biogears/pybiogears
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ../pybiogears
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q                # real engine; about 15 min
 ```
