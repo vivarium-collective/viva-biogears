@@ -43,7 +43,7 @@ from typing import Any
 
 from .base import (
     ActionBinding,
-    CircuitModule,
+    Module,
     Request,
     check_fraction,
     scalar,
@@ -233,7 +233,7 @@ def _check_ventilator_config(config: dict[str, Any]) -> None:
                          f"got {config['ventilator_connection']!r}")
 
 
-RESPIRATORY = CircuitModule(
+RESPIRATORY = Module(
     name="respiratory",
     description="Breathing mechanics plus pressure, volume and flows of the airway, lung and "
                 "pleural gas compartments; setpoint: intubation.",
@@ -245,7 +245,7 @@ RESPIRATORY = CircuitModule(
     check_config=_check_respiratory_config,
 )
 
-MECHANICAL_VENTILATOR = CircuitModule(
+MECHANICAL_VENTILATOR = Module(
     name="mechanical_ventilator",
     description="BioGears' anesthesia-machine ventilator (pressure control): its settings as applied "
                 "and its circuit's gas compartments; setpoints: connection and settings.",

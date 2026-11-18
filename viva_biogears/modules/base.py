@@ -1,6 +1,6 @@
 """Declarative description of one BioGears circuit family as process-bigraph ports.
 
-A ``CircuitModule`` names the BioGears data requests that become its output ports
+A ``Module`` names the BioGears data requests that become its output ports
 and the BioGears actions that its setpoint input ports drive. It computes nothing:
 ``BioGearsModularProcess`` turns the selected modules into ports, requests and
 actions against one real BioGears engine. Circuit nodes and paths are read directly,
@@ -126,8 +126,8 @@ def check_nonnegative(port: str, value: float) -> None:
 
 
 @dataclass(frozen=True)
-class CircuitModule:
-    """One circuit family: its outputs, its setpoint bindings, its config params.
+class Module:
+    """One part of BioGears exposed as ports: its outputs, its setpoint bindings, its config params.
 
     ``params`` are ``config_schema`` entries that ``BioGearsModularProcess`` exposes,
     and ``check_config`` validates them, raising ``ValueError``. ``check_loaded``
@@ -181,3 +181,11 @@ def scalar(tag: str, value: float, unit: str = "") -> str:
     """``<tag value=".." unit=".."/>``, BioGears' scalar XML."""
     u = f' unit="{unit}"' if unit else ""
     return f'<{tag} value="{float(value)!r}"{u}/>'
+
+
+def __getattr__(name):
+    if name == "CircuitModule":           # the class's former name
+        import warnings
+        warnings.warn("CircuitModule is now Module", DeprecationWarning, stacklevel=2)
+        return Module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

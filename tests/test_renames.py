@@ -46,3 +46,12 @@ class _nothing:
 
     def __exit__(self, *exc):
         return False
+
+
+def test_the_old_module_class_name_is_the_new_class():
+    from viva_biogears.modules import Module
+    with pytest.warns(DeprecationWarning, match="Module"):
+        from viva_biogears.modules import CircuitModule
+    with pytest.warns(DeprecationWarning, match="Module"):
+        from viva_biogears.modules.base import CircuitModule as base_alias
+    assert CircuitModule is Module and base_alias is Module

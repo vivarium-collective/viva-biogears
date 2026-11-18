@@ -40,7 +40,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .base import CircuitModule, Request
+from .base import Module, Request
 
 #: The properties each kind of entry can read, with a BioGears unit for each ("" for
 #: unitless; any unit of the same kind works, and a wrong one fails the load). These are
@@ -272,13 +272,13 @@ def every_substance_output(state_file: str = "StandardMale@0s.xml", *, substance
 
 _LIST = {"_type": "list", "_default": []}
 
-SUBSTANCES = CircuitModule(
+SUBSTANCES = Module(
     name="substances",
     description="The substance quantities listed in substance_outputs.",
     params={"substance_outputs": dict(_LIST)},
     prepare=_substance_outputs,
 )
-TISSUES = CircuitModule(
+TISSUES = Module(
     name="tissues",
     description="The tissue values listed in tissue_outputs.",
     params={"tissue_outputs": dict(_LIST)},

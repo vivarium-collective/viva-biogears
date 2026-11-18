@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .base import CircuitModule, Request
+from .base import Module, Request
 
 #: Output port -> (BioGears physiology property, unit). Order is the data-request
 #: order of BioGearsProcess, i.e. the order of BioGearsEngine.pull()[1:].
@@ -20,7 +20,7 @@ VITALS: dict[str, tuple[str, str]] = {
     "total_blood_volume_lost_mL": ("TotalBloodVolumeLost", "mL"),
 }
 
-VITALS_MODULE = CircuitModule(
+VITALS_MODULE = Module(
     name="vitals",
     description="BioGearsProcess's vital signs.",
     outputs=tuple(Request((name,), "Physiology", p, u, allow_nan=(p == "TotalBloodVolumeLost"))

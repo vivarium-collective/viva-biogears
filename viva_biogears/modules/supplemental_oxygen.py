@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 
-from .base import ActionBinding, CircuitModule, Request, scalar, validate_switch
+from .base import ActionBinding, Module, Request, scalar, validate_switch
 from .state import scalar as state_scalar
 
 _OXYGENATION = {
@@ -58,7 +58,7 @@ def _loaded_oxygen(state, config):
     return dict(OXYGEN_BASELINE)
 
 
-SUPPLEMENTAL_OXYGEN = CircuitModule(
+SUPPLEMENTAL_OXYGEN = Module(
     name="supplemental_oxygen",
     description="A nasal cannula: arterial blood gases and end-tidal CO2; setpoints: connection and flow.",
     outputs=tuple(Request(("oxygenation", p), "Physiology", prop, u) for p, (prop, u) in _OXYGENATION.items())

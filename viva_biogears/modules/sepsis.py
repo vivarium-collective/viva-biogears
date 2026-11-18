@@ -23,7 +23,7 @@ result is the progression to sepsis and septic shock the paper describes.
 ``nutrition``: meals and drinks at given times (config ``nutrition_schedule``, a list of
 ``{"hour": h, "nutrition": {"Water": L, "Carbohydrate": g, "Fat": g, "Protein": g,
 "Sodium": g, "Calcium": g}}``), sent as ``ConsumeNutrients`` actions at the first update
-at or after each time (``CircuitModule.schedule``). One-shot actions, so no setpoints.
+at or after each time (``Module.schedule``). One-shot actions, so no setpoints.
 ``INFECTION_SCENARIO_SCHEDULE`` is BioGears' own ``InfectionModerate`` scenario's (water
 hourly, five meals in 48 h), which McDaniel et al. used for every arm. Readings: stomach
 contents and the body's water balance.
@@ -36,7 +36,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from .base import ActionBinding, CircuitModule, Request, scalar
+from .base import ActionBinding, Module, Request, scalar
 
 SEVERITIES = {0.0: None, 1.0: "Mild", 2.0: "Moderate", 3.0: "Severe"}
 
@@ -129,7 +129,7 @@ def _check_infection_config(config: dict[str, Any]) -> None:
         raise ValueError(f"infection_location must be a name, got {config['infection_location']!r}")
 
 
-INFECTION = CircuitModule(
+INFECTION = Module(
     name="infection",
     description="BioGears' acute inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue "
                 "integrity) and the clinical signs of sepsis; setpoint: infection severity (one-way).",
@@ -175,7 +175,7 @@ def _nutrition_schedule(config):
     return [(float(e["hour"]) * 3600.0, nutrition_xml(e["nutrition"])) for e in config["nutrition_schedule"]]
 
 
-NUTRITION = CircuitModule(
+NUTRITION = Module(
     name="nutrition",
     description="Meals and drinks at scheduled times (nutrition_schedule); readings: stomach contents and the "
                 "body's water balance.",

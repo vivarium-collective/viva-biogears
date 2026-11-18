@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import math
 
-from .base import CircuitModule, Request
+from .base import Module, Request
 
 _AIRWAY_OPENING = "EnvironmentToMouth"
 _DEVICE_MODULES = ("mechanical_ventilator", "supplemental_oxygen")
@@ -51,7 +51,7 @@ def _select(kind: str, available: list[str], wanted: list[str], circuit: str) ->
     return list(wanted)
 
 
-def _point_module(name: str, circuit: str, pressure: tuple[str, str], flow: tuple[str, str]) -> CircuitModule:
+def _point_module(name: str, circuit: str, pressure: tuple[str, str], flow: tuple[str, str]) -> Module:
     prefix = name.removesuffix("_points")
 
     def prepare(config, state, modules) -> tuple[Request, ...]:
@@ -70,7 +70,7 @@ def _point_module(name: str, circuit: str, pressure: tuple[str, str], flow: tupl
         out += [Request(("paths", p, flow[0]), "FluidPath", "Flow", flow[1], p) for p in paths]
         return tuple(out)
 
-    return CircuitModule(
+    return Module(
         name=name,
         description=f"Pressure (and volume) of every node and signed flow of every path of BioGears' "
                     f"{circuit} circuit, or of the ones listed.",

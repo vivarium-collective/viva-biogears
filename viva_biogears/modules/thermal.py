@@ -50,7 +50,7 @@ from __future__ import annotations
 
 from .base import (
     ActionBinding,
-    CircuitModule,
+    Module,
     Request,
     check_fraction,
     check_nonnegative,
@@ -233,7 +233,7 @@ def _loaded_thermal_application(state, config):
     return values
 
 
-THERMAL = CircuitModule(
+THERMAL = Module(
     name="thermal",
     description="Core and skin temperatures, heat losses, the environment as applied and every "
                 "thermal compartment's temperature and heat flows; setpoints: the environment, "

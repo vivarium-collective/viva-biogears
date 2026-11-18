@@ -9,7 +9,7 @@ setpoints drive (inputs).
    :members: MODULES
 
 .. automodule:: viva_biogears.modules.base
-   :members: Request, ActionBinding, CircuitModule
+   :members: Request, ActionBinding, Module
 
 .. automodule:: viva_biogears.modules.vitals
 

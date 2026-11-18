@@ -14,7 +14,7 @@ pressure as a negative pressure source, reported positive.
 
 from __future__ import annotations
 
-from .base import CircuitModule, Request
+from .base import Module, Request
 
 #: Tissues with a lymph drainage path (BioGears.cpp SetupTissue), as port keys -> BioGears names.
 TISSUES = {
@@ -27,7 +27,7 @@ TISSUES = {
 _V_TO_E1 = {t: f"{t}VTo{t}E1" for t in TISSUES.values()} | {"Gut": "SplanchnicVToGutE1"}
 
 
-def _lymph() -> CircuitModule:
+def _lymph() -> Module:
     r = [
         Request(("return_mL_per_min",), "FluidPath", "Flow", "mL/min", "LymphToVenaCava"),
         Request(("return_resistance_mmHg_min_per_mL",), "FluidPath", "Resistance", "mmHg min/mL", "LymphToVenaCava"),
@@ -40,14 +40,14 @@ def _lymph() -> CircuitModule:
     ]
     r += [Request(("formation", f"{key}_mL_per_min"), "FluidPath", "Flow", "mL/min", f"{name}ToLymphValve")
           for key, name in TISSUES.items()]
-    return CircuitModule(
+    return Module(
         name="lymph",
         description="Lymph formation (13 tissue valves), the lymph pool, and its return to the vena cava. "
         "BioGears 8.2.0 has no compartment links for lymph, so these are circuit reads (pybiogears P5).",
         outputs=tuple(r))
 
 
-def _tissue_fluid() -> CircuitModule:
+def _tissue_fluid() -> Module:
     r = [
         Request(("plasma_albumin_g_per_dL",), "LiquidCompartment", "Concentration", "g/dL", "Aorta", "Albumin"),
         Request(("blood_volume_mL",), "Physiology", "BloodVolume", "mL"),
@@ -74,7 +74,7 @@ def _tissue_fluid() -> CircuitModule:
                     f"{t}E2To{t}E3"),
             Request((key, "interstitial_pressure_mmHg"), "FluidNode", "Pressure", "mmHg", f"{t}E3"),
         ]
-    return CircuitModule(
+    return Module(
         name="tissue_fluid",
         description="Per-tissue extracellular/intracellular volumes, capillary filtration, endothelial resistance, "
         "plasma and interstitial oncotic pressures, interstitial pressure and albumin; whole-body fluid totals.",

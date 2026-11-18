@@ -2,7 +2,7 @@
 McDaniel et al. 2019's treatment experiments (Figs 9-13).
 
 Config ``treatment_schedule``, a list of events sent at the first update at or after
-their time (``CircuitModule.schedule``), each one of:
+their time (``Module.schedule``), each one of:
 
 - a compound infusion (``SubstanceCompoundInfusion``):
   ``{"hour": h, "compound": "Saline", "bag_volume_mL": 500, "rate_mL_per_min": 50}``.
@@ -45,7 +45,7 @@ from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
 
-from .base import ActionBinding, CircuitModule, Request, check_nonnegative, scalar
+from .base import ActionBinding, Module, Request, check_nonnegative, scalar
 from .state import scalar as state_scalar
 from .state import text as state_text
 
@@ -184,7 +184,7 @@ def _outputs(config, state, modules) -> tuple[Request, ...]:
     return tuple(out)
 
 
-TREATMENT = CircuitModule(
+TREATMENT = Module(
     name="treatment",
     description="Timed IV treatment (treatment_schedule): compound boluses and infusions (saline, antibiotics) and "
                 "substance infusions; setpoint: a vasopressor infusion rate; readings: antibiotic activity and the "

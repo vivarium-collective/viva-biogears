@@ -36,7 +36,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from .base import ActionBinding, CircuitModule, Request, check_nonnegative
+from .base import ActionBinding, Module, Request, check_nonnegative
 from .state import scalar, text
 
 #: Compartments BioGears 8.2.0 can bleed from: those with a "<name>Bleed" path in
@@ -266,7 +266,7 @@ def _check_config(config):
     check_infusion_config(config)
 
 
-CARDIOVASCULAR = CircuitModule(
+CARDIOVASCULAR = Module(
     name="cardiovascular",
     description="Hemodynamics plus pressure, volume and flows of 42 vascular compartments "
                 "(central, cerebral, renal, peripheral); setpoints: a hemorrhage and an IV infusion.",
