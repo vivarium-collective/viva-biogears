@@ -9,6 +9,7 @@ so no module edits the state, and actions are BioGears scenario XML.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -175,6 +176,29 @@ class Module:
     def requests(self) -> tuple[Request, ...]:
         """Static outputs (empty for a ``prepare`` module)."""
         return self.outputs
+
+
+def port_units(unit: str) -> str | None:
+    """The bigraph-schema (pint) units for a BioGears unit string, or None if pint has
+    no such unit (e.g. BioGears' ``clo``) or the request is unitless.
+
+    The two grammars differ: BioGears puts everything after the ``/`` in the
+    denominator (``L/min m^2`` is L/(min m^2)) and writes counts as ``ct``, while pint
+    reads left to right (``L/min m^2`` would be L m^2/min) and ``ct`` is the carat. The
+    type grammar (``float[...]``) has no parentheses, so the denominator is chained:
+    ``L/min/m^2``.
+    """
+    if not unit:
+        return None
+    from bigraph_schema.units import units as registry
+
+    num, slash, den = re.sub(r"\bct\b", "count", unit).partition("/")
+    translated = f"{num}/{'/'.join(den.split())}" if slash else num
+    try:
+        registry.Unit(translated)
+    except Exception:  # noqa: BLE001 - not a pint unit: leave the port without units
+        return None
+    return translated
 
 
 def scalar(tag: str, value: float, unit: str = "") -> str:

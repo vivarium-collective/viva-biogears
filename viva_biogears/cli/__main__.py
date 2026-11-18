@@ -142,6 +142,16 @@ def run_composite(
         console.print(composite.state)
 
 
+@app.command(name="schema")
+def schema_command(
+    check: bool = typer.Option(False, "--check", help="Exit 1 if the committed schema differs from the code."),
+) -> None:
+    """Write the I/O schema files (viva_biogears/data/schema), or check them."""
+    from viva_biogears.schema import main as schema_main
+
+    raise typer.Exit(schema_main(["--check"] if check else []))
+
+
 def main() -> None:
     app()
 

@@ -86,7 +86,7 @@ readouts:
 - {name: heart-rate, store_path: readings.infection.clinical.heart_rate_bpm, units: 1/min}
 - {name: respiration-rate, store_path: readings.infection.clinical.respiration_rate_bpm, units: 1/min}
 - {name: core-temperature, store_path: readings.infection.clinical.core_temperature_C, units: degC}
-- {name: white-blood-cells, store_path: readings.infection.clinical.white_blood_cell_count_per_uL, units: ct/uL}
+- {name: white-blood-cells, store_path: readings.infection.clinical.white_blood_cell_count_per_uL, units: count/uL}
 - {name: systolic-pressure, store_path: readings.infection.clinical.systolic_pressure_mmHg, units: mmHg}
 - {name: mean-arterial-pressure, store_path: readings.infection.clinical.mean_arterial_pressure_mmHg, units: mmHg}
 - {name: systemic-vascular-resistance, store_path: readings.infection.clinical.systemic_vascular_resistance_mmHg_s_per_mL,
