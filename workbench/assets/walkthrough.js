@@ -7421,15 +7421,38 @@
   }
   window._installFromMarketplace = _installFromMarketplace;
 
+  // Non-blocking confirm gate: uses the shared _confirmModal when present
+  // (doesn't freeze the event loop / browser automation — #1051), and falls
+  // back to native confirm() otherwise. Always returns a Promise<bool>.
+  function _confirmGate(message) {
+    if (typeof window._confirmModal === 'function') return window._confirmModal(message);
+    return Promise.resolve(window.confirm(message));
+  }
+  window._confirmGate = _confirmGate;
+
   function _proceedWithCatalogInstall(name, opts) {
-    if (!confirm("Install '" + name + "'?\n\nThis adds a submodule, pip installs the package, and appends it to pyproject.toml. If a workstream is active the change is committed to its branch.")) return;
+    _confirmGate("Install '" + name + "'?\n\nThis adds a submodule, pip installs the package, and appends it to pyproject.toml. If a workstream is active the change is committed to its branch.").then(function (_ok) {
+    if (!_ok) return;
     var body = {name: name};
     if (opts && opts.skip_system_deps_check) body.skip_system_deps_check = true;
     if (opts && opts.full_repo) body.full_repo = true;
+    // In-page progress: the install (submodule clone + pip install) routinely
+    // takes a minute. Without this the page sits silent after the confirm, with
+    // no sign anything is happening (issue #1618, bug 7). A persistent toast
+    // (durationMs:0 → until we clear it) is non-blocking, so it also doesn't
+    // freeze browser automation the way the old alert() did (#1051).
+    var _progress = (typeof _showToast === 'function')
+      ? _showToast('Installing ' + name + '… (cloning + pip install — this can take a minute)', { durationMs: 0 })
+      : null;
+    function _clearProgress() {
+      if (_progress && _progress.parentNode) _progress.parentNode.removeChild(_progress);
+      _progress = null;
+    }
     apiFetch('POST', '/api/catalog-install', body)
       .then(function(r) { return r.json().then(function(j) { return [r.ok, r.status, j]; }); })
       .then(function(parts) {
         var ok = parts[0], status = parts[1], json = parts[2];
+        _clearProgress();
         if (!ok) {
           // 409 = system-deps gate (defence-in-depth — UI should have
           // already shown the modal; re-show if it happens anyway).
@@ -7448,19 +7471,27 @@
             }, opts);
             return;
           }
-          alert(_renderInstallError(json));
+          var em = _renderInstallError(json);
+          // A rolled-back install leaves nothing staged — say so, so the user
+          // knows the Studies panel isn't about to fill with a half-installed
+          // module (issue #1618, bug 7).
+          if (json && json.rolled_back) em += "\n\n(Partial install rolled back — nothing was left staged.)";
+          if (typeof _showToast === 'function') _showToast(em, { danger: true }); else alert(em);
           return;
         }
-        var msg = "Installed " + name + ".\nCommit: " + (json.commit || 'n/a');
-        alert(msg);
+        var msg = "Installed " + name + "." + (json.commit ? "\nCommit: " + json.commit : '');
+        if (typeof _showToast === 'function') _showToast(msg); else alert(msg);
         window._registryLoaded = false;  // force registry reload on next switch
         apiFetch('POST', '/api/render').finally(function() {
           location.reload();
         });
       })
       .catch(function(err) {
-        alert("Network error: " + String(err));
+        _clearProgress();
+        var nm = "Network error: " + String(err);
+        if (typeof _showToast === 'function') _showToast(nm, { danger: true }); else alert(nm);
       });
+    });
   }
   window._proceedWithCatalogInstall = _proceedWithCatalogInstall;
 
@@ -12258,6 +12289,20 @@
   // "All clear" explainer popover: says what the deterministic needs-attention
   // scan means and lists the checks behind it (all passing when all-clear), so
   // the user can see there's nothing to act on — or what would be flagged.
+  // The honest headline for an investigation the scan flagged NOTHING in. "All
+  // clear" (green) is reserved for an investigation that has member studies AND
+  // at least one has run — otherwise there is simply nothing evaluated yet, which
+  // is a neutral state, not a validated one (issue #1618, bug 3: "✓ All clear" on
+  // an empty / never-run investigation read as if the work had passed).
+  function _naQuietState(summary) {
+    summary = summary || {};
+    var members = (summary.member_count != null) ? summary.member_count : null;
+    var evaluated = (summary.evaluated_count != null) ? summary.evaluated_count : null;
+    if (members === 0) return { label: 'No studies yet', cls: 'aig-na-quiet', color: '#475569' };
+    if (evaluated === 0) return { label: 'No runs yet', cls: 'aig-na-quiet', color: '#475569' };
+    return { label: '✓ All clear', cls: 'aig-na-clear', color: '#166534' };
+  }
+
   function _aigCloseAllClearInfo() { var p = document.getElementById('aig-allclear-pop'); if (p) p.remove(); }
   function _aigShowAllClearInfo(anchor) {
     if (document.getElementById('aig-allclear-pop')) { _aigCloseAllClearInfo(); return; }   // toggle
@@ -12331,6 +12376,13 @@
         + '</li>';
     }).join('');
     var clear = total === 0;
+    // Honest headline: "✓ All clear" only when something was actually evaluated;
+    // otherwise "No studies yet" / "No runs yet" (neutral), never a green pass.
+    var _quiet = _naQuietState(summary);
+    var _headColor = clear ? _quiet.color : '#b45309';
+    var _headline = clear
+      ? _quiet.label
+      : '⚠ ' + total + ' need' + (total === 1 ? 's' : '') + ' attention';
     var pop = document.createElement('div');
     pop.id = 'aig-allclear-pop';
     pop.setAttribute('role', 'dialog');
@@ -12340,8 +12392,8 @@
       + 'max-height:78vh;overflow:auto;font-size:0.85em;color:#334155;line-height:1.32';
     pop.innerHTML =
       '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px">'
-        + '<span style="font-weight:700;color:' + (clear ? '#166534' : '#b45309') + '">'
-          + (clear ? '✓ All clear' : '⚠ ' + total + ' need' + (total === 1 ? 's' : '') + ' attention') + '</span>'
+        + '<span style="font-weight:700;color:' + _headColor + '">'
+          + _headline + '</span>'
         + (memberCount != null ? '<span class="muted" style="font-size:0.9em;white-space:nowrap">' + memberCount + ' member stud' + (memberCount === 1 ? 'y' : 'ies') + ' scanned</span>' : '')
       + '</div>'
       + '<ul style="margin:4px 0 0;padding:0;list-style:none">' + rows + '</ul>'
@@ -12394,11 +12446,13 @@
       var lbl = '<span class="muted" style="font-size:0.85em">code-computed by the needs-attention scan (deterministic)</span>';
       var total = (d.summary.total) || 0;
       if (!total) {
-        // All-clear: a compact chip — now CLICKABLE to explain what it means and
-        // show the (passing) checks behind it.
+        // Nothing flagged — but only call it a green "✓ All clear" when a study
+        // has actually run; an empty / never-run investigation gets a neutral
+        // "No studies yet" / "No runs yet" chip instead (issue #1618, bug 3).
+        var _q = _naQuietState(d.summary);
         if (chip) chip.innerHTML =
-          '<button type="button" class="aig-na-chip aig-na-clear" onclick="window._aigShowAllClearInfo(this)" '
-          + 'title="Click to see what the needs-attention scan checked">✓ All clear</button>';
+          '<button type="button" class="aig-na-chip ' + _q.cls + '" onclick="window._aigShowAllClearInfo(this)" '
+          + 'title="Click to see what the needs-attention scan checked">' + _q.label + '</button>';
         return;
       }
       var bySev = d.summary.by_severity || {};
@@ -15179,12 +15233,14 @@
   window._vivRunStudyFromRow = function (ev, slug) {
     if (ev) ev.stopPropagation();
     if ((window.__DASH_CONFIG__ || {}).mode === 'snapshot') return;
-    if (!confirm("Run this study's current baseline spec as a new run?")) return;
-    apiFetch('POST', '/api/study-run-baseline', {study: slug}).then(function (r) { return r.json(); }).then(function (j) {
-      var id = j && (j.run_id || j.simulation_id);
-      var msg = id ? ('Run launched — ' + id) : ('Run: ' + ((j && j.error) || 'done'));
-      if (typeof _showToast === 'function') _showToast(msg); else alert(msg);
-    }).catch(function (e) { alert('Run failed: ' + e); });
+    _confirmGate("Run this study's current baseline spec as a new run?").then(function (_ok) {
+      if (!_ok) return;
+      apiFetch('POST', '/api/study-run-baseline', {study: slug}).then(function (r) { return r.json(); }).then(function (j) {
+        var id = j && (j.run_id || j.simulation_id);
+        var msg = id ? ('Run launched — ' + id) : ('Run: ' + ((j && j.error) || 'done'));
+        if (typeof _showToast === 'function') _showToast(msg); else alert(msg);
+      }).catch(function (e) { alert('Run failed: ' + e); });
+    });
   };
   // ↻ reproduce — replay a study's most recent run's recorded manifest (live
   // only). Resolves the latest run id from /api/simulations first.
