@@ -1,8 +1,8 @@
 """Locate the BioGears runtime and the pybiogears binding.
 
 BioGears has no PyPI release: it is built from source and driven through
-pybiogears (``~/projects/biogears/pybiogears``, built against an installed
-BioGears 8.2.0 by its ``scripts/install_biogears.sh``). The *runtime* directory
+pybiogears (https://github.com/vivarium-collective/pybiogears, built against an installed BioGears 8.2.0
+by its ``scripts/install_biogears.sh``). The *runtime* directory
 holds BioGears' data (``xsd/``, ``substances/``, ``patients/``, ``states/``); the
 install script assembles it at ``<prefix>/share/biogears/runtime``.
 

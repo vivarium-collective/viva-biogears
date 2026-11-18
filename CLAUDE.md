@@ -4,7 +4,7 @@ Guidance for Claude (and other agents) working in this repository. Read `AGENTS.
 
 ## What this is
 
-`viva-biogears` is a process-bigraph wrapper that drives the **real** BioGears 8.2.0 engine. BioGears has no PyPI release. It is built from source, unmodified, by `~/projects/biogears/pybiogears/scripts/install_biogears.sh`, and driven through **pybiogears** (the same repository), which is installed into this venv. Everything pybiogears established is recorded in its `experiments/p1`–`p7` folders: build, actions, state round trip, lymph, determinism, request coverage, and the BioGears bugs it works around. Read those before changing how the engine is driven.
+`viva-biogears` is a process-bigraph wrapper that drives the **real** BioGears 8.2.0 engine. BioGears has no PyPI release. It is built from source, unmodified, by pybiogears' `scripts/install_biogears.sh` (https://github.com/vivarium-collective/pybiogears), and driven through **pybiogears** (the same repository), which is installed into this venv. Everything pybiogears established is recorded in its `experiments/p1`–`p7` folders: build, actions, state round trip, lymph, determinism, request coverage, and the BioGears bugs it works around. Read those before changing how the engine is driven.
 
 Session state and next steps: [CURRENT.md](CURRENT.md).
 

@@ -5,7 +5,10 @@ from pathlib import Path
 import pybiogears as pb
 
 RT = Path(os.environ["BIOGEARS_RUNTIME"])
-SRC = Path("/home/claude/biogears-8.2.0/projects/biogears/libBiogears/src/cdm/system/physiology")
+# BioGears' source tree (for its data-request names): $BIOGEARS_SRC, else where pybiogears'
+# install_biogears.sh clones it.
+SRC = (Path(os.environ.get("BIOGEARS_SRC", "~/biogears-8.2.0-build/src")).expanduser()
+       / "projects/biogears/libBiogears/src/cdm/system/physiology")
 import re
 def ids(name):
     return re.findall(r'constexpr char id\w*\[\] = "(\w+)"', (SRC / f"{name}.cpp").read_text())
