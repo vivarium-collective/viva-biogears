@@ -4,7 +4,7 @@ Oracle: a pybiogears engine driven directly with the same actions at the same ti
 then the behaviours the modules promise (one-way infection, timed meals, branching)."""
 import numpy as np
 import pytest
-from circuit_helpers import CORE, direct, direct_values, flat, make, run
+from circuit_helpers import CORE, Drifted, clock_error, direct, direct_values, flat, make, run
 
 from viva_biogears.modules.sepsis import (
     INFECTION_SCENARIO_SCHEDULE,
@@ -66,6 +66,68 @@ def test_bad_severity_and_schedule_raise():
             make(["nutrition"], nutrition_schedule=bad)
     with pytest.raises(ValueError, match="mic"):
         make(["infection"], infection_mic_mg_per_L=0.0)
+
+
+@pytest.mark.parametrize("hours", [12, 40, 47], ids=["12 h, clock 1 us short", "40 h, clock 2 us long",
+                                                     "47 h, clock 11 us short"])
+def test_a_meal_is_sent_when_the_clock_reaches_its_time(hours):
+    """The real engine, its clock reading as BioGears' does at that hour of a run. Falsifies
+    comparing a meal's time more strictly than the clock's error, which sends it an update
+    (60 s in the sepsis study) late."""
+    p = make(["nutrition"], nutrition_schedule=[{"hour": 1 / 60, "nutrition": {"Water": 0.3}}])
+    p.initial_state()
+    p._engine.advance(60.0)
+    p._engine = Drifted(p._engine, clock_error(hours))
+    p._send_due()
+    assert p._schedule == []
+
+
+def test_a_meal_just_after_an_update_waits_for_its_step():
+    """Falsifies a tolerance on the comparison, which sends a meal due just after an update
+    at that update, before its time: one at 60.001 s goes in at the 60.02 s step."""
+    p = make(["nutrition"], nutrition_schedule=[{"hour": 60.001 / 3600, "nutrition": {"Water": 0.3}}])
+    p.initial_state()
+    p._engine.advance(60.0)
+    p._send_due()
+    assert len(p._schedule) == 1
+    p._engine.advance_steps(1)
+    p._send_due()
+    assert p._schedule == []
+
+
+def test_a_state_off_the_step_grid_refuses_timed_actions(tmp_path):
+    """A state saved at 60.02 s, loaded with 0.04 s steps: its clock is half-way between two
+    steps, so which step a meal falls on is undefined. Falsifies loading it anyway, which
+    sends a meal early or twice. A process without timed actions still loads it."""
+    from viva_biogears.states import save_states
+
+    (state,) = save_states(direct(make(["nutrition"])), tmp_path, [60.02], "odd")
+    meal = [{"hour": 0.05, "nutrition": {"Water": 0.3}}]
+    with pytest.raises(ValueError, match="not on its 0.04 s step grid"):
+        make(["nutrition"], nutrition_schedule=meal, state_file=str(state), time_step_s=0.04).initial_state()
+    make(["nutrition"], nutrition_schedule=meal, state_file=str(state)).initial_state()
+    make(["nutrition"], state_file=str(state), time_step_s=0.04).initial_state()
+
+
+def test_a_branch_keeps_the_meal_due_at_its_start_when_the_clock_reads_long(tmp_path, monkeypatch):
+    """BioGears' clock reads 144000.000002 s at "40 h". A checkpoint is saved before that
+    hour's meal goes in (at the start of the next update), so a branch from it must keep the
+    meal. Falsifies dropping it; oracle: the unbranched run."""
+    import viva_biogears.processes.modular as modular
+
+    schedule = [{"hour": 0.05, "nutrition": {"Water": 0.3}}, {"hour": 0.1, "nutrition": {"Water": 0.3}}]
+    full = make(["nutrition"], nutrition_schedule=schedule,
+                save_state_times_s=[180.0], save_state_dir=str(tmp_path))
+    full.initial_state()
+    a = run(full, 600, interval=60.0)[-1]
+    real = modular.load_engine
+    monkeypatch.setattr(modular, "load_engine", lambda *args: Drifted(real(*args), clock_error(40)))
+    (state,) = tmp_path.glob("state@*s.xml")
+    branch = make(["nutrition"], nutrition_schedule=schedule, state_file=str(state))
+    branch.initial_state()
+    assert [round(t) for t, _, _ in branch._schedule] == [180, 360]
+    b = run(branch, 420, interval=60.0)[-1]
+    np.testing.assert_allclose(flat(branch, b), flat(full, a), rtol=1e-9)
 
 
 def test_a_branch_from_an_infected_checkpoint_continues_it(tmp_path):
