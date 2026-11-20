@@ -7,7 +7,7 @@ import math
 import re
 
 import pytest
-from circuit_helpers import CORE, make, run
+from circuit_helpers import CORE, Drifted, clock_error, make, run, summed_clock
 
 from viva_biogears.modules.cardiovascular import hemorrhage_xml
 from viva_biogears.processes import VITALS, BioGearsProcess
@@ -229,17 +229,77 @@ def test_an_engine_checkpoint_keeps_blood_lost(tmp_path):
     assert lost > 5 and not math.isnan(lost)
 
 
-def test_a_saver_counts_a_time_reached_when_the_clock_runs_microseconds_behind(tmp_path):
-    """BioGears' clock read 43199.999999 s at "12 h" in a 48 h run, and a saver comparing at
-    1 µs saved a whole update (60 s) late. Falsifies the strict comparison."""
+def test_the_clock_is_a_sum_of_steps():
+    """Falsifies ``summed_clock`` as a model of BioGears' clock, which the drift tests take
+    their clock readings from: the real engine must match it bit for bit."""
+    e = _engine()
+    e.advance(60.0)
+    assert e.sim_time_s == summed_clock(60.0, e.time_step_s)
+
+
+class _Clock:
+    """A stand-in for the engine in a comparison test: only its clock, step and saving."""
+    time_step_s = 0.02
+
+    def __init__(self, sim_time_s):
+        self.sim_time_s = sim_time_s
+
+    def save_state(self, path):
+        path.write_text("<state/>")
+
+
+@pytest.mark.parametrize("hours, name", [(12, "ckpt@43199.999999s.xml"), (48, "ckpt@172799.999987s.xml")])
+def test_a_saver_counts_a_time_reached_when_the_clock_runs_behind(tmp_path, hours, name):
+    """BioGears' clock reads 43199.999999 s at "12 h" and 172799.999987 s at "48 h" (13 µs
+    short), and a saver comparing seconds at 1 µs, or within 10 µs, saved a whole update
+    (60 s) late. Falsifies any comparison the clock's error can defeat."""
     from viva_biogears.states import StateSaver
 
-    class Clock:
-        sim_time_s = 43199.999999
+    saver = StateSaver([hours * 3600.0], tmp_path, "ckpt")
+    saver(_Clock(summed_clock(hours * 3600.0)))
+    assert [p.name for p in saver.saved] == [name] and saver.pending == []
 
-        def save_state(self, path):
-            path.write_text("<state/>")
 
-    saver = StateSaver([43200.0], tmp_path, "ckpt")
-    saver(Clock())
-    assert [p.name for p in saver.saved] == ["ckpt@43199.999999s.xml"] and saver.pending == []
+def test_a_saver_never_steps_the_engine_when_the_clock_reads_long(tmp_path):
+    """The real engine, its clock reading 2 µs long as at "40 h". Falsifies the saver handing
+    save_states its clock reading, which falls on the next step: save_states would advance
+    the engine to save, and the run would continue one step off."""
+    from viva_biogears.states import StateSaver
+
+    e = _engine()
+    e.advance(60.0)
+    step = round(e.sim_time_s / e.time_step_s)
+    saver = StateSaver([60.0], tmp_path, "ckpt")
+    saver(Drifted(e, clock_error(40)))
+    assert round(e.sim_time_s / e.time_step_s) == step
+    assert len(saver.saved) == 1 and saver.pending == []
+
+
+def test_the_shipped_44h_state_is_at_the_summed_clock():
+    """Real data: the severe arm's 44 h state, saved by BioGears, holds the summed clock to
+    every digit it stores (158399.999994412). Falsifies ``summed_clock`` over a long run."""
+    from viva_biogears.runtime import state_path
+
+    stored = _time(state_path(runtime_dir(), "StandardMale@severe-infection-44h.xml"))
+    assert stored == pytest.approx(summed_clock(44 * 3600.0), abs=1e-9)
+
+
+def test_a_time_on_a_step_saves_at_that_step(tmp_path):
+    """0.14 s / 0.02 s is 7.000000000000001 in floating point. Falsifies taking its ceiling
+    unrounded, which saves 0.14 s at the 0.16 s step."""
+    paths = save_states(_engine(), tmp_path, [0.14], "run")
+    assert [p.name for p in paths] == ["run@0.14s.xml"]
+
+
+def test_a_time_just_after_a_step_saves_at_the_next_step(tmp_path):
+    """Falsifies a tolerance on the comparison, which saves a time just after a step at that
+    step, before the time: 0.001 s must be saved at the 0.02 s step, not at 0 s."""
+    paths = save_states(_engine(), tmp_path, [0.001], "run")
+    assert [p.name for p in paths] == ["run@0.02s.xml"]
+
+
+def test_saving_at_the_engines_time_when_the_clock_reads_long(tmp_path):
+    """BioGears' clock reads 144000.000002 s at "40 h": saving at 40 h then saves at once.
+    Falsifies a start check that refuses 40 h as before the engine's time."""
+    paths = save_states(_Clock(summed_clock(40 * 3600.0)), tmp_path, [40 * 3600.0], "ckpt")
+    assert [p.name for p in paths] == ["ckpt@144000.000002s.xml"]

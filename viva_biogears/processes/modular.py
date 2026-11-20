@@ -10,7 +10,7 @@ from process_bigraph import Process
 from ..modules import MODULES
 from ..modules.base import check_outputs
 from ..modules.state import read_state
-from ..states import SAVE_CONFIG, saver_from_config
+from ..states import SAVE_CONFIG, engine_step, first_step_at_or_after, saver_from_config
 from ._bridge import (
     START_CONFIG,
     advance,
@@ -164,9 +164,13 @@ class BioGearsModularProcess(Process):
                                  f"{[m.name for m in self._modules if m.airway_device]} would fail every step")
         engine = load_engine(runtime, path, [r.key() for r in self._requests], self.config["time_step_s"])
         self._engine = engine
-        # A run from a saved state skips the timed actions that came before its time.
-        start = round(engine.sim_time_s, 6)
-        self._schedule = [e for e in self._schedule if round(e[0], 6) >= start]
+        # A run from a saved state skips the timed actions before its step. One due at its step
+        # is kept: the saving run sent it at the start of the next update, after the save. (One
+        # due between that run's last two updates was sent after the save too, but where its
+        # updates fell isn't known here, so it is skipped.)
+        if self._schedule:
+            start, step_s = engine_step(engine), engine.time_step_s
+            self._schedule = [e for e in self._schedule if first_step_at_or_after(e[0], step_s) >= start]
         if self._saver:
             self._saver(engine)
         values = self._pull()
@@ -224,9 +228,12 @@ class BioGearsModularProcess(Process):
         return [(float(e.sim_time_s), str(e.event), bool(e.active)) for e in self._engine.events]
 
     def _send_due(self) -> None:
-        """Send the timed actions due at the start of this update (time <= now)."""
-        now = round(self._engine.sim_time_s, 6)
-        due = [e for e in self._schedule if round(e[0], 6) <= now]
+        """Send the timed actions due at the start of this update: those whose first step at
+        or after their time has been reached (BioGears' clock drifts off the exact time)."""
+        if not self._schedule:
+            return
+        now, step_s = engine_step(self._engine), self._engine.time_step_s
+        due = [e for e in self._schedule if first_step_at_or_after(e[0], step_s) <= now]
         if due:
             self._engine.process_actions([xml for _, _, xml in due])
             self._schedule = self._schedule[len(due):]
