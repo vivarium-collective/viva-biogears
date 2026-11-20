@@ -8,7 +8,7 @@ import pytest
 
 from viva_biogears.processes import VITALS, BioGearsProcess, MapFluidController
 from viva_biogears.core import build_core
-from viva_biogears.runtime import BioGearsNotFoundError
+from viva_biogears.runtime import BioGearsNotFoundError, import_pybiogears
 
 _CORE = build_core()
 
@@ -139,7 +139,7 @@ def test_missing_state_file_is_reported():
 def test_state_with_an_active_infusion_starts_at_its_rate(tmp_path, direct_engine):
     """A state saved while infusing starts the iv setpoint at the infusion's rate; an
     infusion of another compound than iv_compound raises (the setpoint couldn't stop it)."""
-    import pybiogears as pb
+    pb = import_pybiogears()  # BioGearsNotFoundError (a skip) without a build, unlike a bare import
     e = direct_engine()
     e.process_actions(pb.actions.substance_compound_infusion("Saline", 500.0, 100.0))
     e.advance(2.0)
@@ -172,7 +172,7 @@ def test_map_fluid_controller(map_mmHg, expected):
 def test_time_step_reaches_the_engine():
     """Falsifies: time_step_s ignored (the engine would keep the state's 0.02 s step).
     Oracle: an engine loaded directly with pybiogears' TimeStep override."""
-    import pybiogears as pb
+    pb = import_pybiogears()  # BioGearsNotFoundError (a skip) without a build, unlike a bare import
 
     from viva_biogears.runtime import runtime_dir
     p = make({"time_step_s": 0.04})
