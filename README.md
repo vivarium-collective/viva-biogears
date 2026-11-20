@@ -187,7 +187,7 @@ Rules that come from BioGears:
 
 The whole BioGears engine (every system is simulated every step); `config.modules` chooses which readings and setpoints become ports. `BioGearsCircuitProcess` is a deprecated alias. `config.modules` lists modules from `viva_biogears.modules.MODULES`.
 
-- **Outputs.** Each module's readings nest under its name, as `overwrite[float]` (e.g. `cardiovascular/central/aorta/pressure_mmHg`).
+- **Outputs.** Each module's readings nest under its name, as `overwrite[float]` with the reading's units in the type when it has any (e.g. `cardiovascular/central/aorta/pressure_mmHg` is `overwrite[float[mmHg]]`; see [I/O schema](#io-schema)).
 - **Inputs.** The module's setpoints sit under one `setpoints` input port (e.g. `setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). Each is sent to BioGears only when it changes.
 - **Validation.**
   - Changed setpoint groups are validated before any action is sent.
@@ -230,6 +230,16 @@ Each module's docstring in `viva_biogears/modules/` gives the details.
 Lymph return in BioGears is a passive resistor from the lymph pool into the vena cava, so it falls as venous pressure rises: 200 mL/min of saline lowers it from 3.2 to 0.4 mL/min within 5 minutes while formation rises, and from the equilibrated state it reverses within 10 minutes (about −1 mL/min): the return path has no valve, so fluid flows from the vena cava back into the pool. Read CVP with it. `StandardMale@0s` is not at fluid steady state (the lymph pool relaxes with τ ≈ 91 min), so lymph studies should start from the shipped `StandardMale@equilibrated.xml` (5 h at rest with hourly water; `viva_biogears/states/README.md`), the default for `biogears_lymph`. A relative `state_file` is looked up in `<runtime>/states`, then in the package's `states/`.
 
 **What was measured** to choose these: `workspace/experiments/circuits-probe-2026-11-03`.
+
+## I/O schema
+
+The sepsis composite's inputs, outputs and config are written out as a [bigraph-schema `ProcessContract`](https://github.com/vivarium-collective/bigraph-schema) for its process (`viva_biogears.schema`), in `viva_biogears/data/schema/` and shipped with the package: `biogears_sepsis.contract.json`, with a table view in `biogears_sepsis.md`. It describes `biogears_sepsis()` as built by default (an untreated run); a treated run, or `drug_readouts`, adds three outputs per drug (plasma and blood concentration, area under the curve).
+
+- `face` is the process's own typed interface. Each output carries its units in its type (`overwrite[float[mL/min]]`), which is where bigraph-schema reads units. BioGears unit strings are translated to the same meaning in pint (BioGears' `L/min m^2` is `L/min/m^2`, its `ct/uL` is `count/uL`; `modules.base.port_units`).
+- `outputs` / `inputs` say what each port is: the BioGears data request behind an output, and the baseline and BioGears action behind a setpoint. `config` gives each setting's type, with the value the composite uses as its default (its modules, its meal schedule).
+- Load it with `ProcessContract(**json.load(f))`.
+
+The files are generated from the code, without running the engine; building the composite reads its starting state's time, so it needs the BioGears runtime. After changing a module's ports, units or setpoints, regenerate them with `python -m viva_biogears.schema` (or `biogears schema`, with the `cli` extra). `tests/test_schema.py` fails while they differ from the code (with a BioGears runtime; it skips without one). Without BioGears, it checks that every port carries its request's units where bigraph-schema reads them, that every unit the modules define keeps BioGears' meaning, and that each study readout's units match its port's.
 
 ## License
 
