@@ -1,0 +1,171 @@
+name: biogears-engine-ci
+
+# Runs the full test suite against a real BioGears 8.2.0 build. workspace-ci
+# skips every engine test (no build there), so without this workflow nothing in
+# CI exercises BioGears. BioGears is built from source with pybiogears'
+# scripts/install_biogears.sh, at the pybiogears commit pinned in
+# pyproject.toml's `engine` extra, then cached; a cold build takes minutes.
+#
+# It carries no viva-template provenance stamp on purpose:
+# scripts/check-workflow-freshness.py only checks stamped workflows.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: Rebuild BioGears from source and replace the cached install
+        type: boolean
+        default: false
+  schedule:
+    - cron: "23 6 * * 1"  # weekly: keeps the cache warm (unused entries go after 7 days)
+
+# Never cancel a main or scheduled run: a cancelled cold build saves no cache.
+concurrency:
+  group: biogears-engine-ci-${{ github.ref }}-${{ github.event.schedule || 'run' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  actions: write  # replace the cache entry on a forced rebuild
+
+env:
+  PYTHON_VERSION: "3.12"
+  # install_biogears.sh's default prefix. BioGears compiles its prefix into a
+  # header, so the cached install must be restored to this same path.
+  BIOGEARS_PREFIX: /home/runner/biogears-8.2.0-install
+  BIOGEARS_RUNTIME: /home/runner/biogears-8.2.0-install/share/biogears/runtime
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Read the pybiogears pin
+        id: pin
+        run: |
+          uv run --no-project python - <<'EOF' >> "$GITHUB_OUTPUT"
+          import re, tomllib
+          with open("pyproject.toml", "rb") as f:
+              (req,) = tomllib.load(f)["project"]["optional-dependencies"]["engine"]
+          m = re.fullmatch(r"pybiogears @ git\+https://github\.com/(.+?)\.git@([0-9a-f]{40})", req)
+          assert m, f"engine extra must pin pybiogears to a full commit: {req!r}"
+          print(f"repo={m[1]}\nsha={m[2]}")
+          EOF
+
+      # For its scripts/install_biogears.sh, at the pinned commit.
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ steps.pin.outputs.repo }}
+          ref: ${{ steps.pin.outputs.sha }}
+          path: .pybiogears
+
+      - name: Install the build dependencies
+        id: toolchain
+        run: |
+          # The Linux list at the top of pybiogears' scripts/install_biogears.sh.
+          sudo apt-get update -q
+          sudo apt-get install -yq cmake ninja-build g++ git xsdcxx libxerces-c-dev libeigen3-dev \
+            libboost-dev libboost-system-dev libboost-filesystem-dev libboost-date-time-dev \
+            libboost-program-options-dev
+          # BioGears links these shared libraries, and its installed headers require this
+          # exact XSD runtime (xsdcxx), so their package versions are part of the cache key:
+          # a runner-image update rebuilds instead of failing verification.
+          libs=$(dpkg-query -W -f='${Package}=${Version}\n' libxerces-c-dev libeigen3-dev libboost-dev g++ xsdcxx | sort)
+          echo "toolchain=$(echo "$libs" | sha256sum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+
+      - name: Decide whether to rebuild
+        id: plan
+        run: |
+          key="biogears-v1-${RUNNER_OS}-${RUNNER_ARCH}-tc${{ steps.toolchain.outputs.toolchain }}"
+          key+="-${{ hashFiles('.pybiogears/scripts/install_biogears.sh', '.github/scripts/verify-biogears-install.py') }}"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "force=${{ inputs.force_rebuild == true }}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the BioGears install
+        id: cache
+        if: steps.plan.outputs.force != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.BIOGEARS_PREFIX }}
+          key: ${{ steps.plan.outputs.key }}
+
+      - name: Build BioGears from source
+        id: build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          start=$SECONDS
+          .pybiogears/scripts/install_biogears.sh --prefix "$BIOGEARS_PREFIX" --work "$RUNNER_TEMP/biogears-build"
+          echo "::notice title=BioGears built from source::$(( (SECONDS - start) / 60 )) min"
+
+      # Never `uv sync`: the engine extra builds pybiogears against the install above.
+      # --refresh-package: setup-uv restores uv's cache, which would otherwise reuse a
+      # pybiogears built against an earlier BioGears install.
+      - name: Install viva-biogears
+        run: |
+          uv venv --python "$PYTHON_VERSION" .venv
+          CMAKE_PREFIX_PATH="$BIOGEARS_PREFIX" uv pip install --python .venv -e ".[dev,engine]" --group docs \
+            --refresh-package pybiogears
+          .venv/bin/python - <<'EOF'
+          import importlib.metadata as md, json
+          vcs = json.loads(md.distribution("pybiogears").read_text("direct_url.json"))["vcs_info"]
+          assert vcs["commit_id"] == "${{ steps.pin.outputs.sha }}", vcs
+          print("pybiogears", vcs["commit_id"], "| vivarium-workbench", md.version("vivarium-workbench"))
+          EOF
+
+      - name: Verify the BioGears install
+        run: .venv/bin/python .github/scripts/verify-biogears-install.py "$BIOGEARS_RUNTIME"
+
+      # Cache entries are immutable, so a forced rebuild deletes this ref's entry
+      # first. --ref matters: a key alone deletes the entry on every branch.
+      - name: Drop the cached install being replaced
+        if: steps.build.outcome == 'success' && steps.plan.outputs.force == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEY: ${{ steps.plan.outputs.key }}
+        run: |
+          existing=$(gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "$KEY" \
+            --json key --jq "map(select(.key == \"$KEY\")) | length")
+          if [ "$existing" != 0 ]; then
+            gh cache delete "$KEY" --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF"
+          fi
+
+      # Only reached when the build and its verification passed.
+      - name: Save the BioGears install
+        if: steps.build.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.BIOGEARS_PREFIX }}
+          key: ${{ steps.plan.outputs.key }}
+
+      # The README's own command (testpaths selects tests/), so CI guards it too.
+      - name: Run the tests
+        run: .venv/bin/python -m pytest -rA --color=yes --junitxml=pytest-results.xml
+
+      # A skipped engine test proves nothing about the engine, so skips fail the
+      # run. Allowed: the template test that skips when no composite-state
+      # artifacts are committed.
+      - name: Fail on unexpected skips
+        if: always() && hashFiles('pytest-results.xml') != ''
+        run: |
+          .venv/bin/python - <<'EOF'
+          import xml.etree.ElementTree as ET
+          ALLOWED = {"tests.test_composite_state_artifacts"}
+          cases = ET.parse("pytest-results.xml").getroot().iter("testcase")
+          skipped = [f"{c.get('classname')}::{c.get('name')}" for c in cases
+                     if c.find("skipped") is not None and c.get("classname") not in ALLOWED]
+          if skipped:
+              raise SystemExit("unexpected skips:\n  " + "\n  ".join(skipped))
+          print("no unexpected skips")
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('pytest-results.xml') != ''
+        with:
+          name: pytest-results
+          path: pytest-results.xml
