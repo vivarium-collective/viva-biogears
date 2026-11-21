@@ -15,7 +15,8 @@ from ..modules.cardiovascular import (
 )
 from ..modules.state import read_state
 from ..patients import conditions_xml, stabilized_state
-from ..runtime import compound_names, import_pybiogears, runtime_dir, state_path
+from ..runtime import compound_names, import_pybiogears, state_path
+from ..tables import engine_runtime, require_acceptable, start_patient
 from ..states import SAVE_CONFIG, saver_from_config
 
 SETPOINTS = ("hemorrhage_rate_mL_per_min", "iv_rate_mL_per_min")
@@ -27,7 +28,10 @@ _AIRWAY_REFUSED = "Can only change airway mode"
 START_CONFIG = {
     "state_file": {"_type": "string", "_default": "StandardMale@0s.xml"},
     "patient_file": {"_type": "string", "_default": ""},
+    "patient_table": {"_type": "string", "_default": ""},
+    "patient": {"_type": "string", "_default": ""},
     "conditions": {"_type": "map", "_default": {}},
+    "substance_table": {"_type": "string", "_default": ""},
     "circuit_additions": {"_type": "map", "_default": {}},
     "runtime_dir": {"_type": "string", "_default": ""},
     # BioGears' solver step. BioGears is validated at 0.02 s and fails at 0.1 s or more;
@@ -56,16 +60,33 @@ INTERVENTION_CONFIG = {
 
 
 def check_start(config) -> None:
-    """A process starts from ``state_file`` or from ``patient_file`` (with optional
-    ``conditions``), not both. A process can't tell an explicit default from an omitted
-    one, so only a non-default ``state_file`` counts as set."""
-    if config["patient_file"] or config["conditions"]:
+    """A process starts from ``state_file``, from ``patient_file``, or from ``patient`` of
+    ``patient_table`` (the last two with optional ``conditions``), only one of them. A
+    process can't tell an explicit default from an omitted one, so only a non-default
+    ``state_file`` counts as set. The patient is checked against BioGears' patient rules
+    (``viva_biogears.tables``): one BioGears would refuse raises, one whose values it
+    changes warns. A ``substance_table`` is converted now, so a bad one fails here."""
+    table, name = config.get("patient_table", ""), config.get("patient", "")
+    if bool(table) != bool(name):
+        raise ValueError("patient_table and patient go together: patient names a column of the table "
+                         f"(got patient_table={table!r}, patient={name!r})")
+    if table and config["patient_file"]:
+        raise ValueError(f"patient_file {config['patient_file']!r} and patient_table {table!r} both name the "
+                         "patient; set one")
+    if config["patient_file"] or table or config["conditions"]:
         if config["state_file"] != START_CONFIG["state_file"]["_default"]:
-            raise ValueError(f"state_file {config['state_file']!r} is a stabilized state; patient_file "
-                             f"{config['patient_file']!r} and conditions {config['conditions']} start from a "
-                             "patient that is stabilized first, so set one or the other")
+            started = (f"patient {name!r} of {table!r}" if table else f"patient_file {config['patient_file']!r}"
+                       if config["patient_file"] else "StandardMale.xml")
+            raise ValueError(f"state_file {config['state_file']!r} is a stabilized state; {started} with "
+                             f"conditions {config['conditions']} starts from a patient that is stabilized first, "
+                             "so set one or the other")
         if config["conditions"]:
             conditions_xml(config["conditions"])  # validates names and values
+    patient = start_patient(config) if (config["patient_file"] or table) else None
+    if patient is not None:
+        require_acceptable(patient)
+    if config.get("substance_table"):
+        engine_runtime(config)
     check_additions(config["circuit_additions"])
     ts = config.get("time_step_s", DEFAULT_TIME_STEP_S)
     if not (isinstance(ts, (int, float)) and math.isfinite(ts) and 0 < ts < MAX_TIME_STEP_S):
@@ -75,12 +96,15 @@ def check_start(config) -> None:
 
 def resolve_state(config):
     """(runtime directory, absolute state path) for a process config: ``state_file``,
-    or, when ``patient_file`` or ``conditions`` is set, that patient (default
-    StandardMale.xml) stabilized with them, from the cache (``viva_biogears.patients``);
-    with ``circuit_additions``, that state with the paths added (``modules.additions``)."""
-    runtime = runtime_dir(config["runtime_dir"])
-    if config.get("patient_file") or config.get("conditions"):
-        path = stabilized_state(config["patient_file"] or "StandardMale.xml", runtime, dict(config["conditions"]))
+    or, when a patient (``patient_file``, ``patient`` of ``patient_table``) or
+    ``conditions`` is set, that patient (default StandardMale.xml) stabilized with them,
+    from the cache (``viva_biogears.patients``); with ``circuit_additions``, that state
+    with the paths added (``modules.additions``). With ``substance_table`` the runtime
+    also holds the table's substances (``viva_biogears.tables``)."""
+    runtime = engine_runtime(config)
+    patient = start_patient(config, runtime)
+    if patient is not None or config.get("conditions"):
+        path = stabilized_state(str(patient or "StandardMale.xml"), runtime, dict(config["conditions"]))
     else:
         path = state_path(runtime, config["state_file"])
     if config.get("circuit_additions"):

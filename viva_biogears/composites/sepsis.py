@@ -12,7 +12,10 @@ from ..runtime import runtime_dir, state_path
 from .circuits import (
     _CIRCUIT_ADDITIONS,
     _CONDITIONS,
+    _PATIENT,
     _PATIENT_FILE,
+    _PATIENT_TABLE,
+    _SUBSTANCE_TABLE,
     _STATE_FILE,
     circuit_emitter,
     circuit_node,
@@ -59,7 +62,8 @@ NUTRITION_SCHEDULES = {"infection_scenario": INFECTION_SCENARIO_SCHEDULE, "none"
                           "description": "Drugs whose concentrations are read (readings/treatment/<drug>); default "
                                          "Piperacillin and Norepinephrine when treated, none otherwise. Give an "
                                          "untreated arm the treated arms' list to record the same stores"},
-        "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "conditions": _CONDITIONS,
+        "state_file": _STATE_FILE, "patient_file": _PATIENT_FILE, "patient_table": _PATIENT_TABLE,
+        "patient": _PATIENT, "conditions": _CONDITIONS, "substance_table": _SUBSTANCE_TABLE,
         "circuit_additions": _CIRCUIT_ADDITIONS,
         "interval": {"type": "float", "default": 60.0, "description": "Seconds per update"},
         "time_step_s": {"type": "float", "default": 0.02,
@@ -73,7 +77,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
                     nutrition="infection_scenario", iv_compound="Saline", state_file="StandardMale@0s.xml",
                     patient_file="", conditions=None, circuit_additions=None, interval=60.0, treatment="none",
                     challenge_h=44.0, treatment_start_h=46.0, treatment_duration_h=6.0, drug_readouts=None,
-                    time_step_s=0.02, **overrides):
+                    time_step_s=0.02, patient_table="", patient="", substance_table="", **overrides):
     if severity not in SEVERITY_LEVELS:
         raise ValueError(f"severity must be one of {list(SEVERITY_LEVELS)}, got {severity!r}")
     if nutrition not in NUTRITION_SCHEDULES:
@@ -87,7 +91,7 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
               "treatment_readouts": list(drug_readouts if drug_readouts is not None
                                          else TREATMENT_READOUTS if treatment != "none" else []),
               "vasopressor_substance": "Norepinephrine", "vasopressor_concentration_ug_per_mL": 14.0,
-              "time_step_s": float(time_step_s)}
+              "time_step_s": float(time_step_s), "substance_table": substance_table}
     INFECTION.check_config(config)
     TREATMENT.check_config(config)
     cardiovascular = setpoints(CARDIOVASCULAR, overrides, config)
@@ -96,12 +100,13 @@ def biogears_sepsis(core=None, *, severity="severe", infection_location="Skin", 
     reject_unknown(overrides)
     # A run can start from a saved septic state (McDaniel et al. ran every treatment from
     # states saved during the untreated severe infection): the protocol keeps engine time.
-    branch_s = 0.0 if patient_file else state_time_s(state_path(runtime_dir(), state_file))
+    branch_s = 0.0 if (patient_file or patient_table or conditions) else state_time_s(state_path(runtime_dir(), state_file))
     if treatment != "none" and branch_s > protocol.challenge_s + TIME_TOLERANCE_S:
         raise ValueError(f"state_file {state_file!r} was saved at {branch_s / 3600:.2f} h, after the protocol's "
                          f"challenge at {challenge_h:g} h; start from an earlier state or move challenge_h")
     doc = {
         "biogears": circuit_node(MODULES, state_file=state_file, patient_file=patient_file, conditions=conditions,
+                                 patient_table=patient_table, patient=patient,
                                  circuit_additions=circuit_additions, interval=interval, **config),
         "interventions": {"infection": {"infection_severity": SEVERITY_LEVELS[severity]},
                           "cardiovascular": cardiovascular,
