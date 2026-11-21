@@ -69,8 +69,8 @@ def _substance_files(substances_dir: str) -> tuple[frozenset[str], frozenset[str
 
 
 def _known(config: dict[str, Any]) -> tuple[frozenset[str], frozenset[str]]:
-    from ..runtime import runtime_dir
-    return _substance_files(str(runtime_dir(config.get("runtime_dir", "")) / "substances"))
+    from ..tables import engine_runtime
+    return _substance_files(str(engine_runtime(config) / "substances"))
 
 
 def scheduled_compounds(config: dict[str, Any]) -> set[str]:
