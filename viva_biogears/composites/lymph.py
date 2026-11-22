@@ -8,7 +8,10 @@ from ..runtime import EQUILIBRATED_STATE
 from .circuits import (
     _CIRCUIT_ADDITIONS,
     _CONDITIONS,
+    _PATIENT,
     _PATIENT_FILE,
+    _PATIENT_TABLE,
+    _SUBSTANCE_TABLE,
     circuit_emitter,
     circuit_node,
     reject_unknown,
@@ -30,7 +33,9 @@ MODULES = ("vitals", "lymph", "tissue_fluid", "cardiovascular")
                                       "see viva_biogears/states/README.md)"},
         "patient_file": {**_PATIENT_FILE, "description": _PATIENT_FILE["description"]
                          + " (not equilibrated: see viva_biogears/states/README.md)"},
+        "patient_table": _PATIENT_TABLE, "patient": _PATIENT,
         "conditions": _CONDITIONS,
+        "substance_table": _SUBSTANCE_TABLE,
         "circuit_additions": _CIRCUIT_ADDITIONS,
         "iv_rate_mL_per_min": {"type": "float", "default": 0.0,
                                "description": "Constant infusion rate from t = 0; 0 for rest"},
@@ -42,6 +47,7 @@ MODULES = ("vitals", "lymph", "tissue_fluid", "cardiovascular")
     fidelity="real-bridge",
 )
 def biogears_lymph(core=None, *, state_file=EQUILIBRATED_STATE, patient_file="", conditions=None, circuit_additions=None,
+                   patient_table="", patient="", substance_table="",
                    iv_compound="Saline",
                    interval=1.0, **overrides):
     config = {"iv_compound": iv_compound, "iv_bag_volume_L": 10.0, "hemorrhage_compartment": "RightLeg"}
@@ -49,9 +55,10 @@ def biogears_lymph(core=None, *, state_file=EQUILIBRATED_STATE, patient_file="",
     reject_unknown(overrides)
     return {
         # A patient starts from its own stabilized state, so the equilibrated default steps aside.
-        "biogears": circuit_node(MODULES, state_file=("StandardMale@0s.xml" if (patient_file or conditions)
+        "biogears": circuit_node(MODULES, state_file=("StandardMale@0s.xml" if (patient_file or patient_table or conditions)
                                                       and state_file == EQUILIBRATED_STATE else state_file),
                                  patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions,
+                                 patient_table=patient_table, patient=patient, substance_table=substance_table,
                                  interval=interval, **config),
         "interventions": {"cardiovascular": values},
         "readings": {},
