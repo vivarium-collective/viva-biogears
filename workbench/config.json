@@ -1,7 +1,6 @@
 {
   "mode": "snapshot",
-  "smsApiBase": "",
   "repo": "https://github.com/vivarium-collective/viva-biogears",
-  "commit": "08a0bcd3e2df61b146c30ae6d37dafb6539ad602",
+  "commit": "652f50e65aabacda85f553b5c267baf7e5f5d3bc",
   "generated_from_ref": "main"
 }

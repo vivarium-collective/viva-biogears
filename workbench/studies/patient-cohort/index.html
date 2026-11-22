@@ -16,17 +16,25 @@
 </head>
 <body>
 <main class="study-page">
+
+
 <header class="study-header">
-  <div style="display:flex; align-items:center; gap:14px; justify-content:space-between;">
+  <div style="display:flex; align-items:flex-start; gap:14px; justify-content:space-between;">
+  <div class="study-head-main" style="min-width:0; flex:1 1 auto">
   <div style="display:flex; align-items:center; gap:12px; min-width:0; flex-wrap:wrap">
   <h1 class="study-title" style="margin:0">
     <span class="study-name" id="study-name" data-slug="patient-cohort" data-study-kind="computational" title="patient-cohort" data-edit-kind="study" data-edit-field="title" data-edit-value="Hemorrhage across BioGears&#39; shipped patients" data-edit-label="Title">Hemorrhage across BioGears&#39; shipped patients</span>
     
   </h1>
+  </div>
+  <p id="study-question-headline" class="study-question-headline" title="Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
+" data-edit-kind="study" data-edit-field="question" data-edit-value="Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
+" data-edit-multiline data-edit-label="Question"><span class="q-glyph">Q</span> <span class="study-question-headline-text">Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
+</span></p>
+  </div>
+  <span class="study-header-actions" style="display:inline-flex; gap:10px; flex-shrink:0; align-items:center;">
     
     <span id="study-axis-markers" data-slug="patient-cohort" style="display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap"></span>
-  </div>
-  <span class="study-header-actions" style="display:inline-flex; gap:6px; flex-shrink:0; align-items:center;">
     
     
     
@@ -49,10 +57,6 @@
 
 
 
-
-<p id="study-question-headline" class="study-question-headline"><span class="q-glyph">Q</span> <span class="study-question-headline-text" data-edit-kind="study" data-edit-field="question" data-edit-value="Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
-" data-edit-multiline data-edit-label="Question">Does the same right-leg bleed behave the same in each of the 17 patient states shipped with BioGears 8.2.0, and what sets how much blood each loses?
-</span></p>
 
 <nav class="study-tabs" aria-label="Study sections">
   
@@ -82,10 +86,18 @@
   </button>
   
   <span class="study-dl study-export-wrap" style="margin-left:auto; align-self:center; position:relative; display:inline-flex">
-    <button type="button" id="study-export-btn" class="btn-mini" aria-haspopup="true" aria-expanded="false" title="Download this study's figures or a runnable notebook">↓ Export ▾</button>
-    <div id="study-export-menu" role="menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.14);z-index:70;min-width:200px;padding:4px">
-      <button type="button" id="study-dl-figures" role="menuitem" class="study-jump-item" onclick="window._vivStudyFiguresFromCard(event, 'patient-cohort')">Download figures</button>
-      <button type="button" id="study-dl-notebook" role="menuitem" class="study-jump-item" onclick="window._vivStudyNotebookFromCard(event, 'patient-cohort', 'biogears-hemorrhage')">Download notebook</button>
+    <button type="button" id="study-export-btn" class="btn-mini" aria-haspopup="true" aria-expanded="false" title="Shortcuts — open in the browser or download (report, notebook, figures)">Shortcuts ▾</button>
+    
+    <div id="study-export-menu" role="menu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.14);z-index:70;min-width:190px;padding:4px">
+      <div class="study-export-sec">Report</div>
+      <button type="button" id="study-report-open" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyReportOpen(event, 'patient-cohort')">Open in browser</button>
+      <button type="button" id="study-report-dl" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyReportDownload(event, 'patient-cohort')">Download HTML</button>
+      <div class="study-export-sec">Notebook</div>
+      <button type="button" id="study-nb-open" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyNotebookOpen(event, 'patient-cohort')">Open in browser</button>
+      <button type="button" id="study-dl-notebook" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyNotebookFromCard(event, 'patient-cohort', 'biogears-hemorrhage')">Download .ipynb</button>
+      <div class="study-export-sec">Figures</div>
+      <button type="button" id="study-fig-open" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyFiguresOpen(event, 'patient-cohort')">Open in browser</button>
+      <button type="button" id="study-dl-figures" role="menuitem" class="btn-mini study-export-item" onclick="window._vivStudyFiguresFromCard(event, 'patient-cohort')">Download (zip)</button>
     </div>
   </span>
 </nav>
@@ -98,8 +110,18 @@
 .study-kind-tag.study-kind-biological{background:#ecfdf5;color:#065f46}
 .study-kind-tag.study-kind-computational{background:#eff6ff;color:#1e40af}
 .study-kind-tag.study-kind-theoretical{background:#faf5ff;color:#6b21a8}
-.study-question-headline{margin:6px 0 0 0;font-size:1.05em;line-height:1.5;color:#1e293b;font-family:Georgia,"Times New Roman",serif}
+.study-question-headline{margin:2px 0 0 0;font-size:0.85em;line-height:1.35;color:#475569;font-family:Georgia,"Times New Roman",serif;padding-right:40px}
+/* Park the inline-edit ✎ in a reserved right gutter so it never lands over the
+   question text (the pencil is an absolutely-positioned child of the editable). */
+.study-question-headline>.ie-pencil{right:6px;top:1px}
+h1.study-title .study-name.ie-editable{padding-right:36px}
+h1.study-title .study-name>.ie-pencil{right:4px;top:6px}
 .study-question-headline .q-glyph{display:inline-block;font-size:0.78em;font-weight:700;font-family:ui-monospace,monospace;color:#64748b;background:#f1f5f9;padding:1px 7px;border-radius:4px;margin-right:6px;vertical-align:middle}
+/* Study Export menu — styled to match the investigation-level ↓ Export menu
+   exactly: grey uppercase section labels + full-width, left-aligned, stacked
+   text-link items (not inline pills). Mirrors walkthrough.js `_sec` + `_mi`. */
+.study-export-sec{padding:6px 8px 2px;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#94a3b8}
+.study-export-item{display:block;width:100%;text-align:left;border:none;background:transparent}
 .status-detail-panel{margin:0;padding:2px 0;background:transparent;border:none;border-radius:0;font-size:0.92em}
 .status-detail-row{display:flex;align-items:center;gap:8px;padding:3px 0}
 .status-detail-axis{min-width:140px;color:#475569;font-size:0.9em}
@@ -637,12 +659,23 @@
 
 
 <section class="study-tab-panel" data-kind="compose" id="panel-compose" hidden>
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
-    <h2 class="overview-label" style="margin:0">Model composition</h2>
-    
-    <button type="button" class="btn-mini" onclick="window._vivStudyNotebookFromCard(event, 'patient-cohort', 'biogears-hemorrhage')" title="Download a runnable Jupyter notebook for THIS study — its composite + editable parameters + figures">↓ notebook</button>
+  
+  <div class="model-subtabs" role="tablist" aria-label="Model sections">
+    <button type="button" class="model-subtab active" data-modelsub="composition" role="tab" aria-selected="true" onclick="_setModelSubtab('composition')">Composition</button>
+    <button type="button" class="model-subtab" data-modelsub="loom" role="tab" aria-selected="false" onclick="_setModelSubtab('loom')">Loom</button>
+    <button type="button" class="model-subtab" data-modelsub="variants" role="tab" aria-selected="false" onclick="_setModelSubtab('variants')">Variants <span class="model-subtab-count">16</span></button>
+    <button type="button" class="model-subtab" data-modelsub="interventions" role="tab" aria-selected="false" onclick="_setModelSubtab('interventions')">Interventions</button>
+    <button type="button" class="model-subtab" data-modelsub="readouts" role="tab" aria-selected="false" onclick="_setModelSubtab('readouts')">Readouts</button>
   </div>
 
+  
+  <div class="model-subpanel" data-modelsubpanel="loom" hidden>
+    <div id="model-loom-mount" class="model-loom-mount">
+      <div class="viv-loading"><span class="viv-loading-spin" aria-hidden="true"></span><span>Loading the interactive model diagram…</span></div>
+    </div>
+  </div>
+
+  <div class="model-subpanel active" data-modelsubpanel="composition">
   
   
   <div id="model-composite-cards" class="model-composite-cards" data-study="patient-cohort"
@@ -718,265 +751,351 @@
   
   
   
+  </div>
 
   
+  <div class="model-subpanel" data-modelsubpanel="variants" hidden>
   <div class="overview-section" id="study-variants-section">
-    <h3>Variants <span class="muted" style="font-size:0.85em;font-weight:normal">— perturbations of the baseline to compare</span></h3>
+    <p class="msub-intro">A <strong>variant</strong> is a copy of a baseline model with a few parameters changed, run and compared against the baseline. Everything else stays fixed.</p>
     
-    <table class="cond-table" style="margin-bottom:10px">
-      <thead><tr><th>Variant</th><th>Base</th><th>Parameter overrides</th><th></th></tr></thead>
-      <tbody>
-        
-        <tr>
-          <td><code>Female</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Female@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Female" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Female" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Female_18_Normal</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Female_18_Normal@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Female_18_Normal" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Female_18_Normal" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Female_30_Normal</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Female_30_Normal@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Female_30_Normal" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Female_30_Normal" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Female_40_Overweight</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Female_40_Overweight@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Female_40_Overweight" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Female_40_Overweight" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_22_Fit_Soldier</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_22_Fit_Soldier@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_22_Fit_Soldier" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_22_Fit_Soldier" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_24_Normal_hidrosis2</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_24_Normal_hidrosis2@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_24_Normal_hidrosis2" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_24_Normal_hidrosis2" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_25_Normal</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_25_Normal@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_25_Normal" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_25_Normal" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_28_Normal_hr109_rr18</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_28_Normal_hr109_rr18@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_28_Normal_hr109_rr18" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_28_Normal_hr109_rr18" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_32_Normal_hr93_rr14</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_32_Normal_hr93_rr14@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_32_Normal_hr93_rr14" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_32_Normal_hr93_rr14" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_44_Bradycardic</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_44_Bradycardic@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Bradycardic" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_44_Bradycardic" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_44_Normal_hr109_rr15</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_44_Normal_hr109_rr15@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Normal_hr109_rr15" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_44_Normal_hr109_rr15" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_44_Normal_rr12</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_44_Normal_rr12@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Normal_rr12" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_44_Normal_rr12" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_44_SleepDeprived</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_44_SleepDeprived@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_44_SleepDeprived" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_44_SleepDeprived" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>Male_44_Tachycardic</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>Male_44_Tachycardic@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Tachycardic" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="Male_44_Tachycardic" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-        <tr>
-          <td><code>StandardFemale</code></td>
-          <td><em class="muted">(inherits baseline)</em></td>
-          <td>
-            
-            <div><span class="cond-pill-k">state_file</span>=<code>StandardFemale@0s.xml</code></div><div><span class="cond-pill-k">compartment</span>=<code>RightLeg</code></div><div><span class="cond-pill-k">rate_mL_per_min</span>=<code>200.0</code></div><div><span class="cond-pill-k">n_steps</span>=<code>600</code></div>
-          </td>
-          <td style="white-space:nowrap">
-            <button type="button" class="action-btn study-variant-run" data-variant="StandardFemale" style="font-size:0.78em" title="Run this variant">▶ Run</button>
-            <button type="button" class="action-btn study-variant-del" data-variant="StandardFemale" style="font-size:0.78em" title="Delete variant">✕</button>
-          </td>
-        </tr>
-        
-      </tbody>
-    </table>
+    <div class="var-list">
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Female</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Female@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Female" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Female" title="Delete variant" aria-label="Delete variant Female">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Female_18_Normal</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Female_18_Normal@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Female_18_Normal" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Female_18_Normal" title="Delete variant" aria-label="Delete variant Female_18_Normal">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Female_30_Normal</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Female_30_Normal@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Female_30_Normal" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Female_30_Normal" title="Delete variant" aria-label="Delete variant Female_30_Normal">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Female_40_Overweight</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Female_40_Overweight@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Female_40_Overweight" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Female_40_Overweight" title="Delete variant" aria-label="Delete variant Female_40_Overweight">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male" title="Delete variant" aria-label="Delete variant Male">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_22_Fit_Soldier</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_22_Fit_Soldier@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_22_Fit_Soldier" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_22_Fit_Soldier" title="Delete variant" aria-label="Delete variant Male_22_Fit_Soldier">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_24_Normal_hidrosis2</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_24_Normal_hidrosis2@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_24_Normal_hidrosis2" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_24_Normal_hidrosis2" title="Delete variant" aria-label="Delete variant Male_24_Normal_hidrosis2">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_25_Normal</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_25_Normal@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_25_Normal" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_25_Normal" title="Delete variant" aria-label="Delete variant Male_25_Normal">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_28_Normal_hr109_rr18</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_28_Normal_hr109_rr18@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_28_Normal_hr109_rr18" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_28_Normal_hr109_rr18" title="Delete variant" aria-label="Delete variant Male_28_Normal_hr109_rr18">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_32_Normal_hr93_rr14</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_32_Normal_hr93_rr14@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_32_Normal_hr93_rr14" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_32_Normal_hr93_rr14" title="Delete variant" aria-label="Delete variant Male_32_Normal_hr93_rr14">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_44_Bradycardic</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_44_Bradycardic@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Bradycardic" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_44_Bradycardic" title="Delete variant" aria-label="Delete variant Male_44_Bradycardic">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_44_Normal_hr109_rr15</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_44_Normal_hr109_rr15@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Normal_hr109_rr15" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_44_Normal_hr109_rr15" title="Delete variant" aria-label="Delete variant Male_44_Normal_hr109_rr15">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_44_Normal_rr12</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_44_Normal_rr12@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Normal_rr12" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_44_Normal_rr12" title="Delete variant" aria-label="Delete variant Male_44_Normal_rr12">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_44_SleepDeprived</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_44_SleepDeprived@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_44_SleepDeprived" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_44_SleepDeprived" title="Delete variant" aria-label="Delete variant Male_44_SleepDeprived">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">Male_44_Tachycardic</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">Male_44_Tachycardic@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="Male_44_Tachycardic" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="Male_44_Tachycardic" title="Delete variant" aria-label="Delete variant Male_44_Tachycardic">✕</button>
+        </div>
+      </div>
+      
+      <div class="var-card">
+        <div class="var-card-main">
+          <div class="var-card-head">
+            <code class="var-name">StandardFemale</code>
+            <span class="var-base">based on the baseline</span>
+          </div>
+          
+          <div class="var-overrides">
+            <span class="ovr-chip"><span class="ovr-k">state_file</span><span class="ovr-eq">=</span><span class="ovr-v">StandardFemale@0s.xml</span></span><span class="ovr-chip"><span class="ovr-k">compartment</span><span class="ovr-eq">=</span><span class="ovr-v">RightLeg</span></span><span class="ovr-chip"><span class="ovr-k">rate_mL_per_min</span><span class="ovr-eq">=</span><span class="ovr-v">200.0</span></span><span class="ovr-chip"><span class="ovr-k">n_steps</span><span class="ovr-eq">=</span><span class="ovr-v">600</span></span>
+          </div>
+        </div>
+        <div class="var-card-actions">
+          <button type="button" class="action-btn study-variant-run" data-variant="StandardFemale" title="Run this variant">▶ Run</button>
+          <button type="button" class="icon-btn study-variant-del" data-variant="StandardFemale" title="Delete variant" aria-label="Delete variant StandardFemale">✕</button>
+        </div>
+      </div>
+      
+    </div>
     
     
-    <form class="study-variant-add-form" onsubmit="return _submitStudyVariantAdd(this)" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
-      <label style="font-size:0.78em;color:#475569">Name<br>
-        <input name="name" required pattern="[a-zA-Z0-9_-]+" placeholder="hi-dnaa"
-               style="font-family:monospace;font-size:0.82em;padding:3px 6px;min-width:130px"></label>
-      <label style="font-size:0.78em;color:#475569">Base<br>
-        <select name="base_composite" style="font-size:0.82em;padding:3px 6px">
-          <option value="StandardMale">StandardMale</option>
-        </select></label>
-      <label style="font-size:0.78em;color:#475569">Parameter overrides (JSON)<br>
-        <input name="overrides" placeholder='{"k_synth": 2.0}'
-               style="font-family:monospace;font-size:0.82em;padding:3px 6px;min-width:180px"></label>
-      <button type="submit" class="action-btn" style="font-size:0.82em">+ Add variant</button>
+    <form class="study-variant-add-form msub-addcard" onsubmit="return _submitStudyVariantAdd(this)">
+      <div class="msub-addcard-title">Add a variant</div>
+      <div class="msub-field-grid">
+        <label class="msub-field">
+          <span class="msub-lbl">Name</span>
+          <input name="name" required pattern="[a-zA-Z0-9_-]+" placeholder="hi-dnaa" class="msub-input mono">
+          <span class="msub-hint">letters, numbers, - and _</span>
+        </label>
+        <label class="msub-field">
+          <span class="msub-lbl">Based on</span>
+          <select name="base_composite" class="msub-input">
+            <option value="StandardMale">StandardMale</option>
+          </select>
+          <span class="msub-hint">the baseline this variant perturbs</span>
+        </label>
+        <label class="msub-field msub-field-wide">
+          <span class="msub-lbl">Parameter overrides</span>
+          <input name="overrides" placeholder='{"k_synth": 2.0}' class="msub-input mono">
+          <span class="msub-hint">JSON object of parameter → value; leave blank for none</span>
+        </label>
+      </div>
+      <div class="msub-addcard-foot">
+        <button type="submit" class="action-btn primary">+ Add variant</button>
+        <span class="study-variant-add-status msub-status"></span>
+      </div>
     </form>
-    <div class="study-variant-add-status muted" style="font-size:0.8em;margin-top:4px"></div>
     
+  </div>
   </div>
 
   
+  <div class="model-subpanel" data-modelsubpanel="interventions" hidden>
   <div class="overview-section" id="study-interventions-section">
-    <h3>Interventions <span class="muted" style="font-size:0.85em;font-weight:normal">— named perturbations applied in this study</span></h3>
+    <p class="msub-intro">An <strong>intervention</strong> is a named, described perturbation applied in this study (e.g. a knockout) — the conceptual change you are testing, documented alongside the model.</p>
     
-    <p class="muted" style="font-size:0.88em;margin:0 0 10px">No interventions yet.</p>
+    <div class="msub-empty">No interventions yet. Add one below.</div>
     
-    <form class="study-intervention-add-form" onsubmit="return _submitStudyInterventionAdd(this)" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
-      <label style="font-size:0.78em;color:#475569">Name<br>
-        <input name="name" required pattern="[a-zA-Z0-9_-]+" placeholder="knockout-dnaA"
-               style="font-family:monospace;font-size:0.82em;padding:3px 6px;min-width:140px"></label>
-      <label style="font-size:0.78em;color:#475569;flex:1;min-width:200px">Description<br>
-        <input name="description" placeholder="what the intervention does"
-               style="width:100%;font-size:0.82em;padding:3px 6px"></label>
-      <button type="submit" class="action-btn" style="font-size:0.82em">+ Add intervention</button>
+    <form class="study-intervention-add-form msub-addcard" onsubmit="return _submitStudyInterventionAdd(this)">
+      <div class="msub-addcard-title">Add an intervention</div>
+      <div class="msub-field-grid">
+        <label class="msub-field">
+          <span class="msub-lbl">Name</span>
+          <input name="name" required pattern="[a-zA-Z0-9_-]+" placeholder="knockout-dnaA" class="msub-input mono">
+          <span class="msub-hint">letters, numbers, - and _</span>
+        </label>
+        <label class="msub-field msub-field-wide">
+          <span class="msub-lbl">Description</span>
+          <input name="description" placeholder="what the intervention does" class="msub-input">
+          <span class="msub-hint">a short, human-readable summary</span>
+        </label>
+      </div>
+      <div class="msub-addcard-foot">
+        <button type="submit" class="action-btn primary">+ Add intervention</button>
+        <span class="study-intervention-add-status msub-status"></span>
+      </div>
     </form>
-    <div class="study-intervention-add-status muted" style="font-size:0.8em;margin-top:4px"></div>
+  </div>
   </div>
 
-
-
   
+  <div class="model-subpanel" data-modelsubpanel="readouts" hidden>
   <div class="overview-section" id="model-readouts-section">
     <h3>Readouts</h3>
 
@@ -1005,6 +1124,7 @@
     
   </div>
   </div>
+  </div>
 
 </section>
 
@@ -1024,7 +1144,6 @@
   <button type="button" id="study-run-current-spec" class="action-btn" title="Run this study's CURRENT baseline spec (POST /api/study-run-baseline) as a brand-new run">▶ Run current spec</button>
   <button type="button" id="study-reproduce" class="btn-mini" title="Replay this study's most recent run's RECORDED manifest verbatim (POST /api/study-reproduce) — ignores any study.yaml edits made since">↻ Reproduce</button>
   
-  <button type="button" id="study-run-composite" class="btn-mini" title="Dispatch a specific process-bigraph composite_id to the remote compute backend (pbg-native multi_node/mbp, or the Nextflow campaign path) — advanced, independent of this study's own pinned baseline">⚙ Dispatch composite</button>
 </div>
 
 <div class="overview-section" id="simulations-section">
@@ -1499,8 +1618,9 @@
 </section>
 
 </main>
-<script>window.__DASH_CONFIG__ = { mode: "snapshot", interactiveUrl: "https://github.com/vivarium-collective/viva-biogears", basePath: "/viva-biogears/workbench", inputsDownloadBase: "https://github.com/vivarium-collective/viva-biogears/raw/main", provenance: {"repo_slug": "vivarium-collective/viva-biogears", "repo_url": "https://github.com/vivarium-collective/viva-biogears", "commit": "08a0bcd3e2df61b146c30ae6d37dafb6539ad602", "commit_url": "https://github.com/vivarium-collective/viva-biogears/commit/08a0bcd3e2df61b146c30ae6d37dafb6539ad602", "branch": "main", "lockfile": "uv.lock@6d0631328220", "generated_at": "2026-11-18 17:19 UTC"} };</script>
+<script>window.__DASH_CONFIG__ = { mode: "snapshot", interactiveUrl: "https://github.com/vivarium-collective/viva-biogears", basePath: "/viva-biogears/workbench", inputsDownloadBase: "https://github.com/vivarium-collective/viva-biogears/raw/main/workspace", provenance: {"repo_slug": "vivarium-collective/viva-biogears", "repo_url": "https://github.com/vivarium-collective/viva-biogears", "commit": "652f50e65aabacda85f553b5c267baf7e5f5d3bc", "commit_url": "https://github.com/vivarium-collective/viva-biogears/commit/652f50e65aabacda85f553b5c267baf7e5f5d3bc", "branch": "main", "lockfile": "uv.lock@ac7ff5558357", "generated_at": "2026-11-22 00:47 UTC"} };</script>
 <script src="/viva-biogears/workbench/assets/data-source.js"></script>
+<script src="/viva-biogears/workbench/assets/backend-features.js"></script>
 <script src="/viva-biogears/workbench/assets/toast.js"></script>
 <script>
 window._studyName = "patient-cohort";
@@ -1632,6 +1752,11 @@ window._seedFollowupProposal = _seedFollowupProposal;
 <script src="/viva-biogears/workbench/assets/checklist-select.js"></script>
 <script src="/viva-biogears/workbench/assets/progress-track.js"></script>
 <script src="/viva-biogears/workbench/assets/comparison-view.js"></script>
+<!-- The backend launch plugin's script (remote-pinned dispatch + the
+     "Dispatch composite" panel), quarantined out of study-detail.js. Loaded
+     BEFORE it: study-detail.js calls window.SmsLaunch.mount() while it loads,
+     and runs local-only when the file is absent. -->
+<script src="/viva-biogears/workbench/assets/sms-launch.js"></script>
 <script src="/viva-biogears/workbench/assets/study-detail.js"></script>
 <script src="/viva-biogears/workbench/assets/study-feedback.js"></script>
 <script src="/viva-biogears/workbench/assets/inline-edit.js"></script>
@@ -1644,7 +1769,7 @@ window._seedFollowupProposal = _seedFollowupProposal;
 </script>
 <script>
 (function () {
-  // Task 8: the Configure & Run mount and the remote-run (smsvpctest) panel
+  // Task 8: the Configure & Run mount and the remote-run panel
   // were both removed from the Simulate tab — launching now lives entirely
   // in the header buttons (Reproduce / Run current spec). This block used
   // to also mount ConfigureRun into the (now-deleted) mount div and, in an

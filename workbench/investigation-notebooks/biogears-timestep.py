@@ -269,7 +269,10 @@ def _render_one(address, config, runs_db, study_yaml, overrides=None):
 ov_viva_biogears_composites_hemorrhage_biogears_hemorrhage = {
     'state_file'       : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states (or an absolute path)
     'patient_file'     : '',   # Patient file in <runtime>/patients (or a path), stabilized once and cached; replaces state_file
+    'patient_table'    : '',   # A Patients.csv (BioGears' template layout, one column per patient); with patient, the patient is generated from it, stabilized once and cached; replaces state_file
+    'patient'          : '',   # The Name of a patient in patient_table
     'conditions'       : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}
+    'substance_table'  : '',   # A Substances.csv, or a folder with Substances.csv and/or Compounds.csv (BioGears' template layout): their substances and compounds are added to the engine's substances
     'circuit_additions': {},   # New path name -> {source, target, resistance_mmHg_s_per_mL} added to the cardiovascular circuit with its compartment link (a perturbation)
     'compartment'      : 'RightLeg',   # Hemorrhage site (a compartment with a BioGears bleed path)
     'rate_mL_per_min'  : 250.0,   # Initial bleeding rate; BioGears' rate then falls with local pressure
@@ -361,7 +364,10 @@ ov_viva_biogears_composites_sepsis_biogears_sepsis = {
     'drug_readouts'         : None,   # Drugs whose concentrations are read (readings/treatment/<drug>); default Piperacillin and Norepinephrine when treated, none otherwise. Give an untreated arm the treated arms' list to record the same stores
     'state_file'            : 'StandardMale@0s.xml',   # BioGears state in <runtime>/states or the package's states/ (or an absolute path)
     'patient_file'          : '',   # Patient file in <runtime>/patients (or a path), stabilized once (about 40 s) and then cached; replaces state_file
+    'patient_table'         : '',   # A Patients.csv (BioGears' template layout, one column per patient); with patient, the patient is generated from it, stabilized once and cached; replaces state_file
+    'patient'               : '',   # The Name of a patient in patient_table
     'conditions'            : {},   # Chronic conditions applied while the patient stabilizes, e.g. {ChronicAnemia: {ReductionFactor: 0.3}}; with no patient_file, StandardMale.xml. A different patient, not a perturbation
+    'substance_table'       : '',   # A Substances.csv, or a folder with Substances.csv and/or Compounds.csv (BioGears' template layout): their substances and compounds are added to the engine's substances
     'circuit_additions'     : {},   # New path name -> {source, target, resistance_mmHg_s_per_mL}: a resistance path between two FullCardiovascular nodes in different vascular compartments, added with its compartment link so substances follow. A perturbation: the body responds over time
     'interval'              : 60.0,   # Seconds per update
     'time_step_s'           : 0.02,   # BioGears' solver step (validated at 0.02 s; must be < 0.1 s)
