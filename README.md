@@ -12,7 +12,7 @@ Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits 
   - composites: `biogears_hemorrhage`, `biogears_resuscitation`, `biogears_cardiovascular`, `biogears_respiratory`, `biogears_mechanical_ventilation`, `biogears_thermal`, `biogears_supplemental_oxygen`, `biogears_whole_body` and `biogears_lymph`.
 
   All are tested against the real engine.
-  - patients: any patient file, with BioGears' chronic conditions, stabilized once and cached (`viva_biogears.patients`);
+  - patients: any patient file or a column of a Patients.csv, with BioGears' chronic conditions, checked against BioGears' patient rules, stabilized once and cached (`viva_biogears.patients`, `viva_biogears.tables`); new substances and compounds from a Substances.csv or Compounds.csv;
   - saved states: saved during a run or from the command line, and branching from them (`viva_biogears.states`);
   - circuit additions: resistance paths added to the cardiovascular circuit with their compartment links (`viva_biogears.modules.additions`);
   - user documentation with five tutorials executed on the real engine (`documentation/`, `make docs`);
@@ -61,7 +61,7 @@ A location that is given but is not a BioGears runtime raises `BioGearsNotFoundE
 Every process and composite starts from `state_file` (a stabilized state) or from `patient_file`, optionally with `conditions`:
 
 ```python
-BioGearsProcess({"patient_file": "Male_44_Normal.xml"})                     # a shipped patient file
+BioGearsProcess({"patient_file": "Male_44_Bradycardic.xml"})                # a shipped patient file
 BioGearsProcess({"patient_file": "/path/to/MyPatient.xml"})                  # your own
 BioGearsModularProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {"ReductionFactor": 0.3}}})
 ```
@@ -75,6 +75,22 @@ BioGearsModularProcess({"modules": ["vitals"], "conditions": {"ChronicAnemia": {
   - The result is a different patient, not a perturbation of a running one.
   - Chronic anemia removes hemoglobin but leaves hematocrit unchanged in BioGears 8.2.0.
 - **Rules.** Setting `state_file` and `patient_file` (or `conditions`) together raises. `biogears_lymph` drops its equilibrated default when a patient is given; that patient is not equilibrated.
+- **BioGears' patient check.** Before anything runs, the patient is checked against BioGears' own patient rules (`pybiogears.check_patient`). A patient BioGears would refuse (age under 18, a respiration rate over 20 /min, a blood volume more than 15 % off, ...) raises `ValueError` with the full report. A patient whose values BioGears changes emits a `PatientAdjustedWarning`: a weight above BMI 30 is lowered to BMI 30, and a heart rate above 109 /min becomes 109 /min. The report, plus how far stabilization moved the resting baselines, is written next to the cached state (`<state>.check.txt`; `patients.check_report_path`). BioGears 8.2.0 ships `Male_44_Normal.xml` with a git merge conflict in it, so that one is refused.
+
+### Patients and substances from spreadsheets
+
+BioGears' patient and substance files can be written from its spreadsheet templates (`<runtime>/templates`: `Patients.csv`, `Substances.csv`, `Compounds.csv`, one column per item). Every process and composite takes them directly:
+
+```python
+BioGearsProcess({"patient_table": "my_patients.csv", "patient": "Avery"})                  # a column of a Patients.csv
+BioGearsProcess({"substance_table": "my_drugs/", "iv_compound": "MySaline"})               # Substances.csv and/or Compounds.csv
+biogears_sepsis(patient_table="my_patients.csv", patient="Avery", treatment="antibiotic")   # composites take the same
+```
+
+- **Conversion.** pybiogears runs BioGears' own converters (`pybiogears.generate_data`, the conversion behind `bg-cli GENERATE data`). A value they can't convert (`"forty yr"`) raises, instead of being left out of the file as BioGears' converter does. Generated files are cached under `<cache>/tables`, keyed by the CSV's bytes, so an edited CSV is converted again and a patient removed from it is gone.
+- **Patients.** `patient` is a patient's `Name` in the table. The generated patient is checked, stabilized and cached like a `patient_file`. `patient_table` and `patient` go together and replace `patient_file` and `state_file`. `viva_biogears.tables.patients_from_table(csv)` lists a table's patients.
+- **Substances.** `substance_table` is a Substances.csv, or a folder with Substances.csv and/or Compounds.csv. The engine runs on a copy of the runtime (`<cache>/tables/runtime-*`, links plus the generated files) whose `substances/` also holds them, because BioGears loads every file there at start. The new names can then be infused (`iv_compound`, the treatment schedule) and read. A generated file named like a shipped one replaces it.
+- **Requires** pybiogears with `generate_data` and `check_patient`: the `engine` extra pins one (01db2ef, pybiogears' `main` of 2026-11-21). An older pybiogears raises `BioGearsNotFoundError` asking for a reinstall.
 
 ### Saved states and branching
 
