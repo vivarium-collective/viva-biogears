@@ -40,11 +40,12 @@ Clone viva-biogears next to pybiogears:
 git clone https://github.com/vivarium-collective/viva-biogears.git
 cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
-uv pip install -e '.[dev]'
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install ../pybiogears
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install -e '.[dev,engine]'   # engine: pybiogears at the pinned commit
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
-python -m pytest -q        # ~5 min, real engine
+python -m pytest -q        # ~15 min, real engine
 ```
+
+`dev` includes the `workbench` extra (the web dashboard). To use viva-biogears from another project, depend on `viva-biogears`, plus `viva-biogears[engine]` for the real engine: the workbench isn't a core dependency, so that project keeps its own workbench version.
 
 ### Finding BioGears
 
@@ -89,7 +90,7 @@ biogears_sepsis(patient_table="my_patients.csv", patient="Avery", treatment="ant
 - **Conversion.** pybiogears runs BioGears' own converters (`pybiogears.generate_data`, the conversion behind `bg-cli GENERATE data`). A value they can't convert (`"forty yr"`) raises, instead of being left out of the file as BioGears' converter does. Generated files are cached under `<cache>/tables`, keyed by the CSV's bytes, so an edited CSV is converted again and a patient removed from it is gone.
 - **Patients.** `patient` is a patient's `Name` in the table. The generated patient is checked, stabilized and cached like a `patient_file`. `patient_table` and `patient` go together and replace `patient_file` and `state_file`. `viva_biogears.tables.patients_from_table(csv)` lists a table's patients.
 - **Substances.** `substance_table` is a Substances.csv, or a folder with Substances.csv and/or Compounds.csv. The engine runs on a copy of the runtime (`<cache>/tables/runtime-*`, links plus the generated files) whose `substances/` also holds them, because BioGears loads every file there at start. The new names can then be infused (`iv_compound`, the treatment schedule) and read. A generated file named like a shipped one replaces it.
-- **Requires** pybiogears with `generate_data` and `check_patient` (its `main` branch from 2026-11-21). An older pybiogears raises `BioGearsNotFoundError` asking for a reinstall.
+- **Requires** pybiogears with `generate_data` and `check_patient`: the `engine` extra pins one (01db2ef, pybiogears' `main` of 2026-11-21). An older pybiogears raises `BioGearsNotFoundError` asking for a reinstall.
 
 ### Saved states and branching
 

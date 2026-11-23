@@ -63,8 +63,10 @@ def import_pybiogears():
         import pybiogears
     except ImportError as ex:
         raise BioGearsNotFoundError(
-            "pybiogears is not installed in this environment. Install it with "
-            "CMAKE_PREFIX_PATH=<biogears prefix> pip install <path to pybiogears>; see README.md."
+            "pybiogears is not installed in this environment. Install viva-biogears' engine "
+            "extra against your BioGears build: CMAKE_PREFIX_PATH=<biogears prefix> uv pip "
+            "install 'viva-biogears[engine]' (in a checkout of viva-biogears: -e '.[engine]'); "
+            "see README.md."
         ) from ex
     version = pybiogears.biogears_version()
     if not version.startswith(BIOGEARS_VERSION):

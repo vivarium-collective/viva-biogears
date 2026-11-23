@@ -12,7 +12,7 @@ from viva_biogears.modules.thermal import (
     ENVIRONMENT_BASELINE,
     THERMAL_APPLICATION_BASELINE,
 )
-from viva_biogears.runtime import runtime_dir
+from viva_biogears.runtime import import_pybiogears, runtime_dir
 
 VENT_ON = {**VENTILATOR_BASELINE, "connected": 1.0, "ventilator_pressure_cmH2O": 15.0, "peep_cmH2O": 5.0,
            "respiration_rate_bpm": 16.0, "oxygen_fraction": 0.5}
@@ -276,6 +276,9 @@ def test_bad_substance_entries_are_refused_before_load(entry, match):
 
 
 def test_wrong_unit_fails_the_load():
+    # Without pybiogears the load raises BioGearsNotFoundError, itself a RuntimeError, which
+    # pytest.raises would catch here and fail on the message instead of skipping.
+    import_pybiogears()
     p = make(["substances"], substance_outputs=[
         {"substance": "Oxygen", "compartment": "Aorta", "property": "PartialPressure", "unit": "mL"}])
     with pytest.raises(RuntimeError, match="did not connect"):

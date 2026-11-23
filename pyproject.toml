@@ -6,9 +6,9 @@ readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
-# BioGears and pybiogears are not on PyPI: build them with pybiogears'
-# scripts/install_biogears.sh and install pybiogears into this venv (see
-# README.md). Engine tests skip when no build is found.
+# BioGears and pybiogears are not on PyPI. Build BioGears with pybiogears'
+# scripts/install_biogears.sh, then install the `engine` extra, which builds
+# pybiogears against it (see README.md). Engine tests skip when no build is found.
 dependencies = [
     # 1.10.1: initial_state() is kept on overwrite[float] and boolean output ports
     # (process-bigraph #268); the vitals ports rely on it.
@@ -27,14 +27,25 @@ dependencies = [
     "pypdf>=4.0",
     "matplotlib",
     "plotly",
-    # Web-based workspace dashboard (server + templates + assets + lib helpers).
-    # Extracted from viva-template as of v0.4.16; provides the `vivarium-workbench
-    # serve` CLI invoked by scripts/serve.sh.
-    "vivarium-workbench",
+    # core.build_core() composes cores with viva_superpowers.core_compose. It came
+    # only through the workbench before. 0.24 is the oldest tested here; 0.26 (what
+    # inflect-sim-core resolves) and 0.28 provide it unchanged.
+    "viva-superpowers>=0.24",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4"]
+# The web-based workspace dashboard (`vivarium-workbench serve`, scripts/serve.sh).
+# An extra, not a core dependency, so a project that uses viva-biogears as a library
+# can bring its own workbench: an exact pin here made such a project unresolvable
+# (inflect-sim-core pins workbench 0.5.3 from git). Pinned: every release from 0.4
+# needs viva-basic-processes, which is not on PyPI, so an unpinned requirement
+# resolved to 0.3.92 anyway, without saying so.
+workbench = ["vivarium-workbench==0.3.92"]
+dev = ["viva-biogears[workbench]", "pytest>=7.4"]
+# The real engine: pybiogears, built against a BioGears 8.2.0 install
+# (CMAKE_PREFIX_PATH=<install> uv pip install -e '.[engine]'), at the commit this
+# repo is tested with.
+engine = ["pybiogears @ git+https://github.com/vivarium-collective/pybiogears.git@01db2efc3db1aaae5a01cf8f1ccef725c60d0c30"]
 cli = ["typer", "rich"]
 
 [project.scripts]
@@ -66,3 +77,8 @@ allow-direct-references = true
 # processes from a committed + pushed git ref.
 [tool.hatch.build.targets.wheel]
 packages = ["viva_biogears"]
+
+# The package's tests. Each study's criteria (workspace/studies/*/tests) are run by the
+# workbench against its recorded runs, and one shares a module name with tests/test_treatment.py.
+[tool.pytest.ini_options]
+testpaths = ["tests"]

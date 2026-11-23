@@ -13,7 +13,7 @@ Session state and next steps: [CURRENT.md](CURRENT.md).
 ```bash
 source .venv/bin/activate
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
-python -m pytest -q                                   # ~5 min, real engine
+python -m pytest -q                                   # ~15 min, real engine
 python -m pytest -q tests/test_processes.py -k zero   # one test
 make docs                                             # user docs; runs every tutorial (~15 min)
 ```
@@ -45,7 +45,7 @@ Without a BioGears build, the engine tests are skipped (`tests/conftest.py`), no
 - `viva_biogears/composites/circuits.py` has the per-circuit composites (store layout: `interventions/<module>`, `readings/<module>`, an emitter of both); `lymph.py` has `biogears_lymph`, starting from `viva_biogears/states/StandardMale@equilibrated.xml` (see that folder's README; `runtime.state_path` looks there after `<runtime>/states`); `hemorrhage.py` has `biogears_hemorrhage` and `biogears_resuscitation`; `sepsis.py` has `biogears_sepsis`.
 - `viva_biogears/protocols.py` turns McDaniel et al. 2019's treatment protocols into setpoints; `processes/controllers.py`'s `TreatmentController` runs one in `biogears_sepsis(treatment=...)`.
 - `workspace/` holds two workbench investigations: `biogears-hemorrhage` (hemorrhage studies) and `mcdaniel-2019` (`mcdaniel-2019-sepsis`, `-treatment`, `-refresh`). Each study's criteria are its `tests/` (shared fixture `workspace/studies/conftest.py`); figures are `viva_biogears/visualizations/`. `mcdaniel-2019-sepsis/run.py` runs the McDaniel arms outside the workbench (4 h checkpoints, resume, treatment arms branched from severe's 44 h checkpoint or the shipped `viva_biogears/states/StandardMale@severe-infection-44h.xml`, which the workbench treatment studies start from; `TreatmentController.time_offset_s` keeps protocol time = engine time); `analyze.py` draws Figs 4–13. Each 48 h arm is ~8 h of wall time.
-- Thermal applications rely on pybiogears' `prune_thermal_application` (BioGears 8.2.0 bugs; `workspace/experiments/circuits-probe-2026-11-03`). Reinstall pybiogears after pulling it.
+- Thermal applications rely on pybiogears' `prune_thermal_application` (BioGears 8.2.0 bugs; `workspace/experiments/circuits-probe-2026-11-03`). Reinstall the `engine` extra (pybiogears at the pinned commit) when its pin changes.
 
 ## Test oracles
 

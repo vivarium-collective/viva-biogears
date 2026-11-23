@@ -16,7 +16,7 @@ from circuit_helpers import CORE
 from viva_biogears.patients import CACHE_ENV_VAR, check_report_path, stabilized_state
 from viva_biogears.processes import BioGearsProcess
 from viva_biogears.processes._bridge import load_engine, resolve_state
-from viva_biogears.runtime import BASE_MARKER, base_runtime, runtime_dir
+from viva_biogears.runtime import BASE_MARKER, base_runtime, import_pybiogears, runtime_dir
 from viva_biogears.modules.treatment import TREATMENT
 from viva_biogears.tables import (
     PatientAdjustedWarning,
@@ -137,6 +137,9 @@ def test_a_patient_biogears_would_refuse_raises_before_anything_runs(patient_tab
 
 
 def test_a_patient_biogears_adjusts_warns(patient_table):
+    # BioGears' patient check runs in pybiogears; without it no check runs and nothing warns,
+    # so pytest.warns would fail here instead of the test skipping.
+    import_pybiogears()
     with pytest.warns(PatientAdjustedWarning, match="HeartRateBaseline: 120 /min .* uses 109"):
         process(patient_table=str(patient_table), patient="Racer")
     with warnings.catch_warnings():
