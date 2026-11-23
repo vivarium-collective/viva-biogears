@@ -353,7 +353,15 @@
    ],
    "_type": "list"
   },
+  "patient": {
+   "_default": "",
+   "_type": "string"
+  },
   "patient_file": {
+   "_default": "",
+   "_type": "string"
+  },
+  "patient_table": {
    "_default": "",
    "_type": "string"
   },
@@ -375,6 +383,10 @@
   },
   "state_file": {
    "_default": "StandardMale@0s.xml",
+   "_type": "string"
+  },
+  "substance_table": {
+   "_default": "",
    "_type": "string"
   },
   "time_step_s": {

@@ -369,7 +369,7 @@ BioGears 8.2.0 modules: infection, nutrition, lymph, tissue_fluid, cardiovascula
 | `setpoints/cardiovascular/iv_rate_mL_per_min` | `overwrite[float]` | 0.0 | SubstanceCompoundInfusionData |
 | `setpoints/treatment/vasopressor_rate_ug_per_min` | `overwrite[float]` | 0.0 | SubstanceInfusionData |
 
-## Config (20)
+## Config (23)
 
 | key | type | value in this composite |
 |---|---|---|
@@ -382,12 +382,15 @@ BioGears 8.2.0 modules: infection, nutrition, lymph, tissue_fluid, cardiovascula
 | `iv_compound` | string | Saline |
 | `modules` | list[string] | 6 entries (in the JSON) |
 | `nutrition_schedule` | list | 47 entries (in the JSON) |
+| `patient` | string | - |
 | `patient_file` | string | - |
+| `patient_table` | string | - |
 | `runtime_dir` | string | - |
 | `save_state_dir` | string | - |
 | `save_state_name` | string | state |
 | `save_state_times_s` | list[float] | [] |
 | `state_file` | string | StandardMale@0s.xml |
+| `substance_table` | string | - |
 | `time_step_s` | float | 0.02 |
 | `treatment_readouts` | list[string] | [] |
 | `treatment_schedule` | list | [] |
