@@ -42,7 +42,7 @@ from xml.sax.saxutils import escape, quoteattr
 
 import platformdirs
 
-from .runtime import import_pybiogears
+from .runtime import base_runtime, import_pybiogears
 
 #: Environment variable that overrides the cache directory.
 CACHE_ENV_VAR = "VIVA_BIOGEARS_CACHE_DIR"
@@ -144,7 +144,7 @@ def _data_digest(runtime: str) -> str:
 def _libraries(runtime: Path) -> list[Path]:
     """The BioGears shared libraries of the install the runtime belongs to
     (``<prefix>/lib`` or ``<prefix>/bin``, with ``<prefix>/share/biogears/runtime``)."""
-    prefix = runtime.parent.parent.parent
+    prefix = base_runtime(runtime).parent.parent.parent
     libs = []
     for d in ("lib", "lib64", "bin"):
         libs += sorted(p for p in (prefix / d).glob("libbiogears*") if p.is_file() and not p.is_symlink())
@@ -173,13 +173,36 @@ def stabilized_state(patient_file: str, runtime: Path, conditions: dict | None =
     """
     runtime = Path(runtime)
     patient_path, content, state_path = _cache_entry(patient_file, runtime, conditions)
-    if state_path.is_file():
-        return state_path
-    conditions = dict(conditions or {})
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    _stabilize(runtime, patient_path, content, conditions_xml(conditions) if conditions else "", state_path,
-               conditions)
+    if not state_path.is_file():
+        conditions = dict(conditions or {})
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        _stabilize(runtime, patient_path, content, conditions_xml(conditions) if conditions else "", state_path,
+                   conditions)
+    _write_check(patient_path, state_path)
     return state_path
+
+
+def check_report_path(state_path: Path) -> Path:
+    """Where ``stabilized_state`` writes BioGears' patient check for a cached state."""
+    return state_path.with_suffix(".check.txt")
+
+
+def _write_check(patient_path: Path, state_path: Path) -> None:
+    """BioGears' patient check (pybiogears.check_patient), next to the cached state: what
+    BioGears refused, adjusted or filled in, and how stabilization moved the baselines."""
+    report = check_report_path(state_path)
+    pb = import_pybiogears()
+    if report.is_file() or not hasattr(pb, "check_patient"):
+        return
+    check = pb.check_patient(patient_path)
+    lines = [check.report(defaults=True), "", "Stabilization moved these baselines (set up -> stabilized):"]
+    for shift in check.after_stabilization(state_path):
+        lines.append(f"  {shift.field}: {shift.set_up:.4g} -> {shift.stabilized:.4g} {shift.unit} "
+                     f"({shift.relative:+.1%})")
+    fd, partial = tempfile.mkstemp(dir=state_path.parent, prefix=".check.", suffix=".txt")
+    with os.fdopen(fd, "w") as stream:
+        stream.write("\n".join(lines) + "\n")
+    os.replace(partial, report)
 
 
 def cache_path(patient_file: str, runtime: Path, conditions: dict | None = None) -> Path:

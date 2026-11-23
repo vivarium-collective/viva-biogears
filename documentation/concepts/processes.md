@@ -48,8 +48,19 @@ Every process starts from one of:
   (40–70 s) and viva-biogears caches. Conditions are BioGears' chronic conditions
   (`ChronicAnemia`, `Dehydration`, `ChronicObstructivePulmonaryDisease`, ...), applied while
   it stabilizes: a different patient, not a perturbation;
+- `patient_table` and `patient`, optionally with `conditions`: a column of a Patients.csv
+  (BioGears' template layout), converted with BioGears' own converters and then treated
+  like a `patient_file`;
 - and, on top of either, `circuit_additions`: resistance paths added to the cardiovascular
   circuit with their compartment links ({doc}`modules`).
+
+Every patient is first checked against BioGears' own patient rules: one BioGears would
+refuse raises before anything runs, and one whose values BioGears changes (a weight above
+BMI 30, a heart rate above 109 /min) warns with `PatientAdjustedWarning`.
+
+`substance_table` (a Substances.csv, or a folder with Substances.csv and/or Compounds.csv)
+adds substances and compounds: the engine runs on a copy of the runtime that also holds
+them, so they can be infused and read.
 
 ## Saved states and branches
 
