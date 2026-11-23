@@ -4,19 +4,23 @@ from process_bigraph.composite_generator import composite_generator
 
 from ..core import build_core
 from ..processes import VITALS
+from .circuits import _PATIENT, _PATIENT_TABLE, _SUBSTANCE_TABLE
 
 _VITAL_PATHS = {name: ["vitals", name] for name in VITALS}
 
 
 def _biogears_node(state_file, compartment, compound, patient_file="", conditions=None, circuit_additions=None,
-                   time_step_s=0.02):
+                   time_step_s=0.02, patient_table="", patient="", substance_table=""):
     return {
         "_type": "process",
         "address": "local:BioGearsProcess",
         "config": {
             "state_file": state_file,
             "patient_file": patient_file,
+            "patient_table": patient_table,
+            "patient": patient,
             "conditions": dict(conditions or {}),
+            "substance_table": substance_table,
             "circuit_additions": dict(circuit_additions or {}),
             "hemorrhage_compartment": compartment,
             "iv_compound": compound,
@@ -49,9 +53,12 @@ _COMMON_PARAMETERS = {
     "patient_file": {"type": "string", "default": "",
                      "description": "Patient file in <runtime>/patients (or a path), stabilized once and cached; "
                                     "replaces state_file"},
+    "patient_table": _PATIENT_TABLE,
+    "patient": _PATIENT,
     "conditions": {"type": "map", "default": {},
                    "description": "Chronic conditions applied while the patient stabilizes, e.g. "
                                   "{ChronicAnemia: {ReductionFactor: 0.3}}"},
+    "substance_table": _SUBSTANCE_TABLE,
     "circuit_additions": {"type": "map", "default": {},
                           "description": "New path name -> {source, target, resistance_mmHg_s_per_mL} added to the "
                                          "cardiovascular circuit with its compartment link (a perturbation)"},
@@ -74,10 +81,11 @@ _COMMON_PARAMETERS = {
 )
 def biogears_hemorrhage(core=None, *, state_file="StandardMale@0s.xml", compartment="RightLeg",
                         rate_mL_per_min=250.0, patient_file="", conditions=None, circuit_additions=None,
-                        time_step_s=0.02):
+                        time_step_s=0.02, patient_table="", patient="", substance_table=""):
+    tables = {"patient_table": patient_table, "patient": patient, "substance_table": substance_table}
     return {
         "biogears": _biogears_node(state_file, compartment, "Saline", patient_file, conditions, circuit_additions,
-                                   time_step_s),
+                                   time_step_s, **tables),
         "interventions": {"hemorrhage_rate_mL_per_min": rate_mL_per_min, "iv_rate_mL_per_min": 0.0},
         "vitals": {},
         "engine": {"time_step_s": float(time_step_s)},  # recorded so figures can tell runs apart
@@ -102,12 +110,14 @@ def biogears_hemorrhage(core=None, *, state_file="StandardMale@0s.xml", compartm
 )
 def biogears_resuscitation(core=None, *, state_file="StandardMale@0s.xml", compartment="RightLeg",
                            rate_mL_per_min=250.0, compound="Saline", patient_file="", conditions=None, circuit_additions=None,
-                           target_map_mmHg=90.0, gain=25.0, max_rate_mL_per_min=250.0, time_step_s=0.02):
+                           target_map_mmHg=90.0, gain=25.0, max_rate_mL_per_min=250.0, time_step_s=0.02,
+                           patient_table="", patient="", substance_table=""):
+    tables = {"patient_table": patient_table, "patient": patient, "substance_table": substance_table}
     doc = biogears_hemorrhage(core, state_file=state_file, compartment=compartment, rate_mL_per_min=rate_mL_per_min,
                               patient_file=patient_file, conditions=conditions, circuit_additions=circuit_additions,
-                              time_step_s=time_step_s)
+                              time_step_s=time_step_s, **tables)
     doc["biogears"] = _biogears_node(state_file, compartment, compound, patient_file, conditions, circuit_additions,
-                                     time_step_s)
+                                     time_step_s, **tables)
     doc["controller"] = {
         "_type": "step",
         "address": "local:MapFluidController",

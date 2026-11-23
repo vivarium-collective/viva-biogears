@@ -1,5 +1,9 @@
 ## Current session
 
+**State (2026-11-21): patient and substance tables** (branch `feat/patient-tables`; needs pybiogears `main` from 2026-11-21, PRs #2 and #3).
+- `patient_table` + `patient`, `substance_table` on every process and composite (`viva_biogears/tables.py`); BioGears' patient check before any run (refused raises, adjusted warns, report next to the cached state). Tests: `tests/test_tables.py` (two engine tests, about 1 min).
+- Next: a cohort study from one Patients.csv (its own branch).
+
 **State (2026-11-16): workbench studies authored and piloted; canonical runs pending** (to be launched from the workbench on the Mac).
 - **Treatment** (2026-11-16): `treatment` module (`readings/treatment.py`: timed compound/substance infusions, norepinephrine setpoint, drug readouts), `viva_biogears/protocols.py` (McDaniel 2019's challenge, antibiotic and REFRESH protocols, tested without the engine), `TreatmentController`, and `biogears_sepsis(treatment=...)`. Every sepsis run records `protocol/code` and `protocol/saline_given_mL`.
 - **Workbench studies** (2026-11-16), each with pre-registered tests and a figure (`viva_biogears/visualizations/`):

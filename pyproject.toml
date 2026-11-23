@@ -13,7 +13,9 @@ dependencies = [
     # 1.10.1: initial_state() is kept on overwrite[float] and boolean output ports
     # (process-bigraph #268); the vitals ports rely on it.
     "process-bigraph>=1.10.1",
-    "bigraph-schema>=1.8.3",
+    # <1.8.4: bigraph-schema 1.8.4 (2026-11-20) lacks bigraph_schema.matching, which
+    # process-bigraph 1.11.0 imports, so process_bigraph fails to import.
+    "bigraph-schema>=1.8.3,<1.8.4",
     "numpy",
     "platformdirs>=3",
     # (The template's floor for process-bigraph, 1.8.5, for composite

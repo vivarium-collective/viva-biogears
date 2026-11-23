@@ -47,6 +47,16 @@ def runtime_dir(configured: str = "") -> Path:
     return _check_runtime(DEFAULT_RUNTIME, "the default runtime")
 
 
+#: File in a runtime built by ``tables.runtime_with_substances`` naming the runtime it extends.
+BASE_MARKER = ".viva-biogears-base"
+
+
+def base_runtime(runtime: Path) -> Path:
+    """The installed runtime ``runtime`` is (or extends, for a runtime with a substance table)."""
+    marker = Path(runtime) / BASE_MARKER
+    return Path(marker.read_text().strip()) if marker.is_file() else Path(runtime)
+
+
 def import_pybiogears():
     """The pybiogears module, checked to drive BioGears 8.2.0."""
     try:
