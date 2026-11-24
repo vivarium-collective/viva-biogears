@@ -67,11 +67,18 @@ Environment baked in: `BIOGEARS_RUNTIME=/opt/biogears/share/biogears/runtime` (t
 `ENTRYPOINT ["/opt/compose-entrypoint.sh"]`: sets `TMPDIR`, `cd`s to a writable scratch directory (pybiogears'
 save-to-bytes goes through a temp file in the working directory), then `exec`s the runner with `"$@"`.
 
-Runner choice (**open question, see below**): the preferred option is to reuse compose-api's own generic runner,
-`compose_api/environments/runner.py` (stdlib + process-bigraph only; written into every composed image; same
-command line; `COMPOSE_RUNNER_TYPES` for type tables), vendored at a pinned compose-api commit with its sha256
-checked in the Dockerfile. The alternative is a small `viva_biogears.compose_runner` like viva-pde-particle's.
-Reusing avoids a second hand-rolled runner (it can only drift from the contract).
+Runner (**decided**, per compose-api-supervisor, read from compose-api main 0.7.102): vendor compose-api's own generic
+`compose_api/environments/runner.py`. Its docstring says it answers "the command line prebuilt images already answer";
+it imports only the standard library and process-bigraph, never compose-api; it was generalised from viva-pde-particle's
+`compose_runner.py`. Pin it to a compose-api release tag (0.7.102 is current) with a sha256 check in the Dockerfile, and
+set `COMPOSE_RUNNER_TYPES` for viva-biogears' type tables. It is an internal module, not a versioned API: the stable
+contract is the command line (runtime contract 2), so the image keeps its vendored copy until it is re-pinned. The
+image's process-bigraph must be one the runner works with (composed images run 1.11.1); the image test checks it.
+
+Filesystem under `singularity run --compat`: the image is read-only. Writable: `/tmp`, `/var/tmp` and `$HOME` (per-job
+directories on the node's disk since compose-api 0.7.102, #567; before that a 64 MiB tmpfs for the non-root service
+account) and `/experiment` (the run's directory). If BioGears writes into its runtime directory on state load (open
+question 2), the entrypoint copies or overlays the runtime into `/tmp` at start and points `BIOGEARS_RUNTIME` there.
 
 ## Tests: real engine, no mocks
 
@@ -81,7 +88,8 @@ CI job (`.github/workflows/compose-image.yml`, modelled on viva-pde-particle's),
 2. **docker**: run a short real composite (`biogears_hemorrhage`, ~10 s simulated) through the entrypoint and check
    the results file for finite, physiologically sensible vitals (non-NaN HR/MAP; the oracle is BioGears itself via
    the existing `tests/` checks, not a fixture).
-3. **apptainer, the exact job contract** (`eWaterCycle/setup-apptainer`): `apptainer run --compat --bind exp:/experiment
+3. **apptainer, the exact job contract** (`eWaterCycle/setup-apptainer`), **as a non-root user** (root has no tmpfs limit
+   and hid v2ecoli's failure in compose-api's own local checks): `apptainer run --compat --bind exp:/experiment
    image.sif run /experiment/experiment.pbg -o /experiment/output -n 10`, then assert `results_*.pber` exists with
    finite vitals. This is what proves the read-only image works: it will surface any write into the install tree.
 4. Assert the image does not import the workbench (`import vivarium_workbench` fails), as viva-pde-particle does.
@@ -92,27 +100,37 @@ compose-api's cluster (resources, `--workdir`), which only a real submission sho
 
 ## Digest and registration
 
-The pushed digest (`sha256:...`) is the contract. compose-api registers the image by digest, never by tag
-(`environments create ... --image <digest>`). viva-biogears CI prints the digest in the job summary; a release of the
+The pushed digest (`sha256:...`) is the contract. compose-api registers each image as a version by digest, never by tag:
+`compose-api environments create <env> --image <ref>@sha256:...`, then `compose-api environments default`. Both need the
+environment-admin role (prod `ENVIRONMENT_ADMIN_ROLE=admin`). The digest is not written into `environments.yaml`. viva-biogears CI prints the digest in the job summary; a release of the
 image is a git tag on this repo, and the compose-api version note names that tag.
 
 ## compose-api side (owned by compose-api-supervisor, nothing here changes compose-api)
 
-One `kind: prebuilt` environment in `environments.yaml` for the inflect-sim-core image (and optionally one for the
-base), a compliance case (one short real sepsis or hemorrhage run), and a compose-api release. Each compose-api change
-is confirmed with Alex by that session before it starts. The registered environment is then used with
-`compose-api run doc.pbg --simulator <env>`.
+Four repo changes plus two admin steps (corrected by compose-api-supervisor, 2026-11-24):
+1. `environments.yaml`: declare the environment (`name`, `kind: prebuilt`, `python:` = the command that enters the
+   image's Python, which compose-api uses to run process-bigraph-lang's describe script for the interface read-back, D8.4).
+   No digest here.
+2. `manifest.yaml`: an entry for the image's code, like viva-pde-particle's: no `install`, `bundles: [<env>]`,
+   `module_roots` (e.g. `viva_biogears`, `viva_simulation_core`; they decide what the read-back describes), a level and evidence.
+3. A compliance case under `compliance/<entry-id>/<case>/` (one short real hemorrhage run first, then a sepsis slice).
+4. A compose-api release.
+5. After the release (admin): `compose-api environments create <env> --image <ref>@sha256:...`, then `environments default`.
+Each compose-api change is confirmed with Alex by compose-api-supervisor before it starts. The registered environment is
+then used with `compose-api run doc.pbg --simulator <env>`.
 
 ## Known gaps this will measure (input to the later dedicated-compute case)
 
 Per compose-api's code: every run is a batch SLURM job (no live session), 2 CPU / 8 GB per job, simulated time
 capped at 1,000 s (24 h with the long-runs role), results when the job ends, container start-up on every run.
 This repo's McDaniel 2019 sepsis arms simulate 48 h (about 8 h wall each, per `CURRENT.md`), which exceeds the 24 h
-simulated-time cap even with the long-runs role. The trial starts with short runs and documents what actually happens.
+simulated-time cap even with the long-runs role. The trial starts with a short `biogears_hemorrhage` run (Alex, 2026-11-24), then a short sepsis slice (which needs the
+long-runs role), and documents what actually happens. Limits: 1,000 s simulated for everyone, 86,400 s with the
+long-runs role, SLURM wall time up to 720 min.
 
 ## Open questions
 
-1. Runner: vendor compose-api's generic `runner.py` (pinned commit + sha256) or ship our own module? (compose-api maintainers)
+1. ~~Runner~~ Decided: vendor compose-api's `runner.py` at a release tag with a sha256 check (see above).
 2. Does BioGears write into its runtime directory on `load_state`/`initialize`? The apptainer test in CI answers this;
    if yes, the runtime must be copied to `$TMPDIR` at start (cost: size of the data directory).
 3. Which Python: both repos require >= 3.12; pybiogears CI uses 3.12. Pin 3.12 in the image unless Arnab prefers otherwise.
