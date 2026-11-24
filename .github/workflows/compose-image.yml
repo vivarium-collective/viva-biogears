@@ -61,7 +61,8 @@ jobs:
 
       - name: The vendored runner is compose-api's release file
         run: |
-          read -r tag path sha < <(awk -F': ' '/^(tag|path|sha256):/ {printf "%s ", $2}' docker/runner.source)
+          field() { sed -n "s/^$1: //p" docker/runner.source; }
+          tag=$(field tag); path=$(field path); sha=$(field sha256)
           curl -fsSL "https://raw.githubusercontent.com/biosimulations/compose-api/$tag/$path" -o /tmp/runner.upstream.py
           echo "$sha  /tmp/runner.upstream.py" | sha256sum -c -
           cmp /tmp/runner.upstream.py docker/runner.py
