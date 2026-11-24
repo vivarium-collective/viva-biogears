@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   build-test-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # not -latest (now 26.04): apptainer 1.3.6 needs libfuse3-3, which 26.04 does not have
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v6
