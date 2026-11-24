@@ -2,6 +2,8 @@
 
 A [process-bigraph](https://github.com/vivarium-collective/process-bigraph) wrapper that drives the **real** [BioGears](https://github.com/BioGearsEngine/core) physiology engine (8.2.0). BioGears runs as a time-stepped `Process`: interventions are input ports, vital signs are output ports, and simulations are ordinary `process_bigraph.Composite` documents. Nothing is reimplemented or mocked: every number comes from BioGears' C++ engine through [pybiogears](https://github.com/vivarium-collective/pybiogears).
 
+viva-biogears is the general-purpose mechanism for running BioGears from process-bigraph. [inflect-sim-core](https://github.com/INFLECT-Praenora/inflect-sim-core), the INFLECT (ARPA-H CIRCLE) simulation-core, builds its BioGears composites on it.
+
 Besides vital signs, hemorrhage and fluids, it exposes BioGears' whole circuits and its tissue-fluid model (endothelial leak, oncotic pressure, albumin and an active lymph system).
 
 ## Status
