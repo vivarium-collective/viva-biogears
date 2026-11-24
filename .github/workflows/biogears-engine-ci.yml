@@ -147,16 +147,11 @@ jobs:
       - name: DIAGNOSTIC probe (temporary)
         run: |
           cd "$BIOGEARS_RUNTIME"
-          for i in 1 2 3 4 5 6; do
-            for v in A B; do
-              PYTHONPATH="$GITHUB_WORKSPACE" BIOGEARS_RUNTIME="$BIOGEARS_RUNTIME" \
-                "$GITHUB_WORKSPACE/.venv/bin/python" "$GITHUB_WORKSPACE/.github/scripts/probe_isolated.py" $v 2>&1 | grep -E "maxrel|Error" || true
-            done
-          done
-          cd "$GITHUB_WORKSPACE"
-          for i in 1 2 3; do
-            .venv/bin/python -m pytest tests/test_treatment.py::test_scheduled_infusions_equal_a_direct_engine -q -p no:cacheprovider 2>&1 | tail -2
-          done
+          export PYTHONPATH="$GITHUB_WORKSPACE"
+          probe() { "$GITHUB_WORKSPACE/.venv/bin/python" "$GITHUB_WORKSPACE/.github/scripts/probe_isolated.py" "$1" 2>&1 | grep -E "maxrel|Error" || echo "$1 FAILED TO RUN"; }
+          export -f probe
+          export GITHUB_WORKSPACE
+          { for i in $(seq 24); do echo B; done; for i in $(seq 12); do echo A; done; } | xargs -P4 -I{} bash -c 'probe {}'
 
       # A skipped engine test proves nothing about the engine, so skips fail the
       # run. Allowed: the template test that skips when no composite-state
