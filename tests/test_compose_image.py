@@ -1,0 +1,113 @@
+"""The compose-api image's contract (docs/design/prebuilt-image.md), against the real BioGears engine; nothing is mocked.
+
+What is exercised is docker/compose-entrypoint.sh + the vendored docker/runner.py (compose-api 0.7.102's generic runner)
++ viva_biogears, in the interpreter running the tests. The image itself (Docker/Apptainer, process-bigraph 1.11.1) is
+checked by .github/workflows/compose-image.yml. Each test names the proposition it would falsify.
+"""
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from viva_biogears.runtime import runtime_dir
+
+DOCKER = Path(__file__).resolve().parents[1] / "docker"
+ENTRYPOINT = DOCKER / "compose-entrypoint.sh"
+RUNNER = DOCKER / "runner.py"
+
+
+def _load(name):
+    spec = importlib.util.spec_from_file_location(name, DOCKER / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+make_document = _load("make_document").make_document
+check_results = _load("check_results").check
+
+
+def _job(entry, *args, runtime, tmp_path, check=True):
+    """compose-api's job command, `<entry> run <doc> -o <out> -n <t>`, with a runtime directory and a scratch TMPDIR."""
+    doc, out = tmp_path / "doc.pbg", tmp_path / "output"
+    doc.write_text(json.dumps(make_document()))
+    tmp = tmp_path / "tmp"
+    tmp.mkdir(exist_ok=True)
+    env = {**os.environ, "BIOGEARS_RUNTIME": str(runtime), "COMPOSE_RUNNER": str(RUNNER), "COMPOSE_PYTHON": sys.executable,
+           "TMPDIR": str(tmp)}
+    cmd = [*entry, "run", str(doc), "-o", str(out), "-n", "10", *args]
+    return subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=300), out, tmp
+
+
+@pytest.fixture(scope="module")
+def read_only_runtime(tmp_path_factory):
+    """A copy of the BioGears runtime that nothing can write into: the image's filesystem, as seen by the engine."""
+    copy = tmp_path_factory.mktemp("ro") / "runtime"
+    shutil.copytree(runtime_dir(), copy)
+    for path in [copy, *copy.rglob("*")]:
+        if not path.is_symlink():
+            path.chmod(path.stat().st_mode & ~(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH))
+    yield copy
+    for path in [copy, *copy.rglob("*")]:
+        if not path.is_symlink():
+            path.chmod(path.stat().st_mode | stat.S_IWUSR)
+
+
+def test_vendored_runner_is_compose_apis_file():
+    """Falsified if docker/runner.py is edited (or re-pinned) without docker/runner.sha256: the image must carry
+    exactly the release file compose-api's cluster contract was written against."""
+    expected = (DOCKER / "runner.sha256").read_text().split()[0]
+    assert hashlib.sha256(RUNNER.read_bytes()).hexdigest() == expected
+
+
+def test_document_resolves_in_the_runners_plain_core():
+    """Falsified if the document uses a bare `local:Name` address: the runner's core is a plain allocate_core(),
+    where only `local:!module.Class` resolves, so compose-api would fail with 'no link found at address'."""
+    from bigraph_schema.protocols import unresolvable_addresses
+    from process_bigraph import allocate_core
+    assert unresolvable_addresses(make_document(), allocate_core()) == []
+
+
+def test_job_command_runs_the_engine_on_a_read_only_runtime(read_only_runtime, tmp_path):
+    """Falsified if the job command fails, the engine does not advance, a vital is not finite, or the hemorrhage
+    does not lower blood volume, with the BioGears runtime directory not writable (the image under Apptainer)."""
+    done, out, _ = _job(["bash", str(ENTRYPOINT)], runtime=read_only_runtime, tmp_path=tmp_path)
+    assert done.returncode == 0, done.stderr[-2000:]
+    summary = check_results(out)
+    assert summary["t_end"] == 10.0 and summary["rows"] == 11
+
+
+def test_engine_alone_cannot_use_a_read_only_runtime(read_only_runtime, tmp_path):
+    """Falsified if BioGears/pybiogears stop writing into the runtime directory. Then the scratch runtime in the
+    entrypoint is unnecessary and should be removed: this test is the reason it exists (pybiogears writes its
+    action/condition/configuration files into the engine's working directory = the runtime)."""
+    doc = tmp_path / "doc.pbg"
+    doc.write_text(json.dumps(make_document()))
+    env = {**os.environ, "BIOGEARS_RUNTIME": str(read_only_runtime)}
+    done = subprocess.run([sys.executable, str(RUNNER), "run", str(doc), "-o", str(tmp_path / "out"), "-n", "10"],
+                          env=env, capture_output=True, text=True, timeout=300)
+    assert done.returncode != 0
+
+
+def test_entrypoint_leaves_nothing_in_tmp(read_only_runtime, tmp_path):
+    """Falsified if the per-job scratch directory survives the run: compose-api puts TMPDIR on the node's disk, and a
+    leaked directory per job fills it."""
+    done, _, tmp = _job(["bash", str(ENTRYPOINT)], runtime=read_only_runtime, tmp_path=tmp_path)
+    assert done.returncode == 0, done.stderr[-2000:]
+    assert list(tmp.iterdir()) == []
+
+
+def test_entrypoint_passes_the_runners_failure_through(read_only_runtime, tmp_path):
+    """Falsified if a failing run exits 0: compose-api would record a failed simulation as complete."""
+    env = {**os.environ, "BIOGEARS_RUNTIME": str(read_only_runtime), "COMPOSE_RUNNER": str(RUNNER),
+           "COMPOSE_PYTHON": sys.executable, "TMPDIR": str(tmp_path)}
+    done = subprocess.run(["bash", str(ENTRYPOINT), "run", str(tmp_path / "missing.pbg"), "-o", str(tmp_path / "o"), "-n", "1"],
+                          env=env, capture_output=True, text=True, timeout=120)
+    assert done.returncode != 0

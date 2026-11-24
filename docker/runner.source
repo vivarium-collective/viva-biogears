@@ -1,0 +1,5 @@
+repository: biosimulations/compose-api
+tag: 0.7.102
+path: compose_api/environments/runner.py
+sha256: 0907a23a3494f2c496c60b62a4649055ea6ce5415fc917a70e4a46adfcc9ef06
+note: byte-for-byte copy; it is an internal module of compose-api, not a versioned API. The stable contract is its command line (runtime contract 2). Re-pin by copying the file at a newer release tag and updating this file and runner.sha256.

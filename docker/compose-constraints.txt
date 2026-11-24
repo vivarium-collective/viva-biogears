@@ -1,0 +1,5 @@
+# The core compose-api's composed environments run (0.7.102: process-bigraph 1.11.1, bigraph-schema 1.8.3), so the
+# vendored runner is exercised against the engine it was written for. viva-biogears accepts these
+# (process-bigraph>=1.10.1, bigraph-schema>=1.8.3,<1.8.4).
+process-bigraph==1.11.1
+bigraph-schema==1.8.3
