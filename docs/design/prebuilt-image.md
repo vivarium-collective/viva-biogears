@@ -107,8 +107,8 @@ is confirmed with Alex by that session before it starts. The registered environm
 
 Per compose-api's code: every run is a batch SLURM job (no live session), 2 CPU / 8 GB per job, simulated time
 capped at 1,000 s (24 h with the long-runs role), results when the job ends, container start-up on every run.
-BioGears runs about real-time-multiple fast enough for short runs; 48 h sepsis arms (about 8 h wall each) do not fit
-12 h wall comfortably. The trial documents what actually happens.
+This repo's McDaniel 2019 sepsis arms simulate 48 h (about 8 h wall each, per `CURRENT.md`), which exceeds the 24 h
+simulated-time cap even with the long-runs role. The trial starts with short runs and documents what actually happens.
 
 ## Open questions
 
