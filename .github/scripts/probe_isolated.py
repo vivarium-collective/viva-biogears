@@ -3,7 +3,7 @@ A = both engines in one fresh process (current test); B = process engine in one 
 import multiprocessing, sys, os
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
-sys.path.insert(0, os.path.join(os.getcwd(), "tests"))
+sys.path.insert(0, os.path.join(os.environ["GITHUB_WORKSPACE"], "tests"))
 from circuit_helpers import direct, direct_values, flat, make, run
 from viva_biogears.modules.treatment import compound_infusion_xml, substance_infusion_xml
 PIP = {"hour": 1 / 60, "compound": "PiperacillinTazobactam", "bag_volume_mL": 20.0, "rate_mL_per_min": 0.667}
