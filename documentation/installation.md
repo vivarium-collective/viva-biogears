@@ -19,10 +19,12 @@ Clone viva-biogears next to pybiogears:
 git clone https://github.com/vivarium-collective/viva-biogears.git
 cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install -e '.[dev,engine]'
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install '.[dev,engine]'
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q                # real engine; about 15 min
 ```
+
+Install without `-e` to run the tests: process-bigraph finds `local:<module>.<Class>` classes through installed distributions, which list no editable package; `tests/test_compose_image.py` skips its engine tests on an editable install.
 
 The `engine` extra builds pybiogears from GitHub at the commit this repository pins and
 is tested with (`pyproject.toml`). Run the install again when that pin changes: its

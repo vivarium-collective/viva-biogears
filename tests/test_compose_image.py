@@ -67,14 +67,52 @@ def test_vendored_runner_is_compose_apis_file():
     assert hashlib.sha256(RUNNER.read_bytes()).hexdigest() == expected
 
 
+# The runner's plain core (`allocate_core()`) finds classes through `importlib.metadata.packages_distributions()`, which
+# lists no editable package, so `local:<module>.<Class>` resolves only when viva-biogears is installed normally, as in
+# the image. biogears-engine-ci installs it that way; workspace-ci (generated from viva-template) installs `-e`.
+import importlib.metadata  # noqa: E402
+
+discoverable = pytest.mark.skipif("viva_biogears" not in importlib.metadata.packages_distributions(),
+                                  reason="viva_biogears is an editable install; install it without -e (README.md)")
+
+
+def test_portable_address_check_accepts_only_plain_dotted_local_paths():
+    """Falsified if the check in make_document.py lets through the `local:!` form (compose-api refuses it), a bare
+    `local:Name` (the runner's plain core cannot resolve it) or a malformed path."""
+    portable = _load("make_document")._portable
+    assert portable("local:viva_biogears.processes.biogears.BioGearsProcess")
+    assert portable("local:process_bigraph.emitter.RAMEmitter")
+    for bad in ["local:!viva_biogears.processes.biogears.BioGearsProcess", "local:BioGearsProcess", "local:.", "local:a.",
+                "local:.C", "local:a.!b", "python:a.B", "local:", ""]:
+        assert not portable(bad), bad
+
+
+@discoverable
 def test_document_resolves_in_the_runners_plain_core():
     """Falsified if the document uses a bare `local:Name` address: the runner's core is a plain allocate_core(),
-    where only `local:!module.Class` resolves, so compose-api would fail with 'no link found at address'."""
+    where a bare name does not resolve, so compose-api would fail with 'no link found at address'."""
     from bigraph_schema.protocols import unresolvable_addresses
     from process_bigraph import allocate_core
     assert unresolvable_addresses(make_document(), allocate_core()) == []
 
 
+def test_document_addresses_are_the_form_compose_api_admits():
+    """Falsified if any address is the `local:!module.Class` form: compose-api's registry validation refuses it
+    (compose_api/registry/validation.py, "imports arbitrary modules"), even for a prebuilt image, so the document would be
+    rejected at admission however well it runs. Every address must be `local:<module>.<Class>`."""
+    def addresses(node):
+        if isinstance(node, dict):
+            if isinstance(node.get("address"), str):
+                yield node["address"]
+            for value in node.values():
+                yield from addresses(value)
+    found = list(addresses(make_document()))
+    assert found, "the document has no addresses"
+    assert [a for a in found if a.startswith("local:!")] == []
+    assert all(a.startswith("local:") and "." in a.removeprefix("local:") for a in found), found
+
+
+@discoverable
 def test_job_command_runs_the_engine_on_a_read_only_runtime(read_only_runtime, tmp_path):
     """Falsified if the job command fails, the engine does not advance, a vital is not finite, or the hemorrhage
     does not lower blood volume, with the BioGears runtime directory not writable (the image under Apptainer)."""
@@ -96,6 +134,7 @@ def test_engine_alone_cannot_use_a_read_only_runtime(read_only_runtime, tmp_path
     assert done.returncode != 0
 
 
+@discoverable
 def test_entrypoint_leaves_nothing_in_tmp(read_only_runtime, tmp_path):
     """Falsified if the per-job scratch directory survives the run: compose-api puts TMPDIR on the node's disk, and a
     leaked directory per job fills it."""

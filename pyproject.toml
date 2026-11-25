@@ -43,7 +43,7 @@ dependencies = [
 workbench = ["vivarium-workbench==0.3.92"]
 dev = ["viva-biogears[workbench]", "pytest>=7.4"]
 # The real engine: pybiogears, built against a BioGears 8.2.0 install
-# (CMAKE_PREFIX_PATH=<install> uv pip install -e '.[engine]'), at the commit this
+# (CMAKE_PREFIX_PATH=<install> uv pip install '.[engine]'), at the commit this
 # repo is tested with.
 engine = ["pybiogears @ git+https://github.com/vivarium-collective/pybiogears.git@01db2efc3db1aaae5a01cf8f1ccef725c60d0c30"]
 cli = ["typer", "rich"]
