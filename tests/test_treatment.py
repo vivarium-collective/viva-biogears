@@ -5,11 +5,15 @@ Oracle: a pybiogears engine driven directly with the same actions at the same ti
 then the guards the module promises (one infusion per compound or substance).
 
 The two oracle comparisons run in a fresh Python process (``isolated``), with the oracle
-engine created before the process runs. Once drugs are infused, engines in one Python
-process can differ by ~5e-6 depending on what earlier engines in that process did: an
-engine created while another had already advanced differed (piperacillin,
-norepinephrine), and the full test suite reproduced it where these tests alone did not.
-In the same process the comparison would test that BioGears effect, not the module."""
+engine created before the process runs, and compare at ``ORACLE_RTOL``, not bit-for-bit:
+BioGears 8.2.0 is not deterministic from run to run once drugs are infused. On Linux CI,
+identical runs ended on one of two trajectories that differ by 4.7275e-6 (relative) at most;
+4 of 36 probe pairs deviated, and 3 of those 24 pairs ran the process and the oracle in
+separate single-engine processes, so it is the engine, not the module or two engines sharing
+a process. (macOS: 0 of 8 deviated.) A bit-exact comparison therefore tested BioGears' noise
+and failed about one run in nine. An infusion sent a minute late (measured on macOS) moves
+the vitals by up to 0.62 (relative; 186 of 195 values beyond ORACLE_RTOL), so the comparison
+still catches a misplaced infusion."""
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
@@ -25,6 +29,7 @@ from viva_biogears.modules.treatment import (
 PIP = {"hour": 1 / 60, "compound": "PiperacillinTazobactam", "bag_volume_mL": 20.0, "rate_mL_per_min": 0.667}
 BOLUS = {"hour": 2 / 60, "compound": "Saline", "bag_volume_mL": 100.0, "rate_mL_per_min": 50.0}
 NOR = {"hour": 3 / 60, "substance": "Norepinephrine", "concentration_ug_per_mL": 14.0, "rate_mL_per_min": 1.0}
+ORACLE_RTOL = 1e-5  # 2x the largest run-to-run deviation measured on Linux CI (4.7275e-6)
 
 
 def isolated(fn):
@@ -63,7 +68,7 @@ def _vasopressor_setpoint():
 def test_scheduled_infusions_equal_a_direct_engine():
     """Falsifies: an infusion sent at the wrong time or with the wrong amounts, readings misplaced."""
     process, oracle, treatment = isolated(_scheduled_infusions)
-    np.testing.assert_allclose(process, oracle, rtol=1e-12)
+    np.testing.assert_allclose(process, oracle, rtol=ORACLE_RTOL)
     assert treatment["Piperacillin"]["plasma_concentration_ug_per_mL"] > 10
     assert treatment["Norepinephrine"]["blood_concentration_ug_per_mL"] > 0
 
