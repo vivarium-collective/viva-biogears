@@ -31,6 +31,9 @@ def _load(name):
 
 
 make_document = _load("make_document").make_document
+# The composites compose-api can be given: the default hemorrhage, and a sepsis slice from the shipped 44 h infection state.
+DOCUMENTS = [("hemorrhage", {}), ("sepsis", {"state_file": "StandardMale@severe-infection-44h.xml"})]
+BY_COMPOSITE = pytest.mark.parametrize("composite, parameters", DOCUMENTS, ids=[d[0] for d in DOCUMENTS])
 check_results = _load("check_results").check
 
 
@@ -88,15 +91,17 @@ def test_portable_address_check_accepts_only_plain_dotted_local_paths():
 
 
 @discoverable
-def test_document_resolves_in_the_runners_plain_core():
+@BY_COMPOSITE
+def test_document_resolves_in_the_runners_plain_core(composite, parameters):
     """Falsified if the document uses a bare `local:Name` address: the runner's core is a plain allocate_core(),
     where a bare name does not resolve, so compose-api would fail with 'no link found at address'."""
     from bigraph_schema.protocols import unresolvable_addresses
     from process_bigraph import allocate_core
-    assert unresolvable_addresses(make_document(), allocate_core()) == []
+    assert unresolvable_addresses(make_document(composite, **parameters), allocate_core()) == []
 
 
-def test_document_addresses_are_the_form_compose_api_admits():
+@BY_COMPOSITE
+def test_document_addresses_are_the_form_compose_api_admits(composite, parameters):
     """Falsified if any address is the `local:!module.Class` form: compose-api's registry validation refuses it
     (compose_api/registry/validation.py, "imports arbitrary modules"), even for a prebuilt image, so the document would be
     rejected at admission however well it runs. Every address must be `local:<module>.<Class>`."""
@@ -106,7 +111,7 @@ def test_document_addresses_are_the_form_compose_api_admits():
                 yield node["address"]
             for value in node.values():
                 yield from addresses(value)
-    found = list(addresses(make_document()))
+    found = list(addresses(make_document(composite, **parameters)))
     assert found, "the document has no addresses"
     assert [a for a in found if a.startswith("local:!")] == []
     assert all(a.startswith("local:") and "." in a.removeprefix("local:") for a in found), found
