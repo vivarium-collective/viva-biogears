@@ -104,12 +104,14 @@ jobs:
           echo "::notice title=BioGears built from source::$(( (SECONDS - start) / 60 )) min"
 
       # Never `uv sync`: the engine extra builds pybiogears against the install above.
+      # Not `-e`: process-bigraph discovers `local:<module>.<Class>` classes through the installed
+      # distributions, which list no editable package (tests/test_compose_image.py).
       # --refresh-package: setup-uv restores uv's cache, which would otherwise reuse a
       # pybiogears built against an earlier BioGears install.
       - name: Install viva-biogears
         run: |
           uv venv --python "$PYTHON_VERSION" .venv
-          CMAKE_PREFIX_PATH="$BIOGEARS_PREFIX" uv pip install --python .venv -e ".[dev,engine]" --group docs \
+          CMAKE_PREFIX_PATH="$BIOGEARS_PREFIX" uv pip install --python .venv ".[dev,engine]" --group docs \
             --refresh-package pybiogears
           .venv/bin/python - <<'EOF'
           import importlib.metadata as md, json

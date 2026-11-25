@@ -67,12 +67,37 @@ def test_vendored_runner_is_compose_apis_file():
     assert hashlib.sha256(RUNNER.read_bytes()).hexdigest() == expected
 
 
+def test_package_is_discoverable_as_in_the_image():
+    """Falsified if viva_biogears is an editable install: the runner's plain core (`allocate_core()`) finds classes
+    through `importlib.metadata.packages_distributions()`, which lists no editable package, so `local:<module>.<Class>`
+    would not resolve. The image installs the package normally; run these tests the same way
+    (`uv pip install '.[dev,engine]'`, not `-e`)."""
+    import importlib.metadata
+    assert "viva_biogears" in importlib.metadata.packages_distributions()
+
+
 def test_document_resolves_in_the_runners_plain_core():
     """Falsified if the document uses a bare `local:Name` address: the runner's core is a plain allocate_core(),
-    where only `local:!module.Class` resolves, so compose-api would fail with 'no link found at address'."""
+    where a bare name does not resolve, so compose-api would fail with 'no link found at address'."""
     from bigraph_schema.protocols import unresolvable_addresses
     from process_bigraph import allocate_core
     assert unresolvable_addresses(make_document(), allocate_core()) == []
+
+
+def test_document_addresses_are_the_form_compose_api_admits():
+    """Falsified if any address is the `local:!module.Class` form: compose-api's registry validation refuses it
+    (compose_api/registry/validation.py, "imports arbitrary modules"), even for a prebuilt image, so the document would be
+    rejected at admission however well it runs. Every address must be `local:<module>.<Class>`."""
+    def addresses(node):
+        if isinstance(node, dict):
+            if isinstance(node.get("address"), str):
+                yield node["address"]
+            for value in node.values():
+                yield from addresses(value)
+    found = list(addresses(make_document()))
+    assert found, "the document has no addresses"
+    assert [a for a in found if a.startswith("local:!")] == []
+    assert all(a.startswith("local:") and "." in a.removeprefix("local:") for a in found), found
 
 
 def test_job_command_runs_the_engine_on_a_read_only_runtime(read_only_runtime, tmp_path):

@@ -42,10 +42,12 @@ Clone viva-biogears next to pybiogears:
 git clone https://github.com/vivarium-collective/viva-biogears.git
 cd viva-biogears
 uv venv --python 3.12 .venv && source .venv/bin/activate
-CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install -e '.[dev,engine]'   # engine: pybiogears at the pinned commit
+CMAKE_PREFIX_PATH=~/biogears-8.2.0-install uv pip install '.[dev,engine]'   # engine: pybiogears at the pinned commit; not -e (see below)
 export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q        # ~15 min, real engine
 ```
+
+Install without `-e` to run the tests: `tests/test_compose_image.py` needs viva-biogears discoverable the way it is in the compose-api image, and process-bigraph finds classes through installed distributions, which list no editable package. Reinstall after editing the code (or use `-e` while editing and a regular install to run that file).
 
 `dev` includes the `workbench` extra (the web dashboard). To use viva-biogears from another project, depend on `viva-biogears`, plus `viva-biogears[engine]` for the real engine: the workbench isn't a core dependency, so that project keeps its own workbench version.
 

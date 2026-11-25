@@ -1,7 +1,8 @@
 """Write a short, real BioGears document for compose-api's runner: ``make_document.py OUT.pbg [--rate R]``.
 
-The document is the ``biogears_hemorrhage`` composite with portable addresses (``local:!<module>.<Class>``): the
-runner's core is a plain ``allocate_core()``, so a bare ``local:BioGearsProcess`` would not resolve there.
+The document is the ``biogears_hemorrhage`` composite with portable addresses (``local:<module>.<Class>``): the
+runner's core is a plain ``allocate_core()``, so a bare ``local:BioGearsProcess`` would not resolve there. compose-api
+admits only this form: its registry validation refuses ``local:!<module>.<Class>`` (it imports arbitrary modules).
 """
 from __future__ import annotations
 
@@ -16,8 +17,8 @@ from viva_biogears.core import build_core
 from viva_biogears.processes.biogears import BioGearsProcess
 
 PORTABLE = {
-    "local:BioGearsProcess": f"local:!{BioGearsProcess.__module__}.{BioGearsProcess.__name__}",
-    "local:RAMEmitter": f"local:!{RAMEmitter.__module__}.{RAMEmitter.__name__}",
+    "local:BioGearsProcess": f"local:{BioGearsProcess.__module__}.{BioGearsProcess.__name__}",
+    "local:RAMEmitter": f"local:{RAMEmitter.__module__}.{RAMEmitter.__name__}",
 }
 
 
@@ -28,10 +29,16 @@ def make_document(**parameters: object) -> dict:
     for bare, portable in PORTABLE.items():
         text = text.replace(f'"{bare}"', f'"{portable}"')
     document = {"state": json.loads(text)}
-    leftover = [a for a in _addresses(document) if a.startswith("local:") and not a.startswith("local:!")]
+    leftover = [a for a in _addresses(document) if not _portable(a)]
     if leftover:
-        raise ValueError(f"addresses that only resolve in viva_biogears' own core: {leftover}")
+        raise ValueError(f"addresses that are not a plain local:<module>.<Class> (bare ones only resolve in viva_biogears' own core, `local:!` is refused by compose-api): {leftover}")
     return document
+
+
+def _portable(address: str) -> bool:
+    """``local:<module>.<Class>``: dotted, and not the ``local:!`` form."""
+    module_class = address.removeprefix("local:")
+    return address.startswith("local:") and not module_class.startswith("!") and "." in module_class
 
 
 def _addresses(node: object) -> list[str]:
