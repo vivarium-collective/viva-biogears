@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 from process_bigraph.emitter import RAMEmitter
@@ -35,10 +36,12 @@ def make_document(**parameters: object) -> dict:
     return document
 
 
+_PORTABLE = re.compile(r"local:[A-Za-z_]\w*(\.[A-Za-z_]\w*)+")
+
+
 def _portable(address: str) -> bool:
-    """``local:<module>.<Class>``: dotted, and not the ``local:!`` form."""
-    module_class = address.removeprefix("local:")
-    return address.startswith("local:") and not module_class.startswith("!") and "." in module_class
+    """``local:<module>.<Class>``: a dotted Python path, and not the ``local:!`` form."""
+    return _PORTABLE.fullmatch(address) is not None
 
 
 def _addresses(node: object) -> list[str]:

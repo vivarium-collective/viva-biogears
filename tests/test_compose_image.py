@@ -76,6 +76,17 @@ discoverable = pytest.mark.skipif("viva_biogears" not in importlib.metadata.pack
                                   reason="viva_biogears is an editable install; install it without -e (README.md)")
 
 
+def test_portable_address_check_accepts_only_plain_dotted_local_paths():
+    """Falsified if the check in make_document.py lets through the `local:!` form (compose-api refuses it), a bare
+    `local:Name` (the runner's plain core cannot resolve it) or a malformed path."""
+    portable = _load("make_document")._portable
+    assert portable("local:viva_biogears.processes.biogears.BioGearsProcess")
+    assert portable("local:process_bigraph.emitter.RAMEmitter")
+    for bad in ["local:!viva_biogears.processes.biogears.BioGearsProcess", "local:BioGearsProcess", "local:.", "local:a.",
+                "local:.C", "local:a.!b", "python:a.B", "local:", ""]:
+        assert not portable(bad), bad
+
+
 @discoverable
 def test_document_resolves_in_the_runners_plain_core():
     """Falsified if the document uses a bare `local:Name` address: the runner's core is a plain allocate_core(),
