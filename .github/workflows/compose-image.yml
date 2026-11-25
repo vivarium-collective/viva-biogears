@@ -1,0 +1,148 @@
+# Container image for running BioGears documents on compose-api (SLURM + Apptainer). Design: docs/design/prebuilt-image.md.
+# Not generated from viva-template (build-and-push.yml is; it builds ./Dockerfile for the workbench).
+#
+# Builds docker/compose.Dockerfile (linux/amd64), then checks it before pushing:
+#   0. the vendored runner is compose-api's file at the pinned release tag;
+#   1. docker, as a non-root user: a short real biogears_hemorrhage document through the entrypoint, results checked;
+#   2. the image has process-bigraph 1.11.1 (what compose-api's composed environments run) and no vivarium_workbench;
+#   3. apptainer, as a non-root user, the compose-api job command (--compat --workdir --bind /experiment).
+# On main it pushes ghcr.io/<owner>/viva-biogears-compose:{sha-<short>,latest} and prints the digest in the job summary.
+name: Compose image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - docker/**
+      - .github/workflows/compose-image.yml
+      - viva_biogears/**
+      - pyproject.toml
+  push:
+    branches: [main]
+    paths:
+      - docker/**
+      - .github/workflows/compose-image.yml
+      - viva_biogears/**
+      - pyproject.toml
+
+concurrency:
+  group: compose-image-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-24.04  # not -latest (now 26.04): apptainer 1.3.6 needs libfuse3-3, which 26.04 does not have
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Pins and image name
+        id: pin
+        run: |
+          # The pybiogears commit this repo is tested with (the engine extra), as biogears-engine-ci.yml reads it.
+          sha=$(python3 - <<'PY'
+          import re, tomllib
+          with open("pyproject.toml", "rb") as f:
+              (req,) = tomllib.load(f)["project"]["optional-dependencies"]["engine"]
+          m = re.fullmatch(r"pybiogears @ git\+https://github\.com/.+?\.git@([0-9a-f]{40})", req)
+          assert m, f"engine extra must pin pybiogears to a full commit: {req!r}"
+          print(m[1])
+          PY
+          )
+          {
+            echo "pybiogears=$sha"
+            echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/viva-biogears-compose"
+            echo "tag=sha-${GITHUB_SHA::7}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: The vendored runner is compose-api's release file
+        run: |
+          field() { sed -n "s/^$1: //p" docker/runner.source; }
+          tag=$(field tag); path=$(field path); sha=$(field sha256)
+          curl -fsSL "https://raw.githubusercontent.com/biosimulations/compose-api/$tag/$path" -o /tmp/runner.upstream.py
+          echo "$sha  /tmp/runner.upstream.py" | sha256sum -c -
+          cmp /tmp/runner.upstream.py docker/runner.py
+
+      - name: Build (linux/amd64)
+        run: |
+          docker build -f docker/compose.Dockerfile \
+            --build-arg PYBIOGEARS_SHA="${{ steps.pin.outputs.pybiogears }}" \
+            --build-arg VIVA_BIOGEARS_SHA="$GITHUB_SHA" \
+            -t "${{ steps.pin.outputs.name }}:${{ steps.pin.outputs.tag }}" .
+          docker image ls "${{ steps.pin.outputs.name }}"
+
+      - name: Job command in docker, as a non-root user
+        run: |
+          set -euo pipefail
+          IMG="${{ steps.pin.outputs.name }}:${{ steps.pin.outputs.tag }}"
+          mkdir -p exp && chmod 777 exp
+          U="$(id -u):$(id -g)"; test "$(id -u)" != 0
+          # The document comes from the image's own viva_biogears, so what is run is what the image contains.
+          docker run --rm --user "$U" -v "$PWD/docker:/work:ro" -v "$PWD/exp:/experiment" \
+            --entrypoint /opt/venv/bin/python "$IMG" /work/make_document.py /experiment/experiment.pbg
+          docker run --rm --user "$U" -v "$PWD/exp:/experiment" "$IMG" \
+            run /experiment/experiment.pbg -o /experiment/output -n 10
+          python3 docker/check_results.py exp/output
+
+      - name: Core version and no dashboard in the image
+        run: |
+          IMG="${{ steps.pin.outputs.name }}:${{ steps.pin.outputs.tag }}"
+          docker run -i --rm --entrypoint /opt/venv/bin/python "$IMG" - <<'PY'
+          import importlib.metadata as md
+          assert md.version("process-bigraph") == "1.11.1", md.version("process-bigraph")
+          assert md.version("bigraph-schema") == "1.8.3", md.version("bigraph-schema")
+          try:
+              import vivarium_workbench  # noqa: F401
+          except ImportError:
+              print("process-bigraph", md.version("process-bigraph"), "| no vivarium_workbench: OK")
+          else:
+              raise SystemExit("vivarium_workbench is installed in the image")
+          PY
+
+      - uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.3.6
+
+      # compose_api/simulation/job_script.py (0.7.102): singularity run --compat --workdir <w> --bind <dir>:/experiment
+      # <image> run /experiment/<doc> -o <out> -n <t>. Run as the (non-root) runner user: root has no tmpfs limit and
+      # hid a failure in compose-api's own checks.
+      - name: compose-api job contract (apptainer --compat, non-root)
+        run: |
+          set -euo pipefail
+          test "$(id -u)" != 0
+          IMG="${{ steps.pin.outputs.name }}:${{ steps.pin.outputs.tag }}"
+          apptainer build image.sif "docker-daemon://$IMG"
+          mkdir -p exp2 work
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/docker:/work:ro" -v "$PWD/exp2:/experiment" \
+            --entrypoint /opt/venv/bin/python "$IMG" /work/make_document.py /experiment/experiment.pbg
+          apptainer run --compat --workdir "$PWD/work" --bind "$PWD/exp2:/experiment" image.sif \
+            run /experiment/experiment.pbg -o /experiment/output -n 10
+          python3 docker/check_results.py exp2/output
+          rm -f image.sif
+
+      - name: Log in to GHCR
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push and record the digest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          IMG="${{ steps.pin.outputs.name }}"
+          docker tag "$IMG:${{ steps.pin.outputs.tag }}" "$IMG:latest"
+          docker push "$IMG:${{ steps.pin.outputs.tag }}"
+          docker push "$IMG:latest"
+          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMG:${{ steps.pin.outputs.tag }}")
+          {
+            echo "### viva-biogears-compose image"
+            echo "Register by digest: \`$digest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=image digest::$digest"
