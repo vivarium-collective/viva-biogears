@@ -24,7 +24,7 @@ export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q                # real engine; about 15 min
 ```
 
-Install without `-e` to run the tests: process-bigraph finds `local:<module>.<Class>` classes through installed distributions, which list no editable package (`tests/test_compose_image.py` checks this).
+Install without `-e` to run the tests: process-bigraph finds `local:<module>.<Class>` classes through installed distributions, which list no editable package; `tests/test_compose_image.py` skips its engine tests on an editable install.
 
 The `engine` extra builds pybiogears from GitHub at the commit this repository pins and
 is tested with (`pyproject.toml`). Run the install again when that pin changes: its

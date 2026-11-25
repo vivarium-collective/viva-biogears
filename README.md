@@ -47,7 +47,7 @@ export BIOGEARS_RUNTIME=~/biogears-8.2.0-install/share/biogears/runtime
 python -m pytest -q        # ~15 min, real engine
 ```
 
-Install without `-e` to run the tests: `tests/test_compose_image.py` needs viva-biogears discoverable the way it is in the compose-api image, and process-bigraph finds classes through installed distributions, which list no editable package. Reinstall after editing the code (or use `-e` while editing and a regular install to run that file).
+Install without `-e` to run the tests: `tests/test_compose_image.py` skips its engine tests unless viva-biogears is discoverable the way it is in the compose-api image, and process-bigraph finds classes through installed distributions, which list no editable package. Reinstall after editing the code (or use `-e` while editing and a regular install to run that file).
 
 `dev` includes the `workbench` extra (the web dashboard). To use viva-biogears from another project, depend on `viva-biogears`, plus `viva-biogears[engine]` for the real engine: the workbench isn't a core dependency, so that project keeps its own workbench version.
 
