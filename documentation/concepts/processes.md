@@ -24,7 +24,8 @@ raises instead.
 
 The whole BioGears engine (every system is simulated every step), with the readings
 and setpoints of the modules listed in `modules` as its ports
-({doc}`modules`). Readings nest under each module's name; setpoints sit under one
+({doc}`modules`). Readings nest under each module's name, typed with their units when
+they have any (`overwrite[float[mmHg]]`, which bigraph-schema reads); setpoints sit under one
 `setpoints` input port (`setpoints/cardiovascular/hemorrhage_rate_mL_per_min`). The
 input and output top-level names are disjoint on purpose: process-bigraph projects
 `initial_state()` through both, so a shared name would copy readings into setpoints.

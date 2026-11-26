@@ -1,0 +1,174 @@
+"""The I/O schema of viva-biogears composites, as bigraph-schema process contracts.
+
+    python -m viva_biogears.schema           # (re)write the files in viva_biogears/data/schema/
+    python -m viva_biogears.schema --check   # exit 1 if they differ from the code
+
+Each schema is a ``bigraph_schema.contract.ProcessContract`` for the composite's
+``BioGearsModularProcess``:
+- ``face`` is the process's own ``interface()``: ``overwrite[float[<units>]]`` ports,
+  the form whose units bigraph-schema reads;
+- ``outputs`` / ``inputs`` / ``config`` say what each port and setting is (the BioGears
+  data request and its BioGears unit behind an output; the baseline and BioGears action
+  behind a setpoint).
+
+``<name>.contract.json`` is ``contract.to_dict()``, which process-bigraph tooling loads
+with ``ProcessContract(**json.load(f))``; ``<name>.md`` is a table view generated from
+the JSON. Building the sepsis composite reads its starting state's time, so generating
+needs the BioGears runtime (not the engine).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any, Callable
+
+from bigraph_schema.contract import ProcessContract
+
+#: Schema name -> the composite's BioGearsModularProcess config. The sepsis composite
+#: first: it is what the virtual patient and the McDaniel 2019 study run.
+SCHEMAS: dict[str, Callable[[], dict[str, Any]]] = {
+    "biogears_sepsis": lambda: _sepsis_config(),
+}
+
+SCHEMA_DIR = Path(__file__).parent / "data" / "schema"
+
+
+def _sepsis_config() -> dict[str, Any]:
+    from .composites.sepsis import biogears_sepsis
+    return biogears_sepsis(None)["biogears"]["config"]
+
+
+def contract(name: str) -> dict[str, Any]:
+    """The named composite process's contract, as a JSON-safe dict."""
+    from .core import build_core
+    from .processes import BioGearsModularProcess
+    from .runtime import BIOGEARS_VERSION
+    from .states import SAVE_CONFIG
+    from .processes._bridge import START_CONFIG
+
+    configured = SCHEMAS[name]()
+    process = BioGearsModularProcess(dict(configured), core=build_core())
+    modules = process._modules
+    outputs = {}
+    for path, i, negated in process._slots:
+        request = process._requests[i]
+        outputs["/".join(path)] = {"biogears_request": request.label(), "biogears_units": request.unit,
+                                   **({"negated": True} if negated else {})}
+    outputs["irreversible_state"] = {"description": "True once BioGears reports an irreversible state; "
+                                                    "the engine is not advanced after that."}
+    inputs = {f"setpoints/{m.name}/{port}": {"baseline": baseline, "biogears_actions": list(b.action_types)}
+              for m in modules for b in m.bindings for port, baseline in b.ports.items()}
+    keys = {"modules", *START_CONFIG, *SAVE_CONFIG, *(k for m in modules for k in m.params)}
+    return ProcessContract(
+        summary=f"BioGears {BIOGEARS_VERSION} modules: {', '.join(m.name for m in modules)}",
+        description="\n".join(f"{m.name}: {m.description.strip()}" for m in modules if m.description),
+        inputs=inputs,
+        outputs=outputs,
+        config={key: _as_configured(process.config_schema[key], configured, key) for key in sorted(keys)},
+        references=[f"BioGears {BIOGEARS_VERSION}: https://github.com/BioGearsEngine/core"],
+        face=process.interface(),
+    ).to_dict()
+
+
+def leaves(tree: dict[str, Any], prefix: tuple[str, ...] = ()):
+    """``(path, port type)`` for every port of a nested face."""
+    for key, value in tree.items():
+        if isinstance(value, dict) and "_type" not in value:
+            yield from leaves(value, prefix + (key,))
+        else:
+            yield "/".join(prefix + (key,)), value
+
+
+def _type(port_type: Any) -> str:
+    return port_type["_type"] if isinstance(port_type, dict) else str(port_type)
+
+
+def _as_configured(spec: Any, configured: dict[str, Any], key: str) -> dict[str, Any]:
+    """A config entry's schema with, as its default, the value the composite gives it (the
+    process's own default is e.g. no modules and no meals)."""
+    spec = dict(spec) if isinstance(spec, dict) else {"_type": spec}
+    if key in configured:
+        spec["_default"] = configured[key]
+    return spec
+
+
+def _cell(value: Any) -> str:
+    if isinstance(value, list) and len(json.dumps(value)) > 80:
+        return f"{len(value)} entries (in the JSON)"
+    text = value if isinstance(value, str) else json.dumps(value)
+    return text.replace("|", "\\|") if text != "" else "-"
+
+
+def render_json(data: dict[str, Any]) -> str:
+    return json.dumps(data, indent=1, sort_keys=True, allow_nan=False) + "\n"
+
+
+def render_markdown(name: str, data: dict[str, Any]) -> str:
+    """A table view of a contract dict (from the JSON, so both always agree)."""
+    face = data["face"]
+    lines = [f"# `{name}` I/O schema", "",
+             f"{data['summary']}. Generated by `python -m viva_biogears.schema` from the "
+             "process's interface and modules; do not edit by hand.", "",
+             f"## Outputs ({sum(1 for _ in leaves(face['outputs']))})", "",
+             "| port | type | BioGears request | BioGears unit |", "|---|---|---|---|"]
+    for path, port_type in leaves(face["outputs"]):
+        meaning = data["outputs"].get(path, {})
+        source = meaning.get("biogears_request") or meaning.get("description", "")
+        if meaning.get("negated"):
+            source += " (sign flipped)"
+        lines.append(f"| `{path}` | `{_type(port_type)}` | {_cell(source)} | {_cell(meaning.get('biogears_units', ''))} |")
+    lines += ["", f"## Inputs ({sum(1 for _ in leaves(face['inputs']))})", "",
+              "| port | type | baseline | BioGears action |", "|---|---|---|---|"]
+    for path, port_type in leaves(face["inputs"]):
+        meaning = data["inputs"].get(path, {})
+        lines.append(f"| `{path}` | `{_type(port_type)}` | {_cell(meaning.get('baseline', ''))} | "
+                     f"{_cell(', '.join(meaning.get('biogears_actions', [])))} |")
+    lines += ["", f"## Config ({len(data['config'])})", "", "| key | type | value in this composite |", "|---|---|---|"]
+    for key, spec in data["config"].items():
+        spec = spec if isinstance(spec, dict) else {"_type": spec}
+        lines.append(f"| `{key}` | {_cell(spec.get('_type', ''))} | {_cell(spec.get('_default', ''))} |")
+    return "\n".join(lines) + "\n"
+
+
+def render(name: str) -> dict[str, str]:
+    """File name -> content for one schema."""
+    data = contract(name)
+    return {f"{name}.contract.json": render_json(data), f"{name}.md": render_markdown(name, data)}
+
+
+def stale(directory: Path = SCHEMA_DIR) -> list[str]:
+    """Files in ``directory`` that are missing or differ from the code."""
+    return [file for name in SCHEMAS for file, text in render(name).items()
+            if not (directory / file).is_file() or (directory / file).read_text() != text]
+
+
+def write(directory: Path = SCHEMA_DIR) -> list[Path]:
+    directory.mkdir(parents=True, exist_ok=True)
+    written = []
+    for name in SCHEMAS:
+        for file, text in render(name).items():
+            (directory / file).write_text(text)
+            written.append(directory / file)
+    return written
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
+    parser.add_argument("--check", action="store_true", help="exit 1 if the files differ from the code")
+    parser.add_argument("--out", type=Path, default=SCHEMA_DIR)
+    args = parser.parse_args(argv)
+    if args.check:
+        files = stale(args.out)
+        for file in files:
+            print(f"stale: {args.out / file} (run: python -m viva_biogears.schema)", file=sys.stderr)
+        return 1 if files else 0
+    for path in write(args.out):
+        print(path)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,2393 @@
+{
+ "amendments": [],
+ "assumptions": [],
+ "config": {
+  "circuit_additions": {
+   "_default": {},
+   "_type": "map"
+  },
+  "conditions": {
+   "_default": {},
+   "_type": "map"
+  },
+  "hemorrhage_compartment": {
+   "_default": "RightLeg",
+   "_type": "string"
+  },
+  "infection_location": {
+   "_default": "Skin",
+   "_type": "string"
+  },
+  "infection_mic_mg_per_L": {
+   "_default": 16.0,
+   "_type": "float"
+  },
+  "iv_bag_volume_L": {
+   "_default": 10.0,
+   "_type": "float"
+  },
+  "iv_compound": {
+   "_default": "Saline",
+   "_type": "string"
+  },
+  "modules": {
+   "_default": [
+    "infection",
+    "nutrition",
+    "lymph",
+    "tissue_fluid",
+    "cardiovascular",
+    "treatment"
+   ],
+   "_type": "list[string]"
+  },
+  "nutrition_schedule": {
+   "_default": [
+    {
+     "hour": 1.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 2.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 3.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 4.0,
+     "nutrition": {
+      "Calcium": 0.5,
+      "Carbohydrate": 130.0,
+      "Fat": 27.0,
+      "Protein": 20.0,
+      "Sodium": 0.75,
+      "Water": 0.5
+     }
+    },
+    {
+     "hour": 5.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 6.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 7.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 8.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 9.0,
+     "nutrition": {
+      "Calcium": 0.5,
+      "Carbohydrate": 130.0,
+      "Fat": 27.0,
+      "Protein": 20.0,
+      "Sodium": 0.75,
+      "Water": 0.5
+     }
+    },
+    {
+     "hour": 10.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 11.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 12.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 13.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 14.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 15.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 16.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 17.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 18.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 19.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 20.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 21.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 22.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 23.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 24.0,
+     "nutrition": {
+      "Calcium": 0.5,
+      "Carbohydrate": 130.0,
+      "Fat": 27.0,
+      "Protein": 20.0,
+      "Sodium": 0.75,
+      "Water": 0.5
+     }
+    },
+    {
+     "hour": 25.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 26.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 27.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 28.0,
+     "nutrition": {
+      "Calcium": 0.5,
+      "Carbohydrate": 130.0,
+      "Fat": 27.0,
+      "Protein": 20.0,
+      "Sodium": 0.75,
+      "Water": 0.5
+     }
+    },
+    {
+     "hour": 29.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 30.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 31.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 32.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 33.0,
+     "nutrition": {
+      "Calcium": 0.5,
+      "Carbohydrate": 130.0,
+      "Fat": 27.0,
+      "Protein": 20.0,
+      "Sodium": 0.75,
+      "Water": 0.5
+     }
+    },
+    {
+     "hour": 34.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 35.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 36.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 37.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 38.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 39.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 40.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 41.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 42.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 43.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 44.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 45.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 46.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    },
+    {
+     "hour": 47.0,
+     "nutrition": {
+      "Water": 0.15
+     }
+    }
+   ],
+   "_type": "list"
+  },
+  "patient": {
+   "_default": "",
+   "_type": "string"
+  },
+  "patient_file": {
+   "_default": "",
+   "_type": "string"
+  },
+  "patient_table": {
+   "_default": "",
+   "_type": "string"
+  },
+  "runtime_dir": {
+   "_default": "",
+   "_type": "string"
+  },
+  "save_state_dir": {
+   "_default": "",
+   "_type": "string"
+  },
+  "save_state_name": {
+   "_default": "state",
+   "_type": "string"
+  },
+  "save_state_times_s": {
+   "_default": [],
+   "_type": "list[float]"
+  },
+  "state_file": {
+   "_default": "StandardMale@0s.xml",
+   "_type": "string"
+  },
+  "substance_table": {
+   "_default": "",
+   "_type": "string"
+  },
+  "time_step_s": {
+   "_default": 0.02,
+   "_type": "float"
+  },
+  "treatment_readouts": {
+   "_default": [],
+   "_type": "list[string]"
+  },
+  "treatment_schedule": {
+   "_default": [],
+   "_type": "list"
+  },
+  "vasopressor_concentration_ug_per_mL": {
+   "_default": 14.0,
+   "_type": "float"
+  },
+  "vasopressor_substance": {
+   "_default": "Norepinephrine",
+   "_type": "string"
+  }
+ },
+ "description": "infection: BioGears' acute inflammatory response (pathogens, immune cells, cytokines, nitric oxide, tissue integrity) and the clinical signs of sepsis; setpoint: infection severity (one-way).\nnutrition: Meals and drinks at scheduled times (nutrition_schedule); readings: stomach contents and the body's water balance.\nlymph: Lymph formation (13 tissue valves), the lymph pool, and its return to the vena cava. BioGears 8.2.0 has no compartment links for lymph, so these are circuit reads (pybiogears P5).\ntissue_fluid: Per-tissue extracellular/intracellular volumes, capillary filtration, endothelial resistance, plasma and interstitial oncotic pressures, interstitial pressure and albumin; whole-body fluid totals.\ncardiovascular: Hemodynamics plus pressure, volume and flows of 42 vascular compartments (central, cerebral, renal, peripheral); setpoints: a hemorrhage and an IV infusion.\ntreatment: Timed IV treatment (treatment_schedule): compound boluses and infusions (saline, antibiotics) and substance infusions; setpoint: a vasopressor infusion rate; readings: antibiotic activity and the treatment_readouts substances' concentrations.",
+ "face": {
+  "inputs": {
+   "setpoints": {
+    "cardiovascular": {
+     "hemorrhage_rate_mL_per_min": {
+      "_default": 0.0,
+      "_type": "overwrite[float]"
+     },
+     "iv_rate_mL_per_min": {
+      "_default": 0.0,
+      "_type": "overwrite[float]"
+     }
+    },
+    "infection": {
+     "infection_severity": {
+      "_default": 0.0,
+      "_type": "overwrite[float]"
+     }
+    },
+    "treatment": {
+     "vasopressor_rate_ug_per_min": {
+      "_default": 0.0,
+      "_type": "overwrite[float]"
+     }
+    }
+   }
+  },
+  "outputs": {
+   "cardiovascular": {
+    "central": {
+     "aorta": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "heart": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_atrium": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_heart": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_ventricle": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "myocardium": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "pericardium": {
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "pulmonary_arteries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "pulmonary_capillaries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "pulmonary_veins": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_atrium": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_heart": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_ventricle": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "vena_cava": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     }
+    },
+    "cerebral": {
+     "cerebral_arteries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "cerebral_capillaries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "cerebral_veins": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "neck_arteries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "neck_veins": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     }
+    },
+    "hemodynamics": {
+     "arterial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "blood_volume_mL": "overwrite[float[mL]]",
+     "cardiac_index_L_per_min_m2": "overwrite[float[L/min/m^2]]",
+     "cardiac_output_L_per_min": "overwrite[float[L/min]]",
+     "central_venous_pressure_mmHg": "overwrite[float[mmHg]]",
+     "cerebral_blood_flow_mL_per_min": "overwrite[float[mL/min]]",
+     "cerebral_perfusion_pressure_mmHg": "overwrite[float[mmHg]]",
+     "diastolic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "ejection_fraction": "overwrite[float]",
+     "heart_rate_bpm": "overwrite[float[1/min]]",
+     "intracranial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "mean_arterial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "mean_central_venous_pressure_mmHg": "overwrite[float[mmHg]]",
+     "mean_skin_flow_mL_per_min": "overwrite[float[mL/min]]",
+     "pulmonary_arterial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "pulmonary_capillary_wedge_pressure_mmHg": "overwrite[float[mmHg]]",
+     "pulmonary_mean_arterial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "pulmonary_vascular_resistance_mmHg_min_per_L": "overwrite[float[mmHg min/L]]",
+     "pulse_pressure_mmHg": "overwrite[float[mmHg]]",
+     "stroke_volume_mL": "overwrite[float[mL]]",
+     "systemic_vascular_resistance_mmHg_min_per_L": "overwrite[float[mmHg min/L]]",
+     "systolic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "total_blood_volume_lost_mL": "overwrite[float[mL]]"
+    },
+    "peripheral": {
+     "bone": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "brain": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "fat": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "gut": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "large_intestine": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_arm": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_leg": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "liver": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "muscle": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_arm": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_leg": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "skin": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "small_intestine": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "splanchnic": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "spleen": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     }
+    },
+    "renal": {
+     "left_glomerular_capillaries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_kidney": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_renal_artery": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "left_renal_vein": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_glomerular_capillaries": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_kidney": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_renal_artery": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     },
+     "right_renal_vein": {
+      "inflow_mL_per_min": "overwrite[float[mL/min]]",
+      "outflow_mL_per_min": "overwrite[float[mL/min]]",
+      "pressure_mmHg": "overwrite[float[mmHg]]",
+      "volume_mL": "overwrite[float[mL]]"
+     }
+    }
+   },
+   "infection": {
+    "clinical": {
+     "arterial_blood_ph": "overwrite[float]",
+     "blood_volume_mL": "overwrite[float[mL]]",
+     "cardiac_output_L_per_min": "overwrite[float[L/min]]",
+     "core_temperature_C": "overwrite[float[degC]]",
+     "heart_rate_bpm": "overwrite[float[1/min]]",
+     "lactate_mmol_per_L": "overwrite[float[mmol/L]]",
+     "mean_arterial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "mean_urine_output_mL_per_min": "overwrite[float[mL/min]]",
+     "oxygen_saturation": "overwrite[float]",
+     "respiration_rate_bpm": "overwrite[float[1/min]]",
+     "systemic_vascular_resistance_mmHg_s_per_mL": "overwrite[float[mmHg s/mL]]",
+     "systolic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "urine_production_mL_per_min": "overwrite[float[mL/min]]",
+     "white_blood_cell_count_per_uL": "overwrite[float[count/uL]]"
+    },
+    "inflammation": {
+     "blood_pathogen": "overwrite[float]",
+     "catecholamines": "overwrite[float]",
+     "inducible_nos": "overwrite[float]",
+     "interleukin_10": "overwrite[float]",
+     "interleukin_12": "overwrite[float]",
+     "interleukin_6": "overwrite[float]",
+     "local_macrophage": "overwrite[float]",
+     "local_neutrophil": "overwrite[float]",
+     "local_pathogen": "overwrite[float]",
+     "macrophage_active": "overwrite[float]",
+     "neutrophil_active": "overwrite[float]",
+     "nitric_oxide": "overwrite[float]",
+     "tissue_integrity": "overwrite[float]",
+     "trauma": "overwrite[float]",
+     "tumor_necrosis_factor": "overwrite[float]"
+    }
+   },
+   "irreversible_state": "boolean",
+   "lymph": {
+    "central_venous_pressure_mmHg": "overwrite[float[mmHg]]",
+    "formation": {
+     "bone_mL_per_min": "overwrite[float[mL/min]]",
+     "brain_mL_per_min": "overwrite[float[mL/min]]",
+     "fat_mL_per_min": "overwrite[float[mL/min]]",
+     "gut_mL_per_min": "overwrite[float[mL/min]]",
+     "left_kidney_mL_per_min": "overwrite[float[mL/min]]",
+     "left_lung_mL_per_min": "overwrite[float[mL/min]]",
+     "liver_mL_per_min": "overwrite[float[mL/min]]",
+     "muscle_mL_per_min": "overwrite[float[mL/min]]",
+     "myocardium_mL_per_min": "overwrite[float[mL/min]]",
+     "right_kidney_mL_per_min": "overwrite[float[mL/min]]",
+     "right_lung_mL_per_min": "overwrite[float[mL/min]]",
+     "skin_mL_per_min": "overwrite[float[mL/min]]",
+     "spleen_mL_per_min": "overwrite[float[mL/min]]"
+    },
+    "pool_pressure_mmHg": "overwrite[float[mmHg]]",
+    "pool_volume_mL": "overwrite[float[mL]]",
+    "return_mL_per_min": "overwrite[float[mL/min]]",
+    "return_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+    "vena_cava_pressure_mmHg": "overwrite[float[mmHg]]"
+   },
+   "nutrition": {
+    "chyme_absorption_rate_mL_per_min": "overwrite[float[mL/min]]",
+    "stomach_carbohydrate_g": "overwrite[float[g]]",
+    "stomach_water_mL": "overwrite[float[mL]]",
+    "total_body_fluid_mL": "overwrite[float[mL]]",
+    "urine_volume_mL": "overwrite[float[mL]]"
+   },
+   "tissue_fluid": {
+    "blood_volume_mL": "overwrite[float[mL]]",
+    "bone": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "brain": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "extravascular_fluid_mL": "overwrite[float[mL]]",
+    "fat": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "gut": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "intracellular_fluid_mL": "overwrite[float[mL]]",
+    "left_kidney": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "left_lung": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "liver": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "muscle": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "myocardium": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "plasma_albumin_g_per_dL": "overwrite[float[g/dL]]",
+    "right_kidney": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "right_lung": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "skin": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "spleen": {
+     "endothelial_resistance_mmHg_min_per_mL": "overwrite[float[mmHg min/mL]]",
+     "extracellular_volume_mL": "overwrite[float[mL]]",
+     "filtration_mL_per_min": "overwrite[float[mL/min]]",
+     "interstitial_albumin_g_per_dL": "overwrite[float[g/dL]]",
+     "interstitial_oncotic_pressure_mmHg": "overwrite[float[mmHg]]",
+     "interstitial_pressure_mmHg": "overwrite[float[mmHg]]",
+     "intracellular_volume_mL": "overwrite[float[mL]]",
+     "plasma_oncotic_pressure_mmHg": "overwrite[float[mmHg]]"
+    },
+    "total_body_fluid_mL": "overwrite[float[mL]]"
+   },
+   "treatment": {
+    "antibiotic_activity_per_hr": "overwrite[float]"
+   }
+  }
+ },
+ "inputs": {
+  "setpoints/cardiovascular/hemorrhage_rate_mL_per_min": {
+   "baseline": 0.0,
+   "biogears_actions": [
+    "HemorrhageData"
+   ]
+  },
+  "setpoints/cardiovascular/iv_rate_mL_per_min": {
+   "baseline": 0.0,
+   "biogears_actions": [
+    "SubstanceCompoundInfusionData"
+   ]
+  },
+  "setpoints/infection/infection_severity": {
+   "baseline": 0.0,
+   "biogears_actions": [
+    "InfectionData"
+   ]
+  },
+  "setpoints/treatment/vasopressor_rate_ug_per_min": {
+   "baseline": 0.0,
+   "biogears_actions": [
+    "SubstanceInfusionData"
+   ]
+  }
+ },
+ "math": [],
+ "outputs": {
+  "cardiovascular/central/aorta/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:Aorta.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/aorta/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:Aorta.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/aorta/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:Aorta.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/aorta/volume_mL": {
+   "biogears_request": "LiquidCompartment:Aorta.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/heart/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:Heart.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/heart/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:Heart.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/heart/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:Heart.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/heart/volume_mL": {
+   "biogears_request": "LiquidCompartment:Heart.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/left_atrium/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftAtrium.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_atrium/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftAtrium.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_atrium/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftAtrium.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/left_atrium/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftAtrium.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/left_heart/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftHeart.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_heart/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftHeart.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_heart/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftHeart.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/left_heart/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftHeart.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/left_ventricle/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftVentricle.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_ventricle/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftVentricle.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/left_ventricle/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftVentricle.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/left_ventricle/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftVentricle.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/myocardium/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:MyocardiumVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/myocardium/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:MyocardiumVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/myocardium/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:MyocardiumVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/myocardium/volume_mL": {
+   "biogears_request": "LiquidCompartment:MyocardiumVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/pericardium/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:Pericardium.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/pericardium/volume_mL": {
+   "biogears_request": "LiquidCompartment:Pericardium.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/pulmonary_arteries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryArteries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_arteries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryArteries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_arteries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:PulmonaryArteries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/pulmonary_arteries/volume_mL": {
+   "biogears_request": "LiquidCompartment:PulmonaryArteries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/pulmonary_capillaries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryCapillaries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_capillaries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryCapillaries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_capillaries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:PulmonaryCapillaries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/pulmonary_capillaries/volume_mL": {
+   "biogears_request": "LiquidCompartment:PulmonaryCapillaries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/pulmonary_veins/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryVeins.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_veins/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:PulmonaryVeins.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/pulmonary_veins/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:PulmonaryVeins.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/pulmonary_veins/volume_mL": {
+   "biogears_request": "LiquidCompartment:PulmonaryVeins.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/right_atrium/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightAtrium.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_atrium/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightAtrium.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_atrium/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightAtrium.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/right_atrium/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightAtrium.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/right_heart/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightHeart.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_heart/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightHeart.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_heart/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightHeart.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/right_heart/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightHeart.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/right_ventricle/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightVentricle.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_ventricle/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightVentricle.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/right_ventricle/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightVentricle.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/right_ventricle/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightVentricle.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/central/vena_cava/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:VenaCava.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/vena_cava/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:VenaCava.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/central/vena_cava/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:VenaCava.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/central/vena_cava/volume_mL": {
+   "biogears_request": "LiquidCompartment:VenaCava.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/cerebral/cerebral_arteries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralArteries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_arteries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralArteries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_arteries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:CerebralArteries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/cerebral/cerebral_arteries/volume_mL": {
+   "biogears_request": "LiquidCompartment:CerebralArteries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/cerebral/cerebral_capillaries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralCapillaries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_capillaries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralCapillaries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_capillaries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:CerebralCapillaries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/cerebral/cerebral_capillaries/volume_mL": {
+   "biogears_request": "LiquidCompartment:CerebralCapillaries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/cerebral/cerebral_veins/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralVeins.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_veins/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:CerebralVeins.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/cerebral_veins/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:CerebralVeins.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/cerebral/cerebral_veins/volume_mL": {
+   "biogears_request": "LiquidCompartment:CerebralVeins.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/cerebral/neck_arteries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:NeckArteries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/neck_arteries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:NeckArteries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/neck_arteries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:NeckArteries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/cerebral/neck_arteries/volume_mL": {
+   "biogears_request": "LiquidCompartment:NeckArteries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/cerebral/neck_veins/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:NeckVeins.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/neck_veins/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:NeckVeins.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/cerebral/neck_veins/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:NeckVeins.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/cerebral/neck_veins/volume_mL": {
+   "biogears_request": "LiquidCompartment:NeckVeins.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/hemodynamics/arterial_pressure_mmHg": {
+   "biogears_request": "Physiology:ArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/blood_volume_mL": {
+   "biogears_request": "Physiology:BloodVolume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/hemodynamics/cardiac_index_L_per_min_m2": {
+   "biogears_request": "Physiology:CardiacIndex",
+   "biogears_units": "L/min m^2"
+  },
+  "cardiovascular/hemodynamics/cardiac_output_L_per_min": {
+   "biogears_request": "Physiology:CardiacOutput",
+   "biogears_units": "L/min"
+  },
+  "cardiovascular/hemodynamics/central_venous_pressure_mmHg": {
+   "biogears_request": "Physiology:CentralVenousPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/cerebral_blood_flow_mL_per_min": {
+   "biogears_request": "Physiology:CerebralBloodFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/hemodynamics/cerebral_perfusion_pressure_mmHg": {
+   "biogears_request": "Physiology:CerebralPerfusionPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/diastolic_pressure_mmHg": {
+   "biogears_request": "Physiology:DiastolicArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/ejection_fraction": {
+   "biogears_request": "Physiology:HeartEjectionFraction",
+   "biogears_units": ""
+  },
+  "cardiovascular/hemodynamics/heart_rate_bpm": {
+   "biogears_request": "Physiology:HeartRate",
+   "biogears_units": "1/min"
+  },
+  "cardiovascular/hemodynamics/intracranial_pressure_mmHg": {
+   "biogears_request": "Physiology:IntracranialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/mean_arterial_pressure_mmHg": {
+   "biogears_request": "Physiology:MeanArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/mean_central_venous_pressure_mmHg": {
+   "biogears_request": "Physiology:MeanCentralVenousPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/mean_skin_flow_mL_per_min": {
+   "biogears_request": "Physiology:MeanSkinFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/hemodynamics/pulmonary_arterial_pressure_mmHg": {
+   "biogears_request": "Physiology:PulmonaryArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/pulmonary_capillary_wedge_pressure_mmHg": {
+   "biogears_request": "Physiology:PulmonaryCapillariesWedgePressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/pulmonary_mean_arterial_pressure_mmHg": {
+   "biogears_request": "Physiology:PulmonaryMeanArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/pulmonary_vascular_resistance_mmHg_min_per_L": {
+   "biogears_request": "Physiology:PulmonaryVascularResistance",
+   "biogears_units": "mmHg min/L"
+  },
+  "cardiovascular/hemodynamics/pulse_pressure_mmHg": {
+   "biogears_request": "Physiology:PulsePressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/stroke_volume_mL": {
+   "biogears_request": "Physiology:HeartStrokeVolume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/hemodynamics/systemic_vascular_resistance_mmHg_min_per_L": {
+   "biogears_request": "Physiology:SystemicVascularResistance",
+   "biogears_units": "mmHg min/L"
+  },
+  "cardiovascular/hemodynamics/systolic_pressure_mmHg": {
+   "biogears_request": "Physiology:SystolicArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/hemodynamics/total_blood_volume_lost_mL": {
+   "biogears_request": "Physiology:TotalBloodVolumeLost",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/bone/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:BoneVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/bone/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:BoneVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/bone/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:BoneVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/bone/volume_mL": {
+   "biogears_request": "LiquidCompartment:BoneVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/brain/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:BrainVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/brain/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:BrainVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/brain/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:BrainVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/brain/volume_mL": {
+   "biogears_request": "LiquidCompartment:BrainVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/fat/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:FatVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/fat/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:FatVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/fat/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:FatVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/fat/volume_mL": {
+   "biogears_request": "LiquidCompartment:FatVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/gut/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:GutVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/gut/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:GutVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/gut/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:GutVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/gut/volume_mL": {
+   "biogears_request": "LiquidCompartment:GutVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/large_intestine/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LargeIntestineVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/large_intestine/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LargeIntestineVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/large_intestine/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LargeIntestineVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/large_intestine/volume_mL": {
+   "biogears_request": "LiquidCompartment:LargeIntestineVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/left_arm/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftArmVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/left_arm/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftArmVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/left_arm/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftArmVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/left_arm/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftArmVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/left_leg/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftLegVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/left_leg/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftLegVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/left_leg/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftLegVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/left_leg/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftLegVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/liver/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LiverVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/liver/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LiverVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/liver/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LiverVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/liver/volume_mL": {
+   "biogears_request": "LiquidCompartment:LiverVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/muscle/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:MuscleVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/muscle/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:MuscleVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/muscle/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:MuscleVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/muscle/volume_mL": {
+   "biogears_request": "LiquidCompartment:MuscleVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/right_arm/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightArmVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/right_arm/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightArmVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/right_arm/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightArmVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/right_arm/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightArmVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/right_leg/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightLegVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/right_leg/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightLegVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/right_leg/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightLegVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/right_leg/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightLegVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/skin/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SkinVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/skin/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SkinVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/skin/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:SkinVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/skin/volume_mL": {
+   "biogears_request": "LiquidCompartment:SkinVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/small_intestine/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SmallIntestineVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/small_intestine/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SmallIntestineVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/small_intestine/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:SmallIntestineVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/small_intestine/volume_mL": {
+   "biogears_request": "LiquidCompartment:SmallIntestineVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/splanchnic/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SplanchnicVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/splanchnic/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SplanchnicVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/splanchnic/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:SplanchnicVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/splanchnic/volume_mL": {
+   "biogears_request": "LiquidCompartment:SplanchnicVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/peripheral/spleen/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SpleenVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/spleen/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:SpleenVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/peripheral/spleen/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:SpleenVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/peripheral/spleen/volume_mL": {
+   "biogears_request": "LiquidCompartment:SpleenVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/left_glomerular_capillaries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftGlomerularCapillaries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_glomerular_capillaries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftGlomerularCapillaries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_glomerular_capillaries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftGlomerularCapillaries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/left_glomerular_capillaries/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftGlomerularCapillaries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/left_kidney/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftKidneyVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_kidney/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftKidneyVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_kidney/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftKidneyVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/left_kidney/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftKidneyVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/left_renal_artery/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftRenalArtery.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_renal_artery/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftRenalArtery.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_renal_artery/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftRenalArtery.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/left_renal_artery/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftRenalArtery.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/left_renal_vein/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftRenalVein.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_renal_vein/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:LeftRenalVein.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/left_renal_vein/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:LeftRenalVein.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/left_renal_vein/volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftRenalVein.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/right_glomerular_capillaries/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightGlomerularCapillaries.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_glomerular_capillaries/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightGlomerularCapillaries.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_glomerular_capillaries/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightGlomerularCapillaries.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/right_glomerular_capillaries/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightGlomerularCapillaries.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/right_kidney/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightKidneyVasculature.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_kidney/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightKidneyVasculature.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_kidney/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightKidneyVasculature.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/right_kidney/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightKidneyVasculature.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/right_renal_artery/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightRenalArtery.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_renal_artery/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightRenalArtery.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_renal_artery/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightRenalArtery.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/right_renal_artery/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightRenalArtery.Volume",
+   "biogears_units": "mL"
+  },
+  "cardiovascular/renal/right_renal_vein/inflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightRenalVein.InFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_renal_vein/outflow_mL_per_min": {
+   "biogears_request": "LiquidCompartment:RightRenalVein.OutFlow",
+   "biogears_units": "mL/min"
+  },
+  "cardiovascular/renal/right_renal_vein/pressure_mmHg": {
+   "biogears_request": "LiquidCompartment:RightRenalVein.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "cardiovascular/renal/right_renal_vein/volume_mL": {
+   "biogears_request": "LiquidCompartment:RightRenalVein.Volume",
+   "biogears_units": "mL"
+  },
+  "infection/clinical/arterial_blood_ph": {
+   "biogears_request": "Physiology:ArterialBloodPH",
+   "biogears_units": ""
+  },
+  "infection/clinical/blood_volume_mL": {
+   "biogears_request": "Physiology:BloodVolume",
+   "biogears_units": "mL"
+  },
+  "infection/clinical/cardiac_output_L_per_min": {
+   "biogears_request": "Physiology:CardiacOutput",
+   "biogears_units": "L/min"
+  },
+  "infection/clinical/core_temperature_C": {
+   "biogears_request": "Physiology:CoreTemperature",
+   "biogears_units": "degC"
+  },
+  "infection/clinical/heart_rate_bpm": {
+   "biogears_request": "Physiology:HeartRate",
+   "biogears_units": "1/min"
+  },
+  "infection/clinical/lactate_mmol_per_L": {
+   "biogears_request": "LiquidCompartment:Aorta.Lactate.Molarity",
+   "biogears_units": "mmol/L"
+  },
+  "infection/clinical/mean_arterial_pressure_mmHg": {
+   "biogears_request": "Physiology:MeanArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "infection/clinical/mean_urine_output_mL_per_min": {
+   "biogears_request": "Physiology:MeanUrineOutput",
+   "biogears_units": "mL/min"
+  },
+  "infection/clinical/oxygen_saturation": {
+   "biogears_request": "Physiology:OxygenSaturation",
+   "biogears_units": ""
+  },
+  "infection/clinical/respiration_rate_bpm": {
+   "biogears_request": "Physiology:RespirationRate",
+   "biogears_units": "1/min"
+  },
+  "infection/clinical/systemic_vascular_resistance_mmHg_s_per_mL": {
+   "biogears_request": "Physiology:SystemicVascularResistance",
+   "biogears_units": "mmHg s/mL"
+  },
+  "infection/clinical/systolic_pressure_mmHg": {
+   "biogears_request": "Physiology:SystolicArterialPressure",
+   "biogears_units": "mmHg"
+  },
+  "infection/clinical/urine_production_mL_per_min": {
+   "biogears_request": "Physiology:UrineProductionRate",
+   "biogears_units": "mL/min"
+  },
+  "infection/clinical/white_blood_cell_count_per_uL": {
+   "biogears_request": "Physiology:WhiteBloodCellCount",
+   "biogears_units": "ct/uL"
+  },
+  "infection/inflammation/blood_pathogen": {
+   "biogears_request": "Physiology:InflammatoryResponse-BloodPathogen",
+   "biogears_units": ""
+  },
+  "infection/inflammation/catecholamines": {
+   "biogears_request": "Physiology:InflammatoryResponse-Catecholamines",
+   "biogears_units": ""
+  },
+  "infection/inflammation/inducible_nos": {
+   "biogears_request": "Physiology:InflammatoryResponse-InducibleNOS",
+   "biogears_units": ""
+  },
+  "infection/inflammation/interleukin_10": {
+   "biogears_request": "Physiology:InflammatoryResponse-Interleukin10",
+   "biogears_units": ""
+  },
+  "infection/inflammation/interleukin_12": {
+   "biogears_request": "Physiology:InflammatoryResponse-Interleukin12",
+   "biogears_units": ""
+  },
+  "infection/inflammation/interleukin_6": {
+   "biogears_request": "Physiology:InflammatoryResponse-Interleukin6",
+   "biogears_units": ""
+  },
+  "infection/inflammation/local_macrophage": {
+   "biogears_request": "Physiology:InflammatoryResponse-LocalMacrophage",
+   "biogears_units": ""
+  },
+  "infection/inflammation/local_neutrophil": {
+   "biogears_request": "Physiology:InflammatoryResponse-LocalNeutrophil",
+   "biogears_units": ""
+  },
+  "infection/inflammation/local_pathogen": {
+   "biogears_request": "Physiology:InflammatoryResponse-LocalPathogen",
+   "biogears_units": ""
+  },
+  "infection/inflammation/macrophage_active": {
+   "biogears_request": "Physiology:InflammatoryResponse-MacrophageActive",
+   "biogears_units": ""
+  },
+  "infection/inflammation/neutrophil_active": {
+   "biogears_request": "Physiology:InflammatoryResponse-NeutrophilActive",
+   "biogears_units": ""
+  },
+  "infection/inflammation/nitric_oxide": {
+   "biogears_request": "Physiology:InflammatoryResponse-NitricOxide",
+   "biogears_units": ""
+  },
+  "infection/inflammation/tissue_integrity": {
+   "biogears_request": "Physiology:InflammatoryResponse-TissueIntegrity",
+   "biogears_units": ""
+  },
+  "infection/inflammation/trauma": {
+   "biogears_request": "Physiology:InflammatoryResponse-Trauma",
+   "biogears_units": ""
+  },
+  "infection/inflammation/tumor_necrosis_factor": {
+   "biogears_request": "Physiology:InflammatoryResponse-TumorNecrosisFactor",
+   "biogears_units": ""
+  },
+  "irreversible_state": {
+   "description": "True once BioGears reports an irreversible state; the engine is not advanced after that."
+  },
+  "lymph/central_venous_pressure_mmHg": {
+   "biogears_request": "Physiology:CentralVenousPressure",
+   "biogears_units": "mmHg"
+  },
+  "lymph/formation/bone_mL_per_min": {
+   "biogears_request": "FluidPath:BoneToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/brain_mL_per_min": {
+   "biogears_request": "FluidPath:BrainToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/fat_mL_per_min": {
+   "biogears_request": "FluidPath:FatToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/gut_mL_per_min": {
+   "biogears_request": "FluidPath:GutToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/left_kidney_mL_per_min": {
+   "biogears_request": "FluidPath:LeftKidneyToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/left_lung_mL_per_min": {
+   "biogears_request": "FluidPath:LeftLungToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/liver_mL_per_min": {
+   "biogears_request": "FluidPath:LiverToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/muscle_mL_per_min": {
+   "biogears_request": "FluidPath:MuscleToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/myocardium_mL_per_min": {
+   "biogears_request": "FluidPath:MyocardiumToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/right_kidney_mL_per_min": {
+   "biogears_request": "FluidPath:RightKidneyToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/right_lung_mL_per_min": {
+   "biogears_request": "FluidPath:RightLungToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/skin_mL_per_min": {
+   "biogears_request": "FluidPath:SkinToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/formation/spleen_mL_per_min": {
+   "biogears_request": "FluidPath:SpleenToLymphValve.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/pool_pressure_mmHg": {
+   "biogears_request": "FluidNode:Lymph.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "lymph/pool_volume_mL": {
+   "biogears_request": "FluidNode:Lymph.Volume",
+   "biogears_units": "mL"
+  },
+  "lymph/return_mL_per_min": {
+   "biogears_request": "FluidPath:LymphToVenaCava.Flow",
+   "biogears_units": "mL/min"
+  },
+  "lymph/return_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:LymphToVenaCava.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "lymph/vena_cava_pressure_mmHg": {
+   "biogears_request": "FluidNode:VenaCava.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "nutrition/chyme_absorption_rate_mL_per_min": {
+   "biogears_request": "Physiology:ChymeAbsorptionRate",
+   "biogears_units": "mL/min"
+  },
+  "nutrition/stomach_carbohydrate_g": {
+   "biogears_request": "Physiology:StomachContents-Carbohydrate",
+   "biogears_units": "g"
+  },
+  "nutrition/stomach_water_mL": {
+   "biogears_request": "Physiology:StomachContents-Water",
+   "biogears_units": "mL"
+  },
+  "nutrition/total_body_fluid_mL": {
+   "biogears_request": "Physiology:TotalBodyFluidVolume",
+   "biogears_units": "mL"
+  },
+  "nutrition/urine_volume_mL": {
+   "biogears_request": "Physiology:UrineVolume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/blood_volume_mL": {
+   "biogears_request": "Physiology:BloodVolume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/bone/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:BoneE1ToBoneE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/bone/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:BoneTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/bone/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:BoneE1ToBoneE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/bone/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:BoneTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/bone/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:BoneE2ToBoneE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/bone/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:BoneE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/bone/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:BoneTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/bone/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:BoneVToBoneE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/brain/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:BrainE1ToBrainE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/brain/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:BrainTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/brain/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:BrainE1ToBrainE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/brain/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:BrainTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/brain/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:BrainE2ToBrainE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/brain/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:BrainE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/brain/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:BrainTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/brain/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:BrainVToBrainE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/extravascular_fluid_mL": {
+   "biogears_request": "Physiology:ExtravascularFluidVolume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/fat/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:FatE1ToFatE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/fat/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:FatTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/fat/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:FatE1ToFatE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/fat/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:FatTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/fat/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:FatE2ToFatE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/fat/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:FatE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/fat/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:FatTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/fat/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:FatVToFatE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/gut/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:GutE1ToGutE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/gut/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:GutTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/gut/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:GutE1ToGutE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/gut/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:GutTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/gut/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:GutE2ToGutE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/gut/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:GutE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/gut/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:GutTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/gut/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:SplanchnicVToGutE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/intracellular_fluid_mL": {
+   "biogears_request": "Physiology:IntracellularFluidVolume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/left_kidney/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:LeftKidneyE1ToLeftKidneyE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/left_kidney/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftKidneyTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/left_kidney/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:LeftKidneyE1ToLeftKidneyE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/left_kidney/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:LeftKidneyTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/left_kidney/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LeftKidneyE2ToLeftKidneyE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/left_kidney/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:LeftKidneyE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/left_kidney/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftKidneyTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/left_kidney/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LeftKidneyVToLeftKidneyE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/left_lung/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:LeftLungE1ToLeftLungE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/left_lung/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftLungTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/left_lung/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:LeftLungE1ToLeftLungE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/left_lung/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:LeftLungTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/left_lung/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LeftLungE2ToLeftLungE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/left_lung/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:LeftLungE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/left_lung/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LeftLungTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/left_lung/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LeftLungVToLeftLungE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/liver/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:LiverE1ToLiverE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/liver/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LiverTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/liver/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:LiverE1ToLiverE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/liver/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:LiverTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/liver/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LiverE2ToLiverE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/liver/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:LiverE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/liver/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:LiverTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/liver/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:LiverVToLiverE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/muscle/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:MuscleE1ToMuscleE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/muscle/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:MuscleTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/muscle/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:MuscleE1ToMuscleE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/muscle/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:MuscleTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/muscle/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:MuscleE2ToMuscleE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/muscle/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:MuscleE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/muscle/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:MuscleTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/muscle/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:MuscleVToMuscleE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/myocardium/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:MyocardiumE1ToMyocardiumE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/myocardium/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:MyocardiumTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/myocardium/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:MyocardiumE1ToMyocardiumE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/myocardium/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:MyocardiumTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/myocardium/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:MyocardiumE2ToMyocardiumE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/myocardium/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:MyocardiumE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/myocardium/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:MyocardiumTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/myocardium/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:MyocardiumVToMyocardiumE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/plasma_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:Aorta.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/right_kidney/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:RightKidneyE1ToRightKidneyE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/right_kidney/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:RightKidneyTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/right_kidney/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:RightKidneyE1ToRightKidneyE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/right_kidney/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:RightKidneyTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/right_kidney/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:RightKidneyE2ToRightKidneyE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/right_kidney/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:RightKidneyE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/right_kidney/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:RightKidneyTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/right_kidney/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:RightKidneyVToRightKidneyE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/right_lung/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:RightLungE1ToRightLungE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/right_lung/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:RightLungTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/right_lung/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:RightLungE1ToRightLungE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/right_lung/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:RightLungTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/right_lung/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:RightLungE2ToRightLungE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/right_lung/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:RightLungE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/right_lung/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:RightLungTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/right_lung/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:RightLungVToRightLungE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/skin/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:SkinE1ToSkinE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/skin/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:SkinTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/skin/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:SkinE1ToSkinE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/skin/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:SkinTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/skin/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:SkinE2ToSkinE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/skin/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:SkinE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/skin/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:SkinTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/skin/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:SkinVToSkinE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/spleen/endothelial_resistance_mmHg_min_per_mL": {
+   "biogears_request": "FluidPath:SpleenE1ToSpleenE2.Resistance",
+   "biogears_units": "mmHg min/mL"
+  },
+  "tissue_fluid/spleen/extracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:SpleenTissueExtracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/spleen/filtration_mL_per_min": {
+   "biogears_request": "FluidPath:SpleenE1ToSpleenE2.Flow",
+   "biogears_units": "mL/min"
+  },
+  "tissue_fluid/spleen/interstitial_albumin_g_per_dL": {
+   "biogears_request": "LiquidCompartment:SpleenTissueExtracellular.Albumin.Concentration",
+   "biogears_units": "g/dL"
+  },
+  "tissue_fluid/spleen/interstitial_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:SpleenE2ToSpleenE3.PressureSource",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/spleen/interstitial_pressure_mmHg": {
+   "biogears_request": "FluidNode:SpleenE3.Pressure",
+   "biogears_units": "mmHg"
+  },
+  "tissue_fluid/spleen/intracellular_volume_mL": {
+   "biogears_request": "LiquidCompartment:SpleenTissueIntracellular.Volume",
+   "biogears_units": "mL"
+  },
+  "tissue_fluid/spleen/plasma_oncotic_pressure_mmHg": {
+   "biogears_request": "FluidPath:SpleenVToSpleenE1.PressureSource",
+   "biogears_units": "mmHg",
+   "negated": true
+  },
+  "tissue_fluid/total_body_fluid_mL": {
+   "biogears_request": "Physiology:TotalBodyFluidVolume",
+   "biogears_units": "mL"
+  },
+  "treatment/antibiotic_activity_per_hr": {
+   "biogears_request": "Physiology:AntibioticActivity",
+   "biogears_units": ""
+  }
+ },
+ "references": [
+  "BioGears 8.2.0: https://github.com/BioGearsEngine/core"
+ ],
+ "summary": "BioGears 8.2.0 modules: infection, nutrition, lymph, tissue_fluid, cardiovascular, treatment",
+ "symbols": {}
+}

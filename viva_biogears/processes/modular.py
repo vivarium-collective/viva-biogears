@@ -8,7 +8,7 @@ from typing import Any
 from process_bigraph import Process
 
 from ..modules import MODULES
-from ..modules.base import check_outputs
+from ..modules.base import check_outputs, port_units
 from ..modules.state import read_state
 from ..states import SAVE_CONFIG, saver_from_config
 from ._bridge import (
@@ -31,6 +31,14 @@ def _config_schema() -> dict[str, Any]:
     return schema
 
 
+def _port_type(request) -> str:
+    """An output port's schema: ``overwrite[float[<units>]]``, the form whose units
+    bigraph-schema reads (``_port_units`` looks inside ``overwrite``), or plain
+    ``overwrite[float]`` for a unitless request or a unit pint doesn't have."""
+    units = port_units(request.unit)
+    return f"overwrite[float[{units}]]" if units else "overwrite[float]"
+
+
 def _nest(leaves) -> dict[str, Any]:
     tree: dict[str, Any] = {}
     for path, value in leaves:
@@ -49,7 +57,8 @@ class BioGearsModularProcess(Process):
     contributes a port subtree named after it:
 
     - outputs: the module's BioGears data requests as ``overwrite[float]`` ports at the
-      module's nested paths (e.g. ``cardiovascular/central/aorta/pressure_mmHg``);
+      module's nested paths (e.g. ``cardiovascular/central/aorta/pressure_mmHg``), with
+      the request's units in the type (``overwrite[float[mmHg]]``) when it has any;
     - inputs, under the single ``setpoints`` port: the module's setpoints as
       ``overwrite[float]`` ports whose schema default is the baseline value, sent to
       BioGears as actions only on change (e.g. ``setpoints/cardiovascular/hemorrhage_rate_mL_per_min``).
@@ -133,7 +142,9 @@ class BioGearsModularProcess(Process):
                               for m in self._modules if m.bindings}}
 
     def outputs(self):
-        ports = _nest([(path, "overwrite[float]") for path, _, _ in self._slots])
+        # Each port carries its units in the type, so the process's own interface is
+        # its typed I/O schema (viva_biogears.schema writes it out).
+        ports = _nest([(path, _port_type(self._requests[i])) for path, i, _ in self._slots])
         ports["irreversible_state"] = "boolean"
         return ports
 
