@@ -16,10 +16,12 @@ BioGears 8.2.0 save/load bugs: the anesthesia machine's empty chamber states (th
 saved file did not reload), and ``TotalBloodVolumeLost``, which BioGears doesn't save
 (pybiogears keeps it in a comment of the file).
 
-Files are named ``<name>@<t>s.xml``, BioGears' convention for its shipped states, with
-``t`` the engine's simulation time rounded to the microsecond (BioGears advances in
-0.02 s steps, so 10 s is reached as 9.999999999999876). An existing file is never
-overwritten.
+Times are compared in BioGears steps, not seconds. The engine's clock is a floating-point
+sum of its steps, so it reads off the exact time: 10 s is reached as 9.999999999999876,
+12 h as 43199.999999 and 48 h as 172799.999987. The engine is at step ``round(t / step)``,
+and a requested time is reached at the first step at or after it. Files are named
+``<name>@<t>s.xml``, BioGears' convention for its shipped states, with ``t`` the engine's
+clock rounded to the microsecond. An existing file is never overwritten.
 
 ``save_states`` drives the engine it is given (a pybiogears engine you hold, the
 command line). A process in a running composite saves its own engine instead, through
@@ -41,10 +43,32 @@ from typing import Sequence
 
 #: Saved-state names use the engine's time rounded to this many decimals (1 µs).
 TIME_DECIMALS = 6
-#: A time counts as reached within this much (s): BioGears' clock sums its 0.02 s steps
-#: in floating point and runs about 1 µs behind after hours (43199.999999 s at "12 h"), far
-#: less than one step.
-TIME_TOLERANCE_S = 1e-5
+#: A requested time within this fraction of a step of a step boundary is on it.
+STEP_DECIMALS = 6
+#: How far (in steps) the clock may read off its step grid: its own drift is far smaller.
+OFF_GRID_STEPS = 0.01
+
+
+def engine_step(engine) -> int:
+    """The engine's step. Its clock is a floating-point sum of its steps and reads off the
+    step's exact time, by 1.3e-5 s at 48 h of 0.02 s steps: far less than half a step.
+
+    Steps count from time 0, so the clock must be on its step's grid. A state saved between
+    two of this step's boundaries (at 60.02 s, then loaded with 0.04 s steps) is not, and
+    raises: there, which step a time falls on is undefined."""
+    step_s = engine.time_step_s
+    steps = engine.sim_time_s / step_s
+    if abs(steps - round(steps)) > OFF_GRID_STEPS:
+        raise ValueError(f"BioGears' clock ({engine.sim_time_s} s) is not on its {step_s} s step grid, so "
+                         "saved states and timed actions can't be placed on its steps; load this state with "
+                         "a time step that divides its time")
+    return round(steps)
+
+
+def first_step_at_or_after(t: float, step_s: float) -> int:
+    """The first step at or after time ``t`` (0.14 s / 0.02 s is 7.000000000000001 in
+    floating point, and still step 7)."""
+    return math.ceil(round(t / step_s, STEP_DECIMALS))
 
 
 def _seconds(t: float) -> str:
@@ -89,11 +113,15 @@ class StateSaver:
         self.saved: list[Path] = []
 
     def __call__(self, engine) -> None:
-        now = engine.sim_time_s + TIME_TOLERANCE_S
-        if self.pending and self.pending[0] <= now:
-            while self.pending and self.pending[0] <= now:
+        if not self.pending:
+            return
+        now, step_s = engine_step(engine), engine.time_step_s
+        if first_step_at_or_after(self.pending[0], step_s) <= now:
+            while self.pending and first_step_at_or_after(self.pending[0], step_s) <= now:
                 self.pending.pop(0)
-            self.saved += save_states(engine, self.out_dir, [engine.sim_time_s], self.name)
+            # The step's exact time, not the clock: a clock reading just past the step
+            # would fall on the next step, and save_states would advance to it.
+            self.saved += save_states(engine, self.out_dir, [now * step_s], self.name)
 
 
 def save_states(engine, out_dir: str | Path, times_s: Sequence[float], name: str = "state") -> list[Path]:
@@ -108,16 +136,17 @@ def save_states(engine, out_dir: str | Path, times_s: Sequence[float], name: str
     or to save; files written before the failure stay.
     """
     times = _checked(times_s, name)
-    now = engine.sim_time_s
-    if round(times[0], TIME_DECIMALS) < round(now, TIME_DECIMALS):
-        raise ValueError(f"times_s starts at {times[0]} s, before the engine's time {now} s")
+    step_s = engine.time_step_s
+    if first_step_at_or_after(times[0], step_s) < engine_step(engine):
+        raise ValueError(f"times_s starts at {times[0]} s, before the engine's time {engine.sim_time_s} s")
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     paths: list[Path] = []
     for t in times:
-        while now + TIME_TOLERANCE_S < t:
+        target = first_step_at_or_after(t, step_s)
+        while engine_step(engine) < target:
             engine.advance_steps(1)
-            now = engine.sim_time_s
+        now = engine.sim_time_s
         path = out / f"{name}@{_seconds(now)}s.xml"
         if path in paths:
             raise ValueError(f"times {t} s and an earlier one both fall on BioGears' step at {now} s")
