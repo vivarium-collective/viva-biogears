@@ -67,10 +67,18 @@ Environment baked in: `BIOGEARS_RUNTIME=/opt/biogears/share/biogears/runtime` (t
 `ENTRYPOINT ["/opt/compose-entrypoint.sh"]`: sets `TMPDIR`, `cd`s to a writable scratch directory (pybiogears'
 save-to-bytes goes through a temp file in the working directory), then `exec`s the runner with `"$@"`.
 
+Stopping a run: compose-api stops a job (time limit, `scancel`) with SIGTERM, which its job script (0.7.110) passes to
+the `singularity` process and Apptainer hands to the container's PID 1. The runner must be that process: on SIGTERM
+it writes the rows it reached (`COMPOSE_CHECKPOINT_SECONDS`, which also sets a periodic write) and exits 143. The
+entrypoint therefore `exec`s it; until 0.1.1 it ran the runner as a child, and a stopped job kept no results. Because
+of the `exec`, the entrypoint does not remove its scratch directory: it is under `/tmp`, which the job keeps in its
+`--workdir` and removes when the job ends.
+
 Runner (**decided**, per compose-api-supervisor, read from compose-api main 0.7.102): vendor compose-api's own generic
 `compose_api/environments/runner.py`. Its docstring says it answers "the command line prebuilt images already answer";
 it imports only the standard library and process-bigraph, never compose-api; it was generalised from viva-pde-particle's
-`compose_runner.py`. Pin it to a compose-api release tag (0.7.102 is current) with a sha256 check in the Dockerfile, and
+`compose_runner.py`. Pin it to a compose-api release tag (0.7.110 since viva-biogears 0.1.1, for its result
+checkpoints; first 0.7.102) with a sha256 check in the Dockerfile, and
 set `COMPOSE_RUNNER_TYPES` for viva-biogears' type tables. It is an internal module, not a versioned API: the stable
 contract is the command line (runtime contract 2), so the image keeps its vendored copy until it is re-pinned. The
 image's process-bigraph must be one the runner works with (composed images run 1.11.1); the image test checks it.

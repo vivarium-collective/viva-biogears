@@ -10,6 +10,12 @@
 # src/cpp/BioGearsThunk.cpp, temp_path()). The runtime is part of the read-only image, so the engine works in a
 # scratch directory of symlinks to it: reads reach the image, new files land in the scratch directory. Measured:
 # a read-only copy of the runtime fails on the first action; this layout passes.
+#
+# Why exec: compose-api stops a run (time limit, scancel) with SIGTERM to the container, whose PID 1 under --compat is
+# this script. The runner writes the rows it reached when it gets SIGTERM (COMPOSE_CHECKPOINT_SECONDS), so it must be
+# PID 1 itself: a shell running it as a child would end on the signal and leave it running unseen. exec means nothing
+# here removes the scratch directory; it lives under TMPDIR (/tmp, which compose-api's job puts in its --workdir and
+# removes when the job ends, as `docker run --rm` does with the container).
 set -euo pipefail
 
 : "${BIOGEARS_RUNTIME:=/opt/biogears/share/biogears/runtime}"
@@ -17,7 +23,6 @@ set -euo pipefail
 : "${COMPOSE_PYTHON:=/opt/venv/bin/python}"
 
 scratch="$(mktemp -d "${TMPDIR:-/tmp}/viva-biogears.XXXXXX")"
-trap 'rm -rf "$scratch"' EXIT
 
 mkdir "$scratch/runtime"
 shopt -s dotglob nullglob
@@ -30,6 +35,4 @@ export BIOGEARS_RUNTIME="$scratch/runtime"
 export VIVA_BIOGEARS_CACHE_DIR="${VIVA_BIOGEARS_CACHE_DIR:-$scratch/cache}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"
 
-rc=0
-"$COMPOSE_PYTHON" "$COMPOSE_RUNNER" "$@" || rc=$?
-exit "$rc"
+exec "$COMPOSE_PYTHON" "$COMPOSE_RUNNER" "$@"
