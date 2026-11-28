@@ -125,20 +125,24 @@ jobs:
           python3 docker/check_results.py exp2/output
 
       # A stopped job keeps the rows it reached (compose-api 0.7.110's job script: SIGTERM to the singularity process,
-      # which hands it to the container's PID 1, this image's entrypoint, which execs the runner). Checked: exit 143
-      # (128+SIGTERM), no process left behind, a results file of whole rows that ends before the requested time. The
-      # cluster's own SLURM path is checked by compose-api's production cancel test after registration.
+      # which reaches the runner in the container). Periodic writes are hourly, so a results file can only come from
+      # the runner's write on SIGTERM. The wait before the signal is a fixed margin, not a results file: start-up and the
+      # first engine steps take seconds (the 10 s contract run above), and too short a wait fails on "did not advance",
+      # never passes falsely. Checked: no results file before the signal; after it, exit 143 (128+SIGTERM) and a results
+      # file of whole rows that ends before the requested time. The cluster's own SLURM path is checked by compose-api's
+      # production cancel test after registration.
       - name: A stopped job keeps its rows (apptainer --compat, SIGTERM to the job's process only)
         run: |
           set -euo pipefail
           mkdir -p exp3/output work3
           cp exp2/experiment.pbg exp3/
-          printf 'COMPOSE_CHECKPOINT_SECONDS=2\n' > checkpoint.env
+          printf 'COMPOSE_CHECKPOINT_SECONDS=3600\n' > checkpoint.env
           apptainer run --compat --workdir "$PWD/work3" --env-file checkpoint.env --bind "$PWD/exp3:/experiment" \
             image.sif run /experiment/experiment.pbg -o /experiment/output -n 3600 &
           sim=$!
-          for _ in $(seq 600); do ls exp3/output/results_*.pber >/dev/null 2>&1 && break; sleep 0.5; done
-          ls exp3/output/results_*.pber  # the first periodic write: the engine is advancing
+          sleep 60
+          kill -0 "$sim" || { echo "the run ended before the signal"; exit 1; }
+          if ls exp3/output/results_*.pber 2>/dev/null; then echo "a results file before the signal: not from SIGTERM"; exit 1; fi
           kill -TERM "$sim"
           for _ in $(seq 120); do kill -0 "$sim" 2>/dev/null || break; sleep 1; done
           if kill -0 "$sim" 2>/dev/null; then
@@ -146,7 +150,7 @@ jobs:
           fi
           rc=0; wait "$sim" || rc=$?
           test "$rc" = 143 || { echo "exit $rc, not 143"; exit 1; }
-          if pgrep -f /experiment/experiment.pbg; then echo "a runner outlived the job"; exit 1; fi
+          ls exp3/output/results_*.pber || { echo "no results file: the runner wrote nothing on SIGTERM"; exit 1; }
           python3 - <<'PY'
           import sys
           sys.path.insert(0, "docker")

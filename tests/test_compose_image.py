@@ -159,24 +159,31 @@ def test_entrypoint_hands_sigterm_to_the_runner(read_only_runtime, tmp_path):
     the shell, and the runner goes on as an orphan that the job cannot see.
 
     Here the entrypoint runs as a plain process, not as PID 1. The Apptainer and SLURM signal path is covered by
-    compose-image.yml's stop check and, on the cluster, by compose-api's production cancel test after registration."""
+    compose-image.yml's stop check and, on the cluster, by compose-api's production cancel test after registration.
+
+    Periodic writes are hourly, so a results file can only come from the write on SIGTERM. The wait before the
+    signal is a fixed margin, not a results file: too short a wait fails on "did not advance", never passes falsely."""
     doc, out, tmp = tmp_path / "doc.pbg", tmp_path / "output", tmp_path / "tmp"
     doc.write_text(json.dumps(make_document()))
     tmp.mkdir()
     env = {**os.environ, "BIOGEARS_RUNTIME": str(read_only_runtime), "COMPOSE_RUNNER": str(RUNNER),
-           "COMPOSE_PYTHON": sys.executable, "TMPDIR": str(tmp), "COMPOSE_CHECKPOINT_SECONDS": "2"}
+           "COMPOSE_PYTHON": sys.executable, "TMPDIR": str(tmp), "COMPOSE_CHECKPOINT_SECONDS": "3600"}
     end = 3600
     log = tmp_path / "entrypoint.log"  # a file, not a pipe: an orphaned runner would hold a pipe open
     job = subprocess.Popen(["bash", str(ENTRYPOINT), "run", str(doc), "-o", str(out), "-n", str(end)],
                            env=env, stdout=log.open("w"), stderr=subprocess.STDOUT)
     runner_left = lambda: subprocess.run(["pgrep", "-f", str(doc)], capture_output=True).returncode == 0  # noqa: E731
     try:
-        # The engine has advanced once the runner's first periodic write exists.
-        deadline = time.monotonic() + 300
-        while not list(out.glob("results_*.pber")):
+        # The runner's own temporary directory appears when its run starts; loading the document and the first
+        # engine steps then take a few seconds (about 5 s on an M-series Mac), so 30 s is a wide margin.
+        deadline = time.monotonic() + 120
+        while not list(tmp.glob("tmp*")):
             assert job.poll() is None, log.read_text()[-2000:]
-            assert time.monotonic() < deadline, "no periodic write: the engine never advanced"
+            assert time.monotonic() < deadline, "the runner never started"
             time.sleep(0.5)
+        time.sleep(30)
+        assert job.poll() is None, f"the run ended before the signal: {log.read_text()[-2000:]}"
+        assert not list(out.glob("results_*.pber")), "a results file before the signal: not from SIGTERM"
         job.send_signal(signal.SIGTERM)
         job.wait(timeout=120)
         time.sleep(1)
@@ -188,6 +195,7 @@ def test_entrypoint_hands_sigterm_to_the_runner(read_only_runtime, tmp_path):
         subprocess.run(["pkill", "-f", str(doc)])
     assert not orphaned, "the runner outlived the entrypoint: SIGTERM never reached it"
     assert job.returncode == 143, f"exit {job.returncode}, not 128+SIGTERM: {log.read_text()[-2000:]}"
+    assert list(out.glob("results_*.pber")), "no results file: the runner wrote nothing on SIGTERM"
     summary = check_results(out)  # whole rows: the file parses, the engine advanced, the bleed shows
     assert summary["t_end"] < end, "the run was not stopped before its requested end"
 
