@@ -5,7 +5,8 @@
 #   0. the vendored runner is compose-api's file at the pinned release tag;
 #   1. docker, as a non-root user: a short real biogears_hemorrhage document through the entrypoint, results checked;
 #   2. the image has process-bigraph 1.11.1 (what compose-api's composed environments run) and no vivarium_workbench;
-#   3. apptainer, as a non-root user, the compose-api job command (--compat --workdir --bind /experiment).
+#   3. apptainer, as a non-root user, the compose-api job command (--compat --workdir --bind /experiment);
+#   4. apptainer, a job stopped with SIGTERM keeps the rows it reached.
 # On main it pushes ghcr.io/<owner>/viva-biogears-compose:{sha-<short>,latest} and prints the digest in the job summary.
 name: Compose image
 
@@ -107,7 +108,7 @@ jobs:
         with:
           apptainer-version: 1.3.6
 
-      # compose_api/simulation/job_script.py (0.7.102): singularity run --compat --workdir <w> --bind <dir>:/experiment
+      # compose_api/simulation/job_script.py (0.7.110): singularity run --compat --workdir <w> --bind <dir>:/experiment
       # <image> run /experiment/<doc> -o <out> -n <t>. Run as the (non-root) runner user: root has no tmpfs limit and
       # hid a failure in compose-api's own checks.
       - name: compose-api job contract (apptainer --compat, non-root)
@@ -122,6 +123,43 @@ jobs:
           apptainer run --compat --workdir "$PWD/work" --bind "$PWD/exp2:/experiment" image.sif \
             run /experiment/experiment.pbg -o /experiment/output -n 10
           python3 docker/check_results.py exp2/output
+
+      # A stopped job keeps the rows it reached (compose-api 0.7.110's job script: SIGTERM to the singularity process,
+      # which reaches the runner in the container). Periodic writes are hourly, so a results file can only come from
+      # the runner's write on SIGTERM. The wait before the signal is a fixed margin, not a results file: start-up and the
+      # first engine steps take seconds (the 10 s contract run above), and too short a wait fails on "did not advance",
+      # never passes falsely. Checked: no results file before the signal; after it, exit 143 (128+SIGTERM) and a results
+      # file of whole rows that ends before the requested time. The cluster's own SLURM path is checked by compose-api's
+      # production cancel test after registration.
+      - name: A stopped job keeps its rows (apptainer --compat, SIGTERM to the job's process only)
+        run: |
+          set -euo pipefail
+          mkdir -p exp3/output work3
+          cp exp2/experiment.pbg exp3/
+          printf 'COMPOSE_CHECKPOINT_SECONDS=3600\n' > checkpoint.env
+          apptainer run --compat --workdir "$PWD/work3" --env-file checkpoint.env --bind "$PWD/exp3:/experiment" \
+            image.sif run /experiment/experiment.pbg -o /experiment/output -n 3600 &
+          sim=$!
+          sleep 60
+          kill -0 "$sim" || { echo "the run ended before the signal"; exit 1; }
+          if ls exp3/output/results_*.pber 2>/dev/null; then echo "a results file before the signal: not from SIGTERM"; exit 1; fi
+          kill -TERM "$sim"
+          for _ in $(seq 120); do kill -0 "$sim" 2>/dev/null || break; sleep 1; done
+          if kill -0 "$sim" 2>/dev/null; then
+            echo "the job did not stop within 120 s of SIGTERM"; kill -KILL "$sim"; exit 1
+          fi
+          rc=0; wait "$sim" || rc=$?
+          test "$rc" = 143 || { echo "exit $rc, not 143"; exit 1; }
+          ls exp3/output/results_*.pber || { echo "no results file: the runner wrote nothing on SIGTERM"; exit 1; }
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "docker")
+          from pathlib import Path
+          from check_results import check
+          summary = check(Path("exp3/output"))  # whole rows: the file parses, the engine advanced, the bleed shows
+          assert summary["t_end"] < 3600, f"not stopped before the requested end: {summary}"
+          print("stopped run kept its rows", summary)
+          PY
           rm -f image.sif
 
       - name: Log in to GHCR

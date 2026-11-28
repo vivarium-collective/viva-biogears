@@ -58,19 +58,34 @@ Pins are build args, never `main`: `PYBIOGEARS_SHA` and `VIVA_BIOGEARS_SHA` (bot
 `pyproject.toml`; a mismatched pair makes BioGears return NaN silently, per inflect-sim-core's README). The BioGears
 commit is the one pinned in pybiogears' install script.
 
-Environment baked in: `BIOGEARS_RUNTIME=/opt/biogears/share/biogears/runtime` (the order in
-`viva_biogears/runtime.py`: config, `$BIOGEARS_RUNTIME`, default), `VIVA_BIOGEARS_CACHE_DIR=$TMPDIR/viva-biogears`
-(stabilized-state cache must not write into the read-only image), `OMP_NUM_THREADS=1`.
+Environment baked in (`docker/compose.Dockerfile`): `BIOGEARS_RUNTIME=/opt/biogears/share/biogears/runtime` (the
+order in `viva_biogears/runtime.py`: config, `$BIOGEARS_RUNTIME`, default), `OMP_NUM_THREADS=1`,
+`PYTHONUNBUFFERED=1`.
 
 ### Entrypoint
 
-`ENTRYPOINT ["/opt/compose-entrypoint.sh"]`: sets `TMPDIR`, `cd`s to a writable scratch directory (pybiogears'
-save-to-bytes goes through a temp file in the working directory), then `exec`s the runner with `"$@"`.
+`ENTRYPOINT ["/opt/compose-entrypoint.sh"]` (`docker/compose-entrypoint.sh`): makes a scratch directory under
+`${TMPDIR:-/tmp}`, holding a scratch runtime of symlinks to the image's runtime (BioGears writes into its runtime
+directory, open question 2: yes, `tests/test_compose_image.py::test_engine_alone_cannot_use_a_read_only_runtime`) and the stabilized-state cache (`VIVA_BIOGEARS_CACHE_DIR`, which must not write into
+the read-only image), points `BIOGEARS_RUNTIME` at the scratch runtime, then `exec`s the runner with `"$@"`.
+
+Stopping a run: compose-api stops a job (time limit, `scancel`) with SIGTERM, which its job script (0.7.110) passes to
+the `singularity` process and Apptainer hands to the container's PID 1 (`--compat` implies `--no-init`, so no init
+process sits in between). The runner must be that process: when `COMPOSE_CHECKPOINT_SECONDS` is above 0 (compose-api's
+`checkpoint_seconds`; production sets 300, `kustomize/config/compose-api-rke/api.env` at 0.7.110), it writes the rows
+so far at that interval and once more on SIGTERM, then exits 143. With 0 the runner installs no handler, and PID 1
+ignores SIGTERM, so a stopped job keeps nothing and ends at SLURM's SIGKILL. The entrypoint therefore `exec`s the
+runner; until 0.1.1 it ran it as a child, and the signal stopped at the shell (CI on 6ab15fb: "no results file: the
+runner wrote nothing on SIGTERM"). Because of the `exec`, the entrypoint does not remove its scratch directory, and the
+runner leaves its own temporary directory after SIGTERM: both are under `/tmp`, which the job keeps in its
+`--workdir` and removes when the job ends (`docker run --rm` likewise). Run outside a container, the entrypoint leaves
+them in `TMPDIR`.
 
 Runner (**decided**, per compose-api-supervisor, read from compose-api main 0.7.102): vendor compose-api's own generic
 `compose_api/environments/runner.py`. Its docstring says it answers "the command line prebuilt images already answer";
 it imports only the standard library and process-bigraph, never compose-api; it was generalised from viva-pde-particle's
-`compose_runner.py`. Pin it to a compose-api release tag (0.7.102 is current) with a sha256 check in the Dockerfile, and
+`compose_runner.py`. Pin it to a compose-api release tag (0.7.110 since viva-biogears 0.1.1, for its result
+checkpoints; first 0.7.102) with a sha256 check in the Dockerfile, and
 set `COMPOSE_RUNNER_TYPES` for viva-biogears' type tables. It is an internal module, not a versioned API: the stable
 contract is the command line (runtime contract 2), so the image keeps its vendored copy until it is re-pinned. The
 image's process-bigraph must be one the runner works with (composed images run 1.11.1); the image test checks it.

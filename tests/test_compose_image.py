@@ -1,6 +1,6 @@
 """The compose-api image's contract (docs/design/prebuilt-image.md), against the real BioGears engine; nothing is mocked.
 
-What is exercised is docker/compose-entrypoint.sh + the vendored docker/runner.py (compose-api 0.7.102's generic runner)
+What is exercised is docker/compose-entrypoint.sh + the vendored docker/runner.py (compose-api 0.7.110's generic runner)
 + viva_biogears, in the interpreter running the tests. The image itself (Docker/Apptainer, process-bigraph 1.11.1) is
 checked by .github/workflows/compose-image.yml. Each test names the proposition it would falsify.
 """
@@ -9,9 +9,11 @@ import importlib.util
 import json
 import os
 import shutil
+import signal
 import stat
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -140,12 +142,62 @@ def test_engine_alone_cannot_use_a_read_only_runtime(read_only_runtime, tmp_path
 
 
 @discoverable
-def test_entrypoint_leaves_nothing_in_tmp(read_only_runtime, tmp_path):
-    """Falsified if the per-job scratch directory survives the run: compose-api puts TMPDIR on the node's disk, and a
-    leaked directory per job fills it."""
+def test_entrypoint_scratch_stays_under_tmpdir(read_only_runtime, tmp_path):
+    """Falsified if the per-job scratch directory is not under TMPDIR. The entrypoint execs the runner, so it cannot
+    remove the directory itself; compose-api's job removes its --workdir, which holds the container's /tmp, when the
+    job ends. That cleanup covers only what is under TMPDIR."""
     done, _, tmp = _job(["bash", str(ENTRYPOINT)], runtime=read_only_runtime, tmp_path=tmp_path)
     assert done.returncode == 0, done.stderr[-2000:]
-    assert list(tmp.iterdir()) == []
+    assert list(tmp.glob("viva-biogears.*/runtime")), "the scratch runtime is not under TMPDIR"
+
+
+@discoverable
+def test_entrypoint_hands_sigterm_to_the_runner(read_only_runtime, tmp_path):
+    """Falsified if SIGTERM to the entrypoint's process alone does not stop the runner with the rows it reached.
+    That is what a stopped compose-api job delivers: its job script signals the container, whose PID 1 under
+    `--compat` is this entrypoint. If the entrypoint runs the runner as a child instead of exec'ing it, the signal ends
+    the shell, and the runner goes on as an orphan that the job cannot see.
+
+    Here the entrypoint runs as a plain process, not as PID 1. The Apptainer and SLURM signal path is covered by
+    compose-image.yml's stop check and, on the cluster, by compose-api's production cancel test after registration.
+
+    Periodic writes are hourly, so a results file can only come from the write on SIGTERM. The wait before the
+    signal is a fixed margin, not a results file: too short a wait fails on "did not advance", never passes falsely."""
+    doc, out, tmp = tmp_path / "doc.pbg", tmp_path / "output", tmp_path / "tmp"
+    doc.write_text(json.dumps(make_document()))
+    tmp.mkdir()
+    env = {**os.environ, "BIOGEARS_RUNTIME": str(read_only_runtime), "COMPOSE_RUNNER": str(RUNNER),
+           "COMPOSE_PYTHON": sys.executable, "TMPDIR": str(tmp), "COMPOSE_CHECKPOINT_SECONDS": "3600"}
+    end = 3600
+    log = tmp_path / "entrypoint.log"  # a file, not a pipe: an orphaned runner would hold a pipe open
+    job = subprocess.Popen(["bash", str(ENTRYPOINT), "run", str(doc), "-o", str(out), "-n", str(end)],
+                           env=env, stdout=log.open("w"), stderr=subprocess.STDOUT)
+    runner_left = lambda: subprocess.run(["pgrep", "-f", str(doc)], capture_output=True).returncode == 0  # noqa: E731
+    try:
+        # The runner's own temporary directory appears when its run starts; loading the document and the first
+        # engine steps then take a few seconds (about 5 s on an M-series Mac), so 30 s is a wide margin.
+        deadline = time.monotonic() + 120
+        while not list(tmp.glob("tmp*")):
+            assert job.poll() is None, log.read_text()[-2000:]
+            assert time.monotonic() < deadline, "the runner never started"
+            time.sleep(0.5)
+        time.sleep(30)
+        assert job.poll() is None, f"the run ended before the signal: {log.read_text()[-2000:]}"
+        assert not list(out.glob("results_*.pber")), "a results file before the signal: not from SIGTERM"
+        job.send_signal(signal.SIGTERM)
+        job.wait(timeout=120)
+        time.sleep(1)
+        orphaned = runner_left()
+    finally:
+        if job.poll() is None:
+            job.kill()
+            job.wait()
+        subprocess.run(["pkill", "-f", str(doc)])
+    assert not orphaned, "the runner outlived the entrypoint: SIGTERM never reached it"
+    assert job.returncode == 143, f"exit {job.returncode}, not 128+SIGTERM: {log.read_text()[-2000:]}"
+    assert list(out.glob("results_*.pber")), "no results file: the runner wrote nothing on SIGTERM"
+    summary = check_results(out)  # whole rows: the file parses, the engine advanced, the bleed shows
+    assert summary["t_end"] < end, "the run was not stopped before its requested end"
 
 
 def test_entrypoint_passes_the_runners_failure_through(read_only_runtime, tmp_path):
